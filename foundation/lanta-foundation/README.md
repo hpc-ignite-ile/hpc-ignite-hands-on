@@ -17,6 +17,52 @@ login, files, modules, job script, monitoring, results และ next experiment
 
 ## Quick Start บน LANTA
 
+### Copy-paste only
+
+เหมาะสำหรับผู้เรียนที่ยังไม่ต้องการเปิด editor หรือแก้ไฟล์เอง ให้แปะ block นี้ใน terminal บน LANTA:
+
+```bash
+cat > /tmp/hpc_ignite_foundation_copy_paste.sh <<'BASH'
+#!/bin/bash
+set -euo pipefail
+
+REPO="$HOME/hpc-ignite-hands-on"
+cd "$REPO"
+
+if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
+    read -rp "Project account for Slurm, เช่น pv915002: " HPC_IGNITE_ACCOUNT
+    export HPC_IGNITE_ACCOUNT
+fi
+
+export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
+
+echo "ใช้ account   : $HPC_IGNITE_ACCOUNT"
+echo "ใช้ partition : $HPC_IGNITE_PARTITION"
+
+bash scripts/lanta_submit_foundation.sh smoke
+
+echo
+echo "ดูคิว:"
+echo "  squeue -u $USER"
+echo
+echo "ดูผลลัพธ์หลังงานจบ:"
+echo "  ls -lh logs"
+echo "  find results/foundation -maxdepth 3 -type f | sort"
+BASH
+
+bash /tmp/hpc_ignite_foundation_copy_paste.sh
+```
+
+ถ้าต้องการส่งทั้งสามงาน foundation ในครั้งเดียว ให้เปลี่ยนบรรทัด submit เป็น:
+
+```bash
+bash scripts/lanta_submit_foundation.sh smoke
+bash scripts/lanta_submit_foundation.sh array
+bash scripts/lanta_submit_foundation.sh env
+```
+
+### แบบ command ปกติ
+
 ```bash
 cd $HOME/hpc-ignite-hands-on
 
@@ -40,6 +86,8 @@ find results/foundation -maxdepth 3 -type f | sort
 ```bash
 export HPC_IGNITE_ACCOUNT=<project-account>
 ```
+
+ดู copy-paste blocks เพิ่มเติมได้ที่ `docs/COPY_PASTE_ONLY_LABS_TH.md`
 
 ## งานที่เตรียมไว้
 

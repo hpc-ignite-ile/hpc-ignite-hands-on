@@ -28,6 +28,9 @@ find results/foundation -maxdepth 3 -type f | sort
 
 เริ่มจากบทภาษาไทยที่รันได้จริงบน LANTA: [`foundation/lanta-foundation/README.md`](foundation/lanta-foundation/README.md)
 
+สำหรับผู้เรียนที่ยังไม่ถนัด Linux CLI ให้ใช้ชุด copy-paste only:
+[`docs/COPY_PASTE_ONLY_LABS_TH.md`](docs/COPY_PASTE_ONLY_LABS_TH.md)
+
 ## Repository Structure
 
 ```
@@ -41,6 +44,7 @@ hpc-ignite-hands-on/
 ├── environments/            # Conda/Mamba environment files
 ├── slurm/                   # Slurm templates and module loads
 ├── scripts/                 # Submit wrappers for LANTA
+├── docs/                    # Thai copy-paste lab guides
 ├── requirements/            # pip requirements files
 └── tests/                   # Validation scripts
 ```
@@ -139,6 +143,25 @@ export HPC_IGNITE_ACCOUNT=<project-account>
 export HPC_IGNITE_PARTITION=compute-devel
 bash scripts/lanta_submit_foundation.sh smoke
 bash scripts/lanta_submit_foundation.sh array
+```
+
+No-editor version:
+
+```bash
+cat > /tmp/hpc_ignite_foundation_copy_paste.sh <<'BASH'
+#!/bin/bash
+set -euo pipefail
+cd "$HOME/hpc-ignite-hands-on"
+if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
+    read -rp "Project account for Slurm: " HPC_IGNITE_ACCOUNT
+    export HPC_IGNITE_ACCOUNT
+fi
+export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
+bash scripts/lanta_submit_foundation.sh smoke
+echo "Monitor: squeue -u $USER"
+echo "Results: find results/foundation -maxdepth 3 -type f | sort"
+BASH
+bash /tmp/hpc_ignite_foundation_copy_paste.sh
 ```
 
 ## Related Resources

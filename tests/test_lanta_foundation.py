@@ -54,6 +54,17 @@ class LantaFoundationTests(unittest.TestCase):
         for name in ["00-smoke-cpu.sbatch", "01-array-foundation.sbatch", "02-env-report.sbatch"]:
             self.assertTrue((FOUNDATION / "jobs" / name).exists())
 
+    def test_submit_wrappers_have_help(self) -> None:
+        for script in ["lanta_submit_foundation.sh", "lanta_submit_python_lab.sh"]:
+            result = subprocess.run(
+                ["bash", f"scripts/{script}", "--help"],
+                cwd=REPO_ROOT,
+                check=True,
+                text=True,
+                capture_output=True,
+            )
+            self.assertIn("Usage:", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

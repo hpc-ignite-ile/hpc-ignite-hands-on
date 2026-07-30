@@ -109,3 +109,46 @@ scaler.update()
 - [Curriculum Book - Chapter 4](https://github.com/wdiazcarballo/hpc-curriculum/blob/main/docs/curriculum-book/chapters/chapter-04-deep-learning.md)
 - [PyTorch Documentation](https://pytorch.org/docs/)
 - [PyTorch DDP Tutorial](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
+
+## Copy-paste only บน LANTA
+
+หมายเหตุ: block นี้ช่วยลดการพิมพ์คำสั่งและสร้าง/ส่งงานให้แบบ no-editor; ถ้า script ของบทนี้ต้องใช้ package เฉพาะ ให้เตรียม environment ตามคำอธิบายของบทก่อน submit
+
+แปะ block นี้ใน terminal บน LANTA แล้วเลือกหมายเลข script ที่ต้องการส่งเข้า Slurm:
+
+```bash
+cat > /tmp/hpc_ignite_core-hpc-chapter-04-deep-learning.sh <<'BASH'
+#!/bin/bash
+set -euo pipefail
+
+cd "$HOME/hpc-ignite-hands-on"
+
+if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
+    read -rp "Project account for Slurm: " HPC_IGNITE_ACCOUNT
+    export HPC_IGNITE_ACCOUNT
+fi
+
+export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
+
+LABS=(
+    "core-hpc/chapter-04-deep-learning/gpu_check.py"
+    "core-hpc/chapter-04-deep-learning/mnist_training.py"
+    "core-hpc/chapter-04-deep-learning/pytorch_basics.py"
+)
+
+echo "เลือก script ของบท core-hpc/chapter-04-deep-learning:"
+select LAB_SCRIPT in "${LABS[@]}"; do
+    if [ -n "${LAB_SCRIPT:-}" ]; then
+        bash scripts/lanta_submit_python_lab.sh "$LAB_SCRIPT"
+        break
+    fi
+    echo "กรุณาเลือกหมายเลขจากรายการ"
+done
+
+echo
+echo "Monitor: squeue -u $USER"
+echo "Results: find results/python-labs -maxdepth 3 -type f | sort"
+BASH
+
+bash /tmp/hpc_ignite_core-hpc-chapter-04-deep-learning.sh
+```

@@ -62,6 +62,27 @@ ls -lh logs
 
 อ่านบทเรียนเต็ม: `foundation/lanta-foundation/README.md`
 
+ถ้าไม่ต้องการเปิด editor ให้ใช้ชุด copy-paste only:
+
+```bash
+cat > /tmp/hpc_ignite_foundation_copy_paste.sh <<'BASH'
+#!/bin/bash
+set -euo pipefail
+cd "$HOME/hpc-ignite-hands-on"
+if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
+    read -rp "Project account for Slurm: " HPC_IGNITE_ACCOUNT
+    export HPC_IGNITE_ACCOUNT
+fi
+export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
+bash scripts/lanta_submit_foundation.sh smoke
+echo "Monitor: squeue -u $USER"
+echo "Results: find results/foundation -maxdepth 3 -type f | sort"
+BASH
+bash /tmp/hpc_ignite_foundation_copy_paste.sh
+```
+
+รายละเอียดเพิ่มเติมอยู่ที่ `docs/COPY_PASTE_ONLY_LABS_TH.md`
+
 ### 4. สร้าง Conda/Mamba Environment แบบ optional
 
 Foundation lab ใช้ Python standard library เท่านั้น จึงไม่ต้องสร้าง environment เพิ่ม แต่ถ้าต้องการ environment

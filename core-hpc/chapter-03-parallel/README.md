@@ -87,3 +87,29 @@ data = comm.bcast(data, root=0)
 
 - [Curriculum Book - Chapter 3](https://github.com/wdiazcarballo/hpc-curriculum/blob/main/docs/curriculum-book/chapters/chapter-03-parallel-programming.md)
 - [mpi4py Documentation](https://mpi4py.readthedocs.io/)
+
+## Copy-paste only บน LANTA
+
+หมายเหตุ: block นี้ช่วยลดการพิมพ์คำสั่งและสร้าง/ส่งงานให้แบบ no-editor; ถ้า script ของบทนี้ต้องใช้ package เฉพาะ ให้เตรียม environment ตามคำอธิบายของบทก่อน submit
+
+บทนี้ยังไม่มี Python script แบบ standalone ในโฟลเดอร์เดียวกัน แต่ผู้เรียนสามารถเปิดเนื้อหาแบบไม่ใช้ editor ได้ด้วย block นี้:
+
+```bash
+cat > /tmp/hpc_ignite_core-hpc-chapter-03-parallel.sh <<'BASH'
+#!/bin/bash
+set -euo pipefail
+
+cd "$HOME/hpc-ignite-hands-on"
+
+echo "อ่าน lab: core-hpc/chapter-03-parallel"
+echo "ไฟล์ในบทนี้:"
+find "core-hpc/chapter-03-parallel" -maxdepth 1 -type f | sort
+echo
+echo "README preview:"
+sed -n '1,180p' "core-hpc/chapter-03-parallel/README.md"
+echo
+echo "ถ้าจะเพิ่ม runnable Slurm lab ให้ใช้ template: docs/LAB_AUTHORING_GUIDE_TH.md"
+BASH
+
+bash /tmp/hpc_ignite_core-hpc-chapter-03-parallel.sh
+```

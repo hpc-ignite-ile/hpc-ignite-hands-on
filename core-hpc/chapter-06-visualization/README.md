@@ -44,3 +44,33 @@ python hpc_dashboard.py --output dashboard.png
 Data-Ink Ratio = (ink used for data) / (total ink)
 
 เป้าหมาย: ลด "chartjunk" ให้เหลือน้อยที่สุด
+
+## Copy-paste only บน LANTA
+
+หมายเหตุ: block นี้ช่วยลดการพิมพ์คำสั่งและสร้าง/ส่งงานให้แบบ no-editor; ถ้า script ของบทนี้ต้องใช้ package เฉพาะ ให้เตรียม environment ตามคำอธิบายของบทก่อน submit
+
+แปะ block นี้ใน terminal บน LANTA เพื่อส่ง script ของบทนี้เข้า Slurm โดยไม่ต้องเปิด editor:
+
+```bash
+cat > /tmp/hpc_ignite_core-hpc-chapter-06-visualization.sh <<'BASH'
+#!/bin/bash
+set -euo pipefail
+
+cd "$HOME/hpc-ignite-hands-on"
+
+if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
+    read -rp "Project account for Slurm: " HPC_IGNITE_ACCOUNT
+    export HPC_IGNITE_ACCOUNT
+fi
+
+export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
+
+bash scripts/lanta_submit_python_lab.sh "core-hpc/chapter-06-visualization/matplotlib_basics.py"
+
+echo
+echo "Monitor: squeue -u $USER"
+echo "Results: find results/python-labs -maxdepth 3 -type f | sort"
+BASH
+
+bash /tmp/hpc_ignite_core-hpc-chapter-06-visualization.sh
+```
