@@ -18,9 +18,7 @@ echo "Running on node: $(hostname)"
 echo "Working directory: $(pwd)"
 
 # Load modules
-module purge
-module load Miniconda3
-source activate hpc-ignite
+source slurm/module-loads/base.sh
 
 # Your code here
 # python your_script.py

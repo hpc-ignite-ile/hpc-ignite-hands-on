@@ -10,20 +10,23 @@ Runnable code examples and hands-on exercises for the HPC Ignite curriculum, des
 ```bash
 # 1. Clone the repository
 cd $HOME
-git clone https://github.com/wdiazcarballo/hpc-ignite-hands-on.git
+git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
 cd hpc-ignite-hands-on
 
-# 2. Load base environment
-source slurm/module-loads/base.sh
+# 2. ตั้งค่า project account และ partition สำหรับงานแรก
+export HPC_IGNITE_ACCOUNT=<project-account>
+export HPC_IGNITE_PARTITION=compute-devel
 
-# 3. Create conda environment
-mamba env create -f environments/base.yaml
-mamba activate hpc-ignite
+# 3. ส่งงาน foundation smoke test ที่ไม่ต้องติดตั้ง package เพิ่ม
+bash scripts/lanta_submit_foundation.sh smoke
 
-# 4. Run your first example
-cd foundation/chapter-00
-sbatch hello-lanta.sbatch
+# 4. ดูผลลัพธ์
+squeue -u $USER
+ls -lh logs
+find results/foundation -maxdepth 3 -type f | sort
 ```
+
+เริ่มจากบทภาษาไทยที่รันได้จริงบน LANTA: [`foundation/lanta-foundation/README.md`](foundation/lanta-foundation/README.md)
 
 ## Repository Structure
 
@@ -35,8 +38,9 @@ hpc-ignite-hands-on/
 ├── applications/            # บทที่ 14-19: แอปพลิเคชันภาคเหนือ
 ├── domain-science/          # บทที่ 20-27: Chemistry, Climate, Bio
 ├── advanced/                # บทที่ 28-30: LLM, Security, Carbon
-├── environments/            # Conda environment files
-├── slurm/                   # SLURM templates and module loads
+├── environments/            # Conda/Mamba environment files
+├── slurm/                   # Slurm templates and module loads
+├── scripts/                 # Submit wrappers for LANTA
 ├── requirements/            # pip requirements files
 └── tests/                   # Validation scripts
 ```
@@ -75,9 +79,9 @@ $PROJECT   # Group storage - Shared datasets
 
 ```bash
 module load cray-python/3.10.10
-module load Miniconda3
-module load PyTorch/2.0.1-CUDA-11.7.0
-module load OpenMPI/4.1.4
+module load Mamba/23.11.0-0
+module load cudatoolkit/24.11_12.6
+module load OpenMPI/4.1.2
 ```
 
 ## Environment Setup
@@ -85,8 +89,9 @@ module load OpenMPI/4.1.4
 ### Option 1: Conda (Recommended)
 
 ```bash
-# Base environment
+# Base environment (optional; foundation lab does not require this)
 mamba env create -f environments/base.yaml
+mamba env create -f environments/lanta-foundation.yaml
 
 # ML/GPU environment
 mamba env create -f environments/ml-gpu.yaml
@@ -123,8 +128,17 @@ sbatch mnist_training.sbatch
 
 ```bash
 srun --partition=gpu --gpus=1 --time=01:00:00 --pty bash
-module load PyTorch/2.0.1-CUDA-11.7.0
+source slurm/module-loads/pytorch.sh
 python pytorch_basics.py
+```
+
+For the currently tested foundation path, prefer:
+
+```bash
+export HPC_IGNITE_ACCOUNT=<project-account>
+export HPC_IGNITE_PARTITION=compute-devel
+bash scripts/lanta_submit_foundation.sh smoke
+bash scripts/lanta_submit_foundation.sh array
 ```
 
 ## Related Resources

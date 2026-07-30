@@ -18,10 +18,7 @@ echo "Running on nodes: $SLURM_JOB_NODELIST"
 echo "Total tasks: $SLURM_NTASKS"
 
 # Load modules
-module purge
-module load OpenMPI/4.1.4
-module load Miniconda3
-source activate hpc-ignite-mpi
+source slurm/module-loads/mpi.sh
 
 # Run MPI program
 srun python your_mpi_script.py

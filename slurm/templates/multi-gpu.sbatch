@@ -19,9 +19,7 @@ echo "Running on node: $(hostname)"
 echo "GPUs available: $SLURM_GPUS"
 
 # Load modules
-module purge
-module load PyTorch/2.0.1-CUDA-11.7.0
-module load NCCL/2.12.12-CUDA-11.7.0
+source slurm/module-loads/pytorch.sh
 
 # Check GPUs
 python -c "import torch; print(f'GPUs: {torch.cuda.device_count()}')"

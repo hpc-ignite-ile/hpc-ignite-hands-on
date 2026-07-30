@@ -30,7 +30,7 @@ Host lanta
 
 ```bash
 cd $HOME
-git clone https://github.com/wdiazcarballo/hpc-ignite-hands-on.git
+git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
 cd hpc-ignite-hands-on
 ```
 
@@ -42,6 +42,8 @@ cd hpc-ignite-hands-on
 # HPC Ignite Hands-On
 export HPC_IGNITE_HOME=$HOME/hpc-ignite-hands-on
 export PATH=$HPC_IGNITE_HOME/scripts:$PATH
+export HPC_IGNITE_ACCOUNT=<project-account>
+export HPC_IGNITE_PARTITION=compute-devel
 
 # Aliases
 alias hpc-ignite='cd $HPC_IGNITE_HOME'
@@ -49,11 +51,24 @@ alias sq='squeue -u $USER'
 alias si='sinfo -p compute,gpu'
 ```
 
-### 3. สร้าง Conda Environment
+### 3. รันงานแรกแบบไม่ต้องติดตั้ง dependency
 
 ```bash
-# โหลด Miniconda module
-module load Miniconda3
+cd $HPC_IGNITE_HOME
+bash scripts/lanta_submit_foundation.sh smoke
+squeue -u $USER
+ls -lh logs
+```
+
+อ่านบทเรียนเต็ม: `foundation/lanta-foundation/README.md`
+
+### 4. สร้าง Conda/Mamba Environment แบบ optional
+
+Foundation lab ใช้ Python standard library เท่านั้น จึงไม่ต้องสร้าง environment เพิ่ม แต่ถ้าต้องการ environment
+แยกสำหรับบทถัดไป สามารถใช้ Mamba ได้:
+
+```bash
+module load Mamba/23.11.0-0
 
 # สร้าง base environment
 mamba env create -f environments/base.yaml
@@ -73,6 +88,8 @@ which python
 | `gpu` | 88 | 48 hr | A100 x4 | GPU jobs |
 | `memory` | 10 | 48 hr | - | High memory |
 
+สำหรับ smoke test แนะนำเริ่มจาก `compute-devel` เพราะ time limit สั้นและเหมาะกับงานทดสอบ หากคิวเต็มค่อยลอง `compute-limited` หรือ `compute`
+
 ## Module System
 
 ### ดู Modules ที่มี
@@ -90,18 +107,16 @@ module spider cuda
 module load cray-python/3.10.10
 
 # Conda/Mamba
-module load Miniconda3
+module load Mamba/23.11.0-0
 
 # Deep Learning
-module load PyTorch/2.0.1-CUDA-11.7.0
-module load TensorFlow/2.11.0-CUDA-11.7.0
+module load cudatoolkit/24.11_12.6
 
 # MPI
-module load OpenMPI/4.1.4
+module load OpenMPI/4.1.2
 
 # CUDA
-module load CUDA/11.7.0
-module load cuDNN/8.4.1.50-CUDA-11.7.0
+module load cuda/12.6
 
 # Scientific
 module load netCDF/4.8
@@ -121,8 +136,7 @@ module load HDF5/1.12.2
 #SBATCH --time=01:00:00
 #SBATCH --output=%x_%j.out
 
-module load Miniconda3
-source activate hpc-ignite
+source slurm/module-loads/base.sh
 
 python my_script.py
 ```
@@ -139,7 +153,7 @@ python my_script.py
 #SBATCH --time=02:00:00
 #SBATCH --output=%x_%j.out
 
-module load PyTorch/2.0.1-CUDA-11.7.0
+source slurm/module-loads/pytorch.sh
 
 python train_model.py
 ```
@@ -155,9 +169,7 @@ python train_model.py
 #SBATCH --time=04:00:00
 #SBATCH --output=%x_%j.out
 
-module load OpenMPI/4.1.4
-module load Miniconda3
-source activate hpc-ignite
+source slurm/module-loads/mpi.sh
 
 srun python mpi_program.py
 ```
@@ -229,7 +241,8 @@ nvidia-smi
 ```bash
 module spider PACKAGE_NAME
 # ดู dependencies
-module spider PyTorch/2.0.1-CUDA-11.7.0
+module spider cudatoolkit
+module spider Mamba
 ```
 
 ### Conda environment ช้า

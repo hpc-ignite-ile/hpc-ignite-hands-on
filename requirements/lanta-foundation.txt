@@ -1,0 +1,2 @@
+# LANTA foundation labs intentionally use only the Python standard library.
+# Keep this file empty unless a future foundation lesson truly needs a package.

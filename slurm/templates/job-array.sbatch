@@ -17,9 +17,7 @@ echo "Job array task: $SLURM_ARRAY_TASK_ID of $SLURM_ARRAY_TASK_COUNT"
 echo "Array job ID: $SLURM_ARRAY_JOB_ID"
 
 # Load modules
-module purge
-module load Miniconda3
-source activate hpc-ignite
+source slurm/module-loads/base.sh
 
 # Method 1: Use task ID directly
 python process.py --task-id $SLURM_ARRAY_TASK_ID

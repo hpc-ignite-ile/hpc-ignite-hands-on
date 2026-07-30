@@ -33,15 +33,24 @@ ssh username@lanta.nstda.or.th
 
 # Clone repo (ถ้ายังไม่มี)
 cd $HOME
-git clone https://github.com/wdiazcarballo/hpc-ignite-hands-on.git
+git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
 cd hpc-ignite-hands-on/foundation/chapter-00
 
 # Run interactively
-module load Miniconda3
+source ../../slurm/module-loads/base.sh
 python hello_lanta.py
 
 # Or submit as job
 sbatch hello_lanta.sbatch
+```
+
+ถ้าต้องการ flow ที่ทดสอบกับ LANTA ปัจจุบันแล้ว แนะนำเริ่มจากบทใหม่:
+
+```bash
+cd $HOME/hpc-ignite-hands-on
+export HPC_IGNITE_ACCOUNT=<project-account>
+export HPC_IGNITE_PARTITION=compute-limited
+bash scripts/lanta_submit_foundation.sh smoke
 ```
 
 ### 2. Rice Production Analysis

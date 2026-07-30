@@ -18,8 +18,7 @@ echo "Job started at: $(date)"
 echo "Running on node: $(hostname)"
 
 # Load modules
-module purge
-module load PyTorch/2.0.1-CUDA-11.7.0
+source slurm/module-loads/pytorch.sh
 
 # Check GPU
 python -c "import torch; print(f'GPU: {torch.cuda.get_device_name(0)}')"
