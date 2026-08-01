@@ -11,7 +11,7 @@
 | CPU and job array | [02-cpu-array.md](02-cpu-array.md) | CPU baseline, parameter CSV, Slurm array logs |
 | OpenMP and MPI | [03-openmp-mpi.md](03-openmp-mpi.md) | compiled C examples launched by `srun` |
 | Scientific/data workflow | [04-science-data.md](04-science-data.md) | model/data outputs with run evidence |
-| AI/GPU check | [05-ai-gpu.md](05-ai-gpu.md) | GPU allocation log, `nvidia-smi`, optional PyTorch CUDA check |
+| AI/GPU check | [05-ai-gpu.md](05-ai-gpu.md) | GPU allocation log, `nvidia-smi`, PyTorch CUDA check |
 
 ## Working Pattern
 

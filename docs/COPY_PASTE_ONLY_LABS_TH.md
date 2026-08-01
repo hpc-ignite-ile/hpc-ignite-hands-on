@@ -155,17 +155,27 @@ cat > jobs/gpu_check.sbatch <<'SLURM'
 
 set -euo pipefail
 module purge
-module load CUDA/11.7.0 2>/dev/null || module load cudatoolkit 2>/dev/null || true
-module load PyTorch/1.13.1-CUDA-11.7.0 2>/dev/null || module load Mamba/23.11.0-0 2>/dev/null || module load cray-python/3.10.10 2>/dev/null || true
+module load Mamba/23.11.0-0
+conda activate pytorch-2.2.2
+export PATH="/lustrefs/disk/modules/easybuild/software/Mamba/23.11.0-0/envs/pytorch-2.2.2/bin:${PATH}"
 cd "$SLURM_SUBMIT_DIR"
-nvidia-smi || true
+nvidia-smi
 python - <<'PY'
-try:
-    import torch
-    print("torch", torch.__version__)
-    print("cuda_available", torch.cuda.is_available())
-except Exception as exc:
-    print("python_gpu_check_error", repr(exc))
+import torch
+
+print("torch", torch.__version__)
+print("cuda_version", torch.version.cuda)
+print("cuda_available", torch.cuda.is_available())
+print("gpu_count", torch.cuda.device_count())
+if not torch.cuda.is_available() or torch.cuda.device_count() < 1:
+    raise SystemExit("PyTorch cannot see the allocated GPU")
+
+x = torch.randn(2000, 2000, device="cuda")
+y = x @ x
+torch.cuda.synchronize()
+print("gpu_name", torch.cuda.get_device_name(0))
+print("matrix_sum", float(y.sum().cpu()))
+print("status", "ok")
 PY
 SLURM
 
