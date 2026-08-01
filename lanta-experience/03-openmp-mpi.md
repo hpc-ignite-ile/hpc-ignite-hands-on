@@ -60,6 +60,14 @@ echo "Submitted OpenMP job: $job_id"
 echo "Read: tail -50 logs/omp_${job_id}.out"
 ```
 
+### คำอธิบายเชิงเรื่องเล่า
+
+OpenMP เป็นบทเรียนเรื่องความขนานภายใน node เดียว โปรแกรม C ขนาดเล็กนี้ให้แต่ละ thread แนะนำตัวเอง แล้ว Slurm script ขอ 4 CPU cores เพื่อให้จำนวน thread ที่เกิดขึ้นมีพื้นฐานจากทรัพยากรที่ระบบจัดสรร ไม่ใช่จากความบังเอิญของ shell ที่ผู้ใช้เปิดอยู่
+
+การ compile ด้วย `cc -fopenmp` สะท้อนแนวปฏิบัติบน LANTA ที่ควรใช้ compiler wrapper หรือ compiler จาก module ที่ตั้งใจโหลดไว้ การตั้ง `OMP_NUM_THREADS` จาก `SLURM_CPUS_PER_TASK` ทำให้ code เคารพคำขอทรัพยากร และ `srun -c` ทำให้ Slurm เห็นการใช้ CPU ต่อ task อย่างสอดคล้องกัน
+
+เมื่อสำเร็จ log จะมีข้อความจาก thread หลายบรรทัด โดยจำนวนควรสัมพันธ์กับ CPU ที่ขอไว้ และ binary `results/omp_hello` จะถูกสร้าง หากเจอปัญหา `omp.h` ให้ตรวจ module compiler ด้วย `module avail gcc` หรือใช้ `cpeCray` หากได้ thread เพียงตัวเดียว ให้กลับไปอ่านค่า `OMP_NUM_THREADS` และ `#SBATCH --cpus-per-task` เพราะสองค่านี้คือสะพานระหว่าง Slurm กับโปรแกรม
+
 ## Copy-Paste MPI
 
 ```bash
@@ -117,3 +125,11 @@ echo "$job_id	mpi_hello	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted MPI job: $job_id"
 echo "Read: tail -50 logs/mpi_${job_id}.out"
 ```
+
+### คำอธิบายเชิงเรื่องเล่า
+
+เมื่อ OpenMP อยู่ภายใน node เดียว MPI คือการเปิดประตูสู่หลาย process ที่อาจกระจายไปหลาย node ได้ โปรแกรมนี้ให้แต่ละ rank บอกลำดับของตน จำนวน process ทั้งหมด และชื่อเครื่องที่ตนรันอยู่ จึงเป็นหลักฐานแรกของ distributed-memory execution ที่จับต้องได้
+
+การใช้ `srun` ภายใน Slurm allocation เป็นแนวทางที่เหมาะกับ LANTA เพราะ Slurm เป็นผู้ถือข้อมูลว่าจัดสรร task ไว้ที่ใด การเริ่มจาก 1 node และ 4 tasks ทำให้ผู้เรียนตรวจจำนวน rank ได้ง่ายก่อนขยายไปหลาย node การ load compiler และ MPI module ภายใน job script ช่วยให้การ compile และ run เกิดภายใต้ environment เดียวกับที่บันทึกใน log
+
+งานสำเร็จเมื่อ log มี 4 บรรทัดจาก `rank 0 of 4` ถึง rank สุดท้าย และจำนวนบรรทัดตรงกับ `SLURM_NTASKS` หาก compile ไม่พบ `mpi.h` ให้ตรวจ module MPI หรือ Cray Programming Environment หากจำนวน rank ไม่ตรงกับที่ขอ ให้ย้อนดู `#SBATCH --ntasks` และคำสั่ง `srun -n` หากข้าม node แล้วประสิทธิภาพไม่ดี ให้กลับมาวัด baseline บน node เดียวก่อน เพื่อแยกปัญหา computation ออกจาก communication

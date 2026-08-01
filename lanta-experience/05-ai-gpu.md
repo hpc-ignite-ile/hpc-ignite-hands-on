@@ -59,6 +59,14 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: tail -80 logs/gpu_${job_id}.out"
 ```
 
+### คำอธิบายเชิงเรื่องเล่า
+
+งาน GPU ไม่ควรเริ่มจาก training ขนาดใหญ่ แต่ควรเริ่มจากการถามระบบอย่างสุภาพว่าได้รับ GPU จริงหรือไม่ Block นี้จึงสร้าง Slurm job ที่ขอ GPU หนึ่งใบ โหลด CUDA หรือ PyTorch เท่าที่ระบบมีให้ แล้วบันทึกทั้ง `nvidia-smi` และผลตรวจ PyTorch ลงใน log
+
+ในเชิงวิธีวิทยา `nvidia-smi` ยืนยันระดับเครื่องและ driver ส่วน `torch.cuda.is_available()` ยืนยันระดับ Python environment ทั้งสองชั้นต้องสัมพันธ์กันจึงจะเริ่มงาน AI ได้อย่างมั่นใจ การใช้ `gpu-devel` และ GPU เพียงหนึ่งใบช่วยลดเวลารอและลดต้นทุนของการ debug ก่อนขยายไปสู่ training จริง
+
+สัญญาณที่ดีคือ log มีตารางจาก `nvidia-smi` และถ้า environment พร้อมจะเห็น `cuda_available True` พร้อมผลคำนวณ matrix บน GPU หาก `nvidia-smi` ผ่านแต่ PyTorch ไม่เห็น CUDA ปัญหามักอยู่ที่ environment ไม่ใช่ allocation หาก submit ถูกปฏิเสธให้ตรวจ `--gpus-per-node=1` และ partition หาก pending นานให้ดู reason ด้วย `squeue` และหาก CUDA module ไม่ตรงกับ PyTorch ให้ใช้ module หรือ environment ที่ ThaiSC แนะนำก่อนเริ่มงานใหญ่
+
 ## Next Modification
 
 หลังเห็น `nvidia-smi` และ `cuda_available True` แล้ว ค่อยเปลี่ยน Python block ให้โหลดโมเดลหรือข้อมูลขนาดเล็กของทีม.
