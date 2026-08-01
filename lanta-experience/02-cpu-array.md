@@ -46,10 +46,11 @@ pi = 4.0 * inside / args.samples
 
 Path("results").mkdir(exist_ok=True)
 job_id = os.environ.get("SLURM_JOB_ID", "manual")
+array_job_id = os.environ.get("SLURM_ARRAY_JOB_ID")
 task_id = os.environ.get("SLURM_ARRAY_TASK_ID")
-run_id = f"{job_id}_{task_id}" if task_id else job_id
+run_id = f"{array_job_id}_{task_id}" if array_job_id and task_id else job_id
 Path(f"results/pi_{run_id}.txt").write_text(
-    f"job_id={job_id}\ntask_id={task_id or ''}\nsamples={args.samples}\nworkers={workers}\npi={pi}\nelapsed={time.time() - t0:.3f}\n",
+    f"job_id={job_id}\narray_job_id={array_job_id or ''}\ntask_id={task_id or ''}\nsamples={args.samples}\nworkers={workers}\npi={pi}\nelapsed={time.time() - t0:.3f}\n",
     encoding="utf-8",
 )
 print(f"pi={pi} workers={workers} result=results/pi_{run_id}.txt")
@@ -87,7 +88,7 @@ echo "Read: tail -50 logs/pi_${job_id}.out && cat results/pi_${job_id}.txt"
 
 การเริ่มจาก sample ขนาดเล็กคือวินัยของการทดลองเชิงสมรรถนะ เพราะผลลัพธ์จะกลับมาเร็วพอให้ตรวจ log และแก้ไขได้ทันที การตั้ง `OMP_NUM_THREADS=1` ป้องกันไม่ให้ library ภายใน Python แอบใช้ thread เกินกว่าที่ขอไว้ และการเขียนผลลัพธ์ด้วยชื่อที่มี `SLURM_JOB_ID` ทำให้แต่ละ run แยกจากกันอย่างเป็นระบบ
 
-งานสำเร็จเมื่อ log มีข้อความประมาณ `pi=... workers=4` และไฟล์ `results/pi_<job-id>.txt` มีจำนวน sample จำนวน worker ค่า pi และเวลารัน ค่า pi ควรอยู่ใกล้ 3.14 แต่ไม่จำเป็นต้องตรงอย่างสมบูรณ์เพราะเป็นการสุ่ม หากงานช้าให้ลด sample หาก memory ไม่พอให้ลด worker หรือขนาดงาน หาก worker ไม่ตรงกับ CPU ที่ขอให้ตรวจทั้ง `#SBATCH --cpus-per-task` และ argument `--workers` แล้วส่งใหม่ด้วยทรัพยากรที่เล็กและชัดเจนกว่าเดิม เมื่อ code เดียวกันถูกเรียกจาก job array ชื่อไฟล์จะเพิ่ม task id เป็น `results/pi_<job-id>_<task-id>.txt` เพื่อไม่ให้งานย่อยหลายตัวเขียนทับหลักฐานของกันและกัน
+งานสำเร็จเมื่อ log มีข้อความประมาณ `pi=... workers=4` และไฟล์ `results/pi_<job-id>.txt` มีจำนวน sample จำนวน worker ค่า pi และเวลารัน ค่า pi ควรอยู่ใกล้ 3.14 แต่ไม่จำเป็นต้องตรงอย่างสมบูรณ์เพราะเป็นการสุ่ม หากงานช้าให้ลด sample หาก memory ไม่พอให้ลด worker หรือขนาดงาน หาก worker ไม่ตรงกับ CPU ที่ขอให้ตรวจทั้ง `#SBATCH --cpus-per-task` และ argument `--workers` แล้วส่งใหม่ด้วยทรัพยากรที่เล็กและชัดเจนกว่าเดิม เมื่อ code เดียวกันถูกเรียกจาก job array ชื่อไฟล์จะใช้ array job id และ task id เป็น `results/pi_<array-job-id>_<task-id>.txt` เพื่อไม่ให้งานย่อยหลายตัวเขียนทับหลักฐานของกันและกัน
 
 ## Copy-Paste Job Array
 
@@ -156,4 +157,4 @@ echo "Read: ls logs/pi_array_${job_id}_*.out results/pi_${job_id}_*.txt"
 
 นี่คือรูปแบบที่พบได้บ่อยในงาน HPC จริง ไม่ว่าจะเป็นหลาย seed หลาย input file หลายพื้นที่ศึกษา หรือหลายค่าพารามิเตอร์ การใช้ `--array=1-4` ทำให้ Slurm รู้ว่างานหนึ่งชุดมีงานย่อยหลายตัว และการใช้ `%A_%a` ในชื่อ log ทำให้ array job id กับ task id ปรากฏในหลักฐานอย่างชัดเจน
 
-ความสำเร็จจะเห็นจาก log หลายไฟล์ เช่น `logs/pi_array_<jobid>_1.out` จนถึง task สุดท้าย และแต่ละ task ควรมี output ของตนเอง เช่น `results/pi_<jobid>_1.txt` จนถึง task สุดท้าย หาก task ใดล้มเหลว ให้เปิด error log เฉพาะ task นั้นก่อน เพราะ array มักล้มบางจุดไม่ใช่ทั้งหมด หาก `sed` อ่านบรรทัดว่าง แสดงว่าช่วง `--array` ยาวกว่า config ที่มีอยู่ และหาก queue หนักเกินไป ให้ลดจำนวน task หรือกลับไปใช้พารามิเตอร์เล็กลงเพื่อรักษาวินัยของการทดลอง
+ความสำเร็จจะเห็นจาก log หลายไฟล์ เช่น `logs/pi_array_<jobid>_1.out` จนถึง task สุดท้าย และแต่ละ task ควรมี output ของตนเอง เช่น `results/pi_<array-jobid>_1.txt` จนถึง task สุดท้าย หาก task ใดล้มเหลว ให้เปิด error log เฉพาะ task นั้นก่อน เพราะ array มักล้มบางจุดไม่ใช่ทั้งหมด หาก `sed` อ่านบรรทัดว่าง แสดงว่าช่วง `--array` ยาวกว่า config ที่มีอยู่ และหาก queue หนักเกินไป ให้ลดจำนวน task หรือกลับไปใช้พารามิเตอร์เล็กลงเพื่อรักษาวินัยของการทดลอง
