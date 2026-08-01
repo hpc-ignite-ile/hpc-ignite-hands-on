@@ -46,7 +46,7 @@ cat notes/readiness.txt
 cat configs/run-small.env
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
 ก่อนส่งงานแรก ผู้เรียนควรทำความรู้จักสภาพแวดล้อมที่ตนยืนอยู่เสียก่อน Block นี้จึงทำหน้าที่เหมือนการลงทะเบียนภาคสนาม โดยบันทึก workspace วันเวลา ผู้ใช้ เครื่องที่เข้าใช้ และ home directory ลงใน `notes/readiness.txt` จากนั้นจึงเก็บภาพรวมของไฟล์ quota balance queue และ module ลงใน `notes/system-check.txt` พร้อมสร้าง `configs/run-small.env` เป็นตัวอย่างของไฟล์กำกับการทดลอง
 
