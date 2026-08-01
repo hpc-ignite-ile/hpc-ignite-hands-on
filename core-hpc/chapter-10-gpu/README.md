@@ -60,42 +60,50 @@ sbatch sbatch/gpu_job.sbatch
 
 ## Copy-paste only บน LANTA
 
-หมายเหตุ: block นี้ช่วยลดการพิมพ์คำสั่งและสร้าง/ส่งงานให้แบบ no-editor; ถ้า script ของบทนี้ต้องใช้ package เฉพาะ ให้เตรียม environment ตามคำอธิบายของบทก่อน submit
-
-แปะ block นี้ใน terminal บน LANTA แล้วเลือกหมายเลข script ที่ต้องการส่งเข้า Slurm:
+แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
 
 ```bash
-cat > /tmp/hpc_ignite_core-hpc-chapter-10-gpu.sh <<'BASH'
-#!/bin/bash
-set -euo pipefail
-
 cd "$HOME/hpc-ignite-hands-on"
 
-if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
-    read -rp "Project account for Slurm: " HPC_IGNITE_ACCOUNT
-    export HPC_IGNITE_ACCOUNT
+if [ -z "${LANTA_ACCOUNT:-}" ]; then
+    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    export LANTA_ACCOUNT
 fi
+export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
+export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-10-gpu/cupy_basics.py}"
 
-export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
+mkdir -p jobs logs results/python-labs
 
-LABS=(
-    "core-hpc/chapter-10-gpu/cupy_basics.py"
-    "core-hpc/chapter-10-gpu/gpu_info.py"
-)
+cat > jobs/run_python_lab.sbatch <<'SLURM'
+#!/bin/bash
+#SBATCH --job-name=hpcig-python-lab
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --gpus-per-node=1
+#SBATCH --mem=8G
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
 
-echo "เลือก script ของบท core-hpc/chapter-10-gpu:"
-select LAB_SCRIPT in "${LABS[@]}"; do
-    if [ -n "${LAB_SCRIPT:-}" ]; then
-        bash scripts/lanta_submit_python_lab.sh "$LAB_SCRIPT"
-        break
-    fi
-    echo "กรุณาเลือกหมายเลขจากรายการ"
-done
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+if [ -f "slurm/module-loads/base.sh" ]; then
+    source slurm/module-loads/base.sh
+fi
+mkdir -p "results/python-labs/${SLURM_JOB_ID}"
+echo "script=${LAB_SCRIPT}"
+python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+SLURM
 
-echo
-echo "Monitor: squeue -u $USER"
-echo "Results: find results/python-labs -maxdepth 3 -type f | sort"
-BASH
-
-bash /tmp/hpc_ignite_core-hpc-chapter-10-gpu.sh
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+echo "Submitted job: $job_id"
+echo "Monitor: squeue -j $job_id"
+echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
 ```
+
+เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=core-hpc/chapter-10-gpu/cupy_basics.py`

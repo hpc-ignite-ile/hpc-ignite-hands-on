@@ -1,103 +1,129 @@
 # LANTA Foundation Lab: งานแรกที่รันได้จริง
 
-บทนี้เป็นฐานสำหรับผู้เรียน HPC Ignite ที่ต้องการเริ่มจากศูนย์บน LANTA โดยเน้นลำดับเดียวกับ handbook ล่าสุด:
-login, files, modules, job script, monitoring, results และ next experiment
+บทนี้เป็นฐานสำหรับผู้เรียน HPC Ignite ที่ต้องการเริ่มจากศูนย์บน LANTA โดยเน้นลำดับเดียวกับ booklet: login, files, modules, job script, monitoring, results และ next experiment.
 
-เป้าหมายคือให้ผู้เรียนส่งงาน Slurm ที่รันได้จริงภายในเวลาไม่กี่นาที โดยยังไม่ต้องติดตั้ง package หนักหรือใช้ GPU
+แนวทางใหม่คือ copy-paste เป็นหลัก แต่ไม่ใช้ helper ที่ซ่อนรายละเอียดงาน. ผู้เรียนจะสร้างไฟล์ `.py` และ `.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
 
 ## สิ่งที่จะได้ฝึก
 
 1. ตรวจว่าอยู่บน login node หรือ compute node
 2. อ่านตัวแปร Slurm เช่น `SLURM_JOB_ID`, `SLURM_CPUS_PER_TASK`, `SLURM_SUBMIT_DIR`
 3. โหลด environment พื้นฐานด้วย Lmod
-4. ส่งงาน batch ด้วย `sbatch`
-5. ติดตามงานด้วย `squeue`
-6. อ่านผลลัพธ์ใน `logs/` และ `results/`
-7. เปลี่ยนจากงานเดียวเป็น job array ขนาดเล็ก
+4. สร้าง Slurm job script ด้วย heredoc
+5. ส่งงาน batch ด้วย `sbatch`
+6. ติดตามงานด้วย `squeue`
+7. อ่านผลลัพธ์ใน `logs/` และ `results/`
 
-## Quick Start บน LANTA
+## Copy-Paste Only บน LANTA
 
-### Copy-paste only
-
-เหมาะสำหรับผู้เรียนที่ยังไม่ต้องการเปิด editor หรือแก้ไฟล์เอง ให้แปะ block นี้ใน terminal บน LANTA:
+แปะ block นี้ใน terminal บน LANTA:
 
 ```bash
-cat > /tmp/hpc_ignite_foundation_copy_paste.sh <<'BASH'
-#!/bin/bash
-set -euo pipefail
+mkdir -p "$HOME/lanta-experience/foundation"
+cd "$HOME/lanta-experience/foundation"
+mkdir -p jobs logs notes results src
 
-REPO="$HOME/hpc-ignite-hands-on"
-cd "$REPO"
-
-if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
-    read -rp "Project account for Slurm, เช่น pv915002: " HPC_IGNITE_ACCOUNT
-    export HPC_IGNITE_ACCOUNT
+if [ -z "${LANTA_ACCOUNT:-}" ]; then
+    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    export LANTA_ACCOUNT
 fi
+export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 
-export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
+cat > src/verify_lanta.py <<'PY'
+import json
+import os
+import platform
+import socket
+from datetime import datetime, timezone
+from pathlib import Path
 
-echo "ใช้ account   : $HPC_IGNITE_ACCOUNT"
-echo "ใช้ partition : $HPC_IGNITE_PARTITION"
+slurm_keys = [
+    "SLURM_JOB_ID",
+    "SLURM_JOB_NAME",
+    "SLURM_SUBMIT_DIR",
+    "SLURM_NODELIST",
+    "SLURM_NTASKS",
+    "SLURM_CPUS_PER_TASK",
+    "SLURM_JOB_PARTITION",
+    "SLURM_JOB_ACCOUNT",
+]
 
-bash scripts/lanta_submit_foundation.sh smoke
+info = {
+    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+    "hostname": socket.gethostname(),
+    "python_version": platform.python_version(),
+    "user": os.environ.get("USER", "unknown"),
+    "working_directory": str(Path.cwd()),
+    "slurm": {key: os.environ.get(key, "N/A") for key in slurm_keys},
+}
 
-echo
-echo "ดูคิว:"
-echo "  squeue -u $USER"
-echo
-echo "ดูผลลัพธ์หลังงานจบ:"
-echo "  ls -lh logs"
-echo "  find results/foundation -maxdepth 3 -type f | sort"
-BASH
+print("HPC Ignite foundation smoke test")
+print(json.dumps(info, ensure_ascii=False, indent=2))
+Path("results").mkdir(exist_ok=True)
+Path(f"results/system_{os.environ.get('SLURM_JOB_ID', 'manual')}.json").write_text(
+    json.dumps(info, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
 
-bash /tmp/hpc_ignite_foundation_copy_paste.sh
+cat > src/serial_sum.py <<'PY'
+import math
+import time
+
+n = 200000
+step = 1.0 / n
+start = time.perf_counter()
+total = 0.0
+for i in range(n):
+    x = (i + 0.5) * step
+    total += math.sqrt(1.0 - x * x)
+pi_value = 4.0 * step * total
+elapsed = time.perf_counter() - start
+
+print(f"n          : {n}")
+print(f"pi estimate: {pi_value:.12f}")
+print(f"abs error  : {abs(math.pi - pi_value):.6e}")
+print(f"elapsed sec: {elapsed:.4f}")
+PY
+
+cat > jobs/foundation_smoke.sbatch <<'SLURM'
+#!/bin/bash
+#SBATCH --job-name=hpcig-foundation
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=512M
+#SBATCH --time=00:03:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+
+set -euo pipefail
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
+cd "$SLURM_SUBMIT_DIR"
+
+echo "Job ID : ${SLURM_JOB_ID}"
+echo "Node   : $(hostname)"
+python src/verify_lanta.py
+python src/serial_sum.py | tee "results/serial_sum_${SLURM_JOB_ID}.txt"
+SLURM
+
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/foundation_smoke.sbatch)
+echo "$job_id	foundation_smoke	$(date -Is)" >> notes/job-history.tsv
+echo "Submitted job: $job_id"
+echo "Monitor: squeue -j $job_id"
+echo "After completion:"
+echo "  tail -50 logs/hpcig-foundation_${job_id}.out"
+echo "  find results -type f | sort"
 ```
 
-ถ้าต้องการส่งทั้งสามงาน foundation ในครั้งเดียว ให้เปลี่ยนบรรทัด submit เป็น:
+## Repo Reference Files
 
-```bash
-bash scripts/lanta_submit_foundation.sh smoke
-bash scripts/lanta_submit_foundation.sh array
-bash scripts/lanta_submit_foundation.sh env
-```
-
-### แบบ command ปกติ
-
-```bash
-cd $HOME/hpc-ignite-hands-on
-
-# ตั้ง project account ให้ตรงกับบัญชีของทีม
-export HPC_IGNITE_ACCOUNT=<project-account>
-export HPC_IGNITE_PARTITION=compute-devel
-
-# ส่งงาน smoke test ขนาดเล็ก
-bash scripts/lanta_submit_foundation.sh smoke
-
-# ดูคิว
-squeue -u $USER
-
-# อ่านผลลัพธ์หลังงานจบ
-ls -lh logs
-find results/foundation -maxdepth 3 -type f | sort
-```
-
-ถ้า project ของคุณใช้ account อื่น ให้เปลี่ยน `HPC_IGNITE_ACCOUNT` ก่อน submit เช่น
-
-```bash
-export HPC_IGNITE_ACCOUNT=<project-account>
-```
-
-ดู copy-paste blocks เพิ่มเติมได้ที่ `docs/COPY_PASTE_ONLY_LABS_TH.md`
-
-## งานที่เตรียมไว้
-
-| คำสั่ง | Slurm job | ใช้สำหรับ |
-|---|---|---|
-| `bash scripts/lanta_submit_foundation.sh smoke` | `jobs/00-smoke-cpu.sbatch` | ตรวจระบบ, Python, Slurm variables และเขียนผลลัพธ์ JSON |
-| `bash scripts/lanta_submit_foundation.sh array` | `jobs/01-array-foundation.sbatch` | ทดลอง job array 4 tasks แบบเบา |
-| `bash scripts/lanta_submit_foundation.sh env` | `jobs/02-env-report.sbatch` | เก็บรายงาน module, Python, filesystem และ partition |
-
-## โครงสร้างไฟล์
+ไฟล์ในโฟลเดอร์นี้ยังเก็บตัวอย่าง reusable สำหรับทดสอบและสอน:
 
 ```text
 foundation/lanta-foundation/
@@ -111,35 +137,32 @@ foundation/lanta-foundation/
     └── 02-env-report.sbatch
 ```
 
-## อ่านผลลัพธ์
-
-หลังจาก job จบ ให้เริ่มจากไฟล์ log:
+ถ้าจะใช้ไฟล์ที่เตรียมไว้ใน repo โดยตรง ให้ส่งด้วย `sbatch` เอง:
 
 ```bash
-ls -lh logs
-tail -n +1 logs/hpcig-foundation-*.out
-```
+cd "$HOME/hpc-ignite-hands-on"
+export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 
-แล้วอ่าน result ที่เป็น machine-readable:
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-```bash
-find results/foundation -type f | sort
-python -m json.tool results/foundation/<job-id>/system.json
+sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" foundation/lanta-foundation/jobs/00-smoke-cpu.sbatch
 ```
 
 ## Flow การสอน
 
-1. ให้ผู้เรียนดูว่า source code อยู่ใน `$HOME` แต่ผลลัพธ์ถูกแยกไปใน `results/`
-2. เปิด `jobs/00-smoke-cpu.sbatch` แล้วชี้ให้เห็น `#SBATCH` แต่ละบรรทัด
-3. ส่งงานด้วย wrapper เพื่อให้ account/partition ปรับได้โดยไม่แก้ไฟล์ job
-4. ใช้ `squeue -u $USER` ระหว่างรอ
-5. อ่าน log และ JSON หลังงานจบ
-6. ส่ง `array` เพื่อให้เห็นว่า experiment หลายชุดไม่จำเป็นต้องเขียน script ซ้ำ
+1. ให้ผู้เรียนแปะ heredoc block และดูว่าเกิด `src/` กับ `jobs/`
+2. เปิด `jobs/foundation_smoke.sbatch` แล้วชี้ `#SBATCH` แต่ละบรรทัด
+3. ส่งงานด้วย `sbatch` โดยตรง
+4. ใช้ `squeue -j <job-id>` ระหว่างรอ
+5. อ่าน log และ result หลังงานจบ
+6. เปลี่ยนจำนวนงานหรือตัวอย่าง Python เพียงเล็กน้อย แล้วส่งซ้ำ
 
 ## หมายเหตุสำหรับ LANTA
 
-- ค่า default ของ partition ใน wrapper ตั้งเป็น `compute-devel` เพื่อใช้เป็น smoke test ขนาดเล็กที่จบเร็ว
-- ควรตั้ง `HPC_IGNITE_ACCOUNT` ให้ตรงกับ project account ของทีมก่อน submit
-- ถ้า partition นี้ไม่เปิดให้ account ของคุณใช้ ให้ลอง `HPC_IGNITE_PARTITION=compute-limited` หรือ `compute`
+- เริ่มจาก `compute-devel` สำหรับ smoke test ขนาดเล็ก
+- ถ้า account ต้องระบุ project ให้ตั้ง `LANTA_ACCOUNT` ก่อน submit
 - งาน foundation ไม่ใช้ GPU และไม่ติดตั้ง dependency เพิ่ม
-- เมื่อต่อยอดไปบท GPU/AI ให้ใช้ devel/limited partition ก่อน full run เสมอ
+- เมื่อต่อยอดไปบท GPU/AI ให้ใช้ `gpu-devel` ก่อน full run เสมอ

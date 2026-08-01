@@ -3,184 +3,112 @@
 [![LANTA Compatible](https://img.shields.io/badge/LANTA-Compatible-blue.svg)](https://docs.lanta.nstda.or.th)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Runnable code examples and hands-on exercises for the HPC Ignite curriculum, designed for execution on Thailand's LANTA supercomputer.
+Runnable copy-paste labs for Thailand's LANTA supercomputer. The main path now follows the event booklet `LANTA HPC Handbook` for **LANTA HPC Experience Day: On the Move**.
 
-## Quick Start on LANTA
+## Quick Start On LANTA
 
 ```bash
-# 1. Clone the repository
-cd $HOME
+cd "$HOME"
 git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
 cd hpc-ignite-hands-on
 
-# 2. ตั้งค่า project account และ partition สำหรับงานแรก
-export HPC_IGNITE_ACCOUNT=<project-account>
-export HPC_IGNITE_PARTITION=compute-devel
-
-# 3. ส่งงาน foundation smoke test ที่ไม่ต้องติดตั้ง package เพิ่ม
-bash scripts/lanta_submit_foundation.sh smoke
-
-# 4. ดูผลลัพธ์
-squeue -u $USER
-ls -lh logs
-find results/foundation -maxdepth 3 -type f | sort
+# Start with the booklet-aligned event flow.
+sed -n '1,120p' lanta-experience/README.md
 ```
 
-เริ่มจากบทภาษาไทยที่รันได้จริงบน LANTA: [`foundation/lanta-foundation/README.md`](foundation/lanta-foundation/README.md)
+For the first real job, open [lanta-experience/01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) and paste the block on LANTA. It creates `src/hello_lanta.py` and `jobs/hello_lanta.sbatch` with heredoc, then submits directly with `sbatch`.
 
-สำหรับผู้เรียนที่ยังไม่ถนัด Linux CLI ให้ใช้ชุด copy-paste only:
-[`docs/COPY_PASTE_ONLY_LABS_TH.md`](docs/COPY_PASTE_ONLY_LABS_TH.md)
+## Booklet-Aligned Structure
 
-## Repository Structure
-
-```
+```text
 hpc-ignite-hands-on/
-├── foundation/              # บทที่ 0-1: HPC 101, Linux พื้นฐาน
-├── core-hpc/                # บทที่ 2-10: MPI, PyTorch, Dask, Spark, GPU
-├── ai-development/          # บทที่ 11-13: Containers, AI Dev, Prompts
-├── applications/            # บทที่ 14-19: แอปพลิเคชันภาคเหนือ
-├── domain-science/          # บทที่ 20-27: Chemistry, Climate, Bio
-├── advanced/                # บทที่ 28-30: LLM, Security, Carbon
-├── environments/            # Conda/Mamba environment files
-├── slurm/                   # Slurm templates and module loads
-├── scripts/                 # Submit wrappers for LANTA
-├── docs/                    # Thai copy-paste lab guides
-├── requirements/            # pip requirements files
-└── tests/                   # Validation scripts
+├── lanta-experience/        # Main event path from the booklet
+│   ├── 00-readiness.md      # Linux, shell, files, quota, modules
+│   ├── 01-first-slurm-job.md
+│   ├── 02-cpu-array.md
+│   ├── 03-openmp-mpi.md
+│   ├── 04-science-data.md
+│   └── 05-ai-gpu.md
+├── foundation/              # Reusable foundation scripts and older chapter material
+├── core-hpc/                # Reference chapters: environment, parallel, data, MPI, GPU
+├── ai-applications/         # Reference AI chapters
+├── domain-science/          # Reference science/domain chapters
+├── environments/            # Optional Conda/Mamba environment files
+├── slurm/                   # Reusable Slurm templates and module-load snippets
+├── docs/                    # Authoring guide and copy-paste conventions
+├── requirements/            # Optional pip requirements
+└── tests/                   # Local validation
 ```
 
-## Chapter Overview
+## Event Flow
 
-| Track | Chapters | Topics |
-|-------|----------|--------|
-| **Foundation** | 0-1 | HPC 101, Linux Basics |
-| **Core HPC** | 2-10 | Environment, Parallel, PyTorch, Dask, MPI, Spark, GPU |
-| **AI Development** | 11-13 | Containers, AI Development, Prompt Engineering |
-| **Applications** | 14-19 | 3D Design, Educational AI, Smart Home, Health, Dashboard |
-| **Domain Science** | 20-27 | Chemistry, MD, Climate, Materials, Bio, Agriculture, Disaster |
-| **Advanced** | 28-30 | LLM Fine-tuning, Security, Carbon Verification |
+| Booklet section | Repo guide | Main activity |
+|---|---|---|
+| Linux, shell, files | [00-readiness.md](lanta-experience/00-readiness.md) | Create folders, configs, and system notes |
+| First Slurm job | [01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) | Write `hello_lanta.py` and `hello_lanta.sbatch` using heredoc |
+| CPU and arrays | [02-cpu-array.md](lanta-experience/02-cpu-array.md) | Run CPU pi baseline and a small job array |
+| OpenMP and MPI | [03-openmp-mpi.md](lanta-experience/03-openmp-mpi.md) | Compile C examples and launch with `srun` |
+| Science/data | [04-science-data.md](lanta-experience/04-science-data.md) | Run diffusion/data examples and capture evidence |
+| AI/GPU | [05-ai-gpu.md](lanta-experience/05-ai-gpu.md) | Request one GPU and verify CUDA/PyTorch |
 
-## LANTA System Requirements
+## Copy-Paste Style
 
-### Compute Resources
-
-| Configuration | Nodes | CPUs | GPUs | Memory | Partition |
-|---------------|-------|------|------|--------|-----------|
-| CPU Small | 1 | 32 | 0 | 64G | compute |
-| CPU Large | 4 | 128 | 0 | 256G | compute |
-| GPU Single | 1 | 32 | 1 | 128G | gpu |
-| GPU Multi | 1 | 128 | 4 | 512G | gpu |
-
-### File Systems
+Learner-facing labs should avoid hidden submit helpers. A good activity is still mostly copy-paste, but the pasted block should create simple visible files:
 
 ```bash
-$HOME      # 50 GB - Scripts, configs (persistent)
-$SCRATCH   # 5 TB - Data, outputs (30-day retention)
-$PROJECT   # Group storage - Shared datasets
-```
+mkdir -p jobs logs results src
 
-### Module Environment
+cat > src/main.py <<'PY'
+print("Hello from LANTA")
+PY
 
-```bash
-module load cray-python/3.10.10
-module load Mamba/23.11.0-0
-module load cudatoolkit/24.11_12.6
-module load OpenMPI/4.1.2
-```
-
-## Environment Setup
-
-### Option 1: Conda (Recommended)
-
-```bash
-# Base environment (optional; foundation lab does not require this)
-mamba env create -f environments/base.yaml
-mamba env create -f environments/lanta-foundation.yaml
-
-# ML/GPU environment
-mamba env create -f environments/ml-gpu.yaml
-
-# MPI environment
-mamba env create -f environments/mpi.yaml
-```
-
-### Option 2: pip
-
-```bash
-pip install -r requirements/base.txt
-pip install -r requirements/ml.txt  # For ML chapters
-pip install -r requirements/mpi.txt # For MPI chapters
-```
-
-## Running Examples
-
-### CPU Jobs
-
-```bash
-cd core-hpc/chapter-03-parallel/mpi
-sbatch parallel_sum.sbatch
-```
-
-### GPU Jobs
-
-```bash
-cd core-hpc/chapter-04-deep-learning
-sbatch mnist_training.sbatch
-```
-
-### Interactive Session
-
-```bash
-srun --partition=gpu --gpus=1 --time=01:00:00 --pty bash
-source slurm/module-loads/pytorch.sh
-python pytorch_basics.py
-```
-
-For the currently tested foundation path, prefer:
-
-```bash
-export HPC_IGNITE_ACCOUNT=<project-account>
-export HPC_IGNITE_PARTITION=compute-devel
-bash scripts/lanta_submit_foundation.sh smoke
-bash scripts/lanta_submit_foundation.sh array
-```
-
-No-editor version:
-
-```bash
-cat > /tmp/hpc_ignite_foundation_copy_paste.sh <<'BASH'
+cat > jobs/main.sbatch <<'SLURM'
 #!/bin/bash
+#SBATCH --job-name=hpcig-main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+
 set -euo pipefail
-cd "$HOME/hpc-ignite-hands-on"
-if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
-    read -rp "Project account for Slurm: " HPC_IGNITE_ACCOUNT
-    export HPC_IGNITE_ACCOUNT
-fi
-export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
-bash scripts/lanta_submit_foundation.sh smoke
-echo "Monitor: squeue -u $USER"
-echo "Results: find results/foundation -maxdepth 3 -type f | sort"
-BASH
-bash /tmp/hpc_ignite_foundation_copy_paste.sh
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
+cd "$SLURM_SUBMIT_DIR"
+python src/main.py
+SLURM
+
+sbatch -p compute-devel jobs/main.sbatch
 ```
+
+See [docs/LAB_AUTHORING_GUIDE_TH.md](docs/LAB_AUTHORING_GUIDE_TH.md) for the authoring checklist.
+
+## LANTA Notes
+
+- SSH login host: `lanta.nstda.or.th`
+- Transfer host: `transfer.lanta.nstda.or.th`
+- Use login nodes for editing, small checks, and job submission only.
+- Start with `compute-devel` or `gpu-devel` smoke tests when available, then scale after the result is correct.
+- Set `LANTA_ACCOUNT` only if your project requires explicit `sbatch -A`.
+
+## Optional Reference Chapters
+
+The older chapter directories remain useful as source examples and extension material after the event path:
+
+| Track | Topics |
+|---|---|
+| `foundation/` | HPC basics and first runnable scripts |
+| `core-hpc/` | Environment, parallel Python, Dask, MPI, Spark, GPU |
+| `ai-applications/` | Containers, AI development, prompts, fine-tuning, security, carbon |
+| `domain-science/` | Chemistry, MD, climate, materials, bioinformatics, agriculture, disaster |
 
 ## Related Resources
 
-- **Curriculum Book**: [HPC Ignite Curriculum](https://github.com/wdiazcarballo/hpc-curriculum/tree/main/docs/curriculum-book)
-- **SCORM Modules**: [Interactive Learning Modules](https://github.com/wdiazcarballo/hpc-curriculum/tree/main/scorm-modules)
-- **LANTA Documentation**: [docs.lanta.nstda.or.th](https://docs.lanta.nstda.or.th)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-example`)
-3. Test on LANTA or compatible HPC system
-4. Submit a pull request
+- LANTA User Guide: https://docs.lanta.nstda.or.th
+- ThaiSC: https://www.thaisc.io
+- Slurm: https://slurm.schedmd.com/documentation.html
 
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
-
----
-
-**HPC Ignite Project** | Thailand National HPC Training Initiative

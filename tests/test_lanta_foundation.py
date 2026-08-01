@@ -54,16 +54,32 @@ class LantaFoundationTests(unittest.TestCase):
         for name in ["00-smoke-cpu.sbatch", "01-array-foundation.sbatch", "02-env-report.sbatch"]:
             self.assertTrue((FOUNDATION / "jobs" / name).exists())
 
-    def test_submit_wrappers_have_help(self) -> None:
-        for script in ["lanta_submit_foundation.sh", "lanta_submit_python_lab.sh"]:
-            result = subprocess.run(
-                ["bash", f"scripts/{script}", "--help"],
-                cwd=REPO_ROOT,
-                check=True,
-                text=True,
-                capture_output=True,
-            )
-            self.assertIn("Usage:", result.stdout)
+    def test_event_guides_exist(self) -> None:
+        event_dir = REPO_ROOT / "lanta-experience"
+        for name in [
+            "README.md",
+            "00-readiness.md",
+            "01-first-slurm-job.md",
+            "02-cpu-array.md",
+            "03-openmp-mpi.md",
+            "04-science-data.md",
+            "05-ai-gpu.md",
+        ]:
+            self.assertTrue((event_dir / name).exists())
+
+    def test_learner_docs_do_not_use_hidden_submit_helpers(self) -> None:
+        learner_docs = [
+            REPO_ROOT / "README.md",
+            REPO_ROOT / "LANTA_SETUP.md",
+            REPO_ROOT / "docs" / "COPY_PASTE_ONLY_LABS_TH.md",
+            REPO_ROOT / "docs" / "LAB_AUTHORING_GUIDE_TH.md",
+            FOUNDATION / "README.md",
+        ]
+        forbidden = ["lanta" + "_submit_", "/tmp/hpc" + "_ignite_", "bash /tmp/hpc" + "_ignite"]
+        for doc in learner_docs:
+            text = doc.read_text(encoding="utf-8")
+            for marker in forbidden:
+                self.assertNotIn(marker, text, f"{marker} found in {doc}")
 
 
 if __name__ == "__main__":

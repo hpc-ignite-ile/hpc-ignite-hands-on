@@ -1,291 +1,153 @@
 # LANTA Setup Guide
 
-คู่มือการตั้งค่าสภาพแวดล้อมบน LANTA สำหรับ HPC Ignite Hands-On Labs
+คู่มือเริ่มต้นสำหรับใช้ repo นี้บน LANTA ตาม booklet ของงาน LANTA HPC Experience Day: On the Move.
 
-## การเชื่อมต่อ LANTA
+## 1. SSH To LANTA
 
 ```bash
-# SSH เข้าสู่ระบบ
-ssh username@lanta.nstda.or.th
-
-# หรือใช้ SSH config
-# ~/.ssh/config
-Host lanta
-    HostName lanta.nstda.or.th
-    User your_username
-    IdentityFile ~/.ssh/id_rsa
+ssh <username>@lanta.nstda.or.th
 ```
 
-## โครงสร้างไฟล์ระบบ
-
-| Path | ขนาด | ระยะเวลาเก็บ | การใช้งาน |
-|------|------|-------------|----------|
-| `$HOME` | 50 GB | ถาวร | Scripts, configs, source code |
-| `$SCRATCH` | 5 TB | 30 วัน | ข้อมูลชั่วคราว, ผลลัพธ์ |
-| `$PROJECT` | ตามโควต้า | ถาวร | ข้อมูลกลุ่ม, datasets ขนาดใหญ่ |
-
-## การติดตั้ง
-
-### 1. Clone Repository
+ใช้ transfer host สำหรับย้ายไฟล์ขนาดใหญ่:
 
 ```bash
-cd $HOME
+scp local-file <username>@transfer.lanta.nstda.or.th:/project/<project-id>/
+rsync -rvz ./local-folder/ <username>@transfer.lanta.nstda.or.th:/project/<project-id>/local-folder/
+```
+
+หลัง login แล้ว prompt ที่เห็นคือ shell บน LANTA. ใช้ login node สำหรับแก้ไฟล์ ตรวจระบบ และส่งงานเท่านั้น.
+
+## 2. Clone Repository
+
+```bash
+cd "$HOME"
 git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
 cd hpc-ignite-hands-on
 ```
 
-### 2. ตั้งค่า Environment Variables
-
-เพิ่มใน `~/.bashrc`:
+## 3. Create The Event Workspace
 
 ```bash
-# HPC Ignite Hands-On
-export HPC_IGNITE_HOME=$HOME/hpc-ignite-hands-on
-export PATH=$HPC_IGNITE_HOME/scripts:$PATH
-export HPC_IGNITE_ACCOUNT=<project-account>
-export HPC_IGNITE_PARTITION=compute-devel
+mkdir -p "$HOME/lanta-experience"
+cd "$HOME/lanta-experience"
+mkdir -p configs input jobs logs notes results src
 
-# Aliases
-alias hpc-ignite='cd $HPC_IGNITE_HOME'
-alias sq='squeue -u $USER'
-alias si='sinfo -p compute,gpu'
-```
-
-### 3. รันงานแรกแบบไม่ต้องติดตั้ง dependency
-
-```bash
-cd $HPC_IGNITE_HOME
-bash scripts/lanta_submit_foundation.sh smoke
-squeue -u $USER
-ls -lh logs
-```
-
-อ่านบทเรียนเต็ม: `foundation/lanta-foundation/README.md`
-
-ถ้าไม่ต้องการเปิด editor ให้ใช้ชุด copy-paste only:
-
-```bash
-cat > /tmp/hpc_ignite_foundation_copy_paste.sh <<'BASH'
-#!/bin/bash
-set -euo pipefail
-cd "$HOME/hpc-ignite-hands-on"
-if [ -z "${HPC_IGNITE_ACCOUNT:-}" ]; then
-    read -rp "Project account for Slurm: " HPC_IGNITE_ACCOUNT
-    export HPC_IGNITE_ACCOUNT
+if [ -z "${LANTA_ACCOUNT:-}" ]; then
+    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    export LANTA_ACCOUNT
 fi
-export HPC_IGNITE_PARTITION="${HPC_IGNITE_PARTITION:-compute-devel}"
-bash scripts/lanta_submit_foundation.sh smoke
-echo "Monitor: squeue -u $USER"
-echo "Results: find results/foundation -maxdepth 3 -type f | sort"
-BASH
-bash /tmp/hpc_ignite_foundation_copy_paste.sh
+
+export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
 ```
 
-รายละเอียดเพิ่มเติมอยู่ที่ `docs/COPY_PASTE_ONLY_LABS_TH.md`
+Then follow [lanta-experience/README.md](lanta-experience/README.md).
 
-### 4. สร้าง Conda/Mamba Environment แบบ optional
+## 4. First Job Pattern
 
-Foundation lab ใช้ Python standard library เท่านั้น จึงไม่ต้องสร้าง environment เพิ่ม แต่ถ้าต้องการ environment
-แยกสำหรับบทถัดไป สามารถใช้ Mamba ได้:
+The teaching pattern is direct heredoc, not a hidden submit helper:
 
 ```bash
-module load Mamba/23.11.0-0
+cd "$HOME/lanta-experience"
+mkdir -p jobs logs results src
 
-# สร้าง base environment
-mamba env create -f environments/base.yaml
-mamba activate hpc-ignite
+cat > src/main.py <<'PY'
+from pathlib import Path
+Path("results").mkdir(exist_ok=True)
+Path("results/main.txt").write_text("hello from LANTA\n", encoding="utf-8")
+print("results/main.txt")
+PY
 
-# ตรวจสอบ
-python --version
-which python
+cat > jobs/main.sbatch <<'SLURM'
+#!/bin/bash
+#SBATCH --job-name=hpcig-main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=512M
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+
+set -euo pipefail
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
+cd "$SLURM_SUBMIT_DIR"
+python src/main.py
+SLURM
+
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "${LANTA_CPU_PARTITION:-compute-devel}" --parsable jobs/main.sbatch)
+echo "Submitted: $job_id"
+squeue -j "$job_id"
 ```
 
-## SLURM Partitions
+## Storage
 
-| Partition | Nodes | Max Time | GPUs | ใช้สำหรับ |
-|-----------|-------|----------|------|----------|
-| `debug` | 2 | 15 min | - | ทดสอบ |
-| `compute` | 346 | 48 hr | - | CPU jobs |
-| `gpu` | 88 | 48 hr | A100 x4 | GPU jobs |
-| `memory` | 10 | 48 hr | - | High memory |
+Official LANTA training material describes these common storage areas:
 
-สำหรับ smoke test แนะนำเริ่มจาก `compute-devel` เพราะ time limit สั้นและเหมาะกับงานทดสอบ หากคิวเต็มค่อยลอง `compute-limited` หรือ `compute`
+| Path | Typical use |
+|---|---|
+| `/home/<username>` | Personal scripts, small source trees, configs |
+| `/project/<project-id>` | Shared project data, builds, job output |
+| `/scratch/<project-id>` | Temporary high-throughput work files |
 
-## Module System
+Check live quota before large work:
 
-### ดู Modules ที่มี
+```bash
+myquota
+sbalance
+df -h "$HOME" "$PWD"
+```
+
+## Partitions
+
+Use `sinfo` for live partition status. For teaching:
+
+```bash
+sinfo -o "%P %a %l %D %t %N"
+```
+
+Start small:
+
+| Workload | First partition to try | Notes |
+|---|---|---|
+| CPU smoke test | `compute-devel` | short job, small memory |
+| CPU full run | `compute` | scale only after output is correct |
+| GPU smoke test | `gpu-devel` | one GPU check first |
+| GPU full run | `gpu` | request only the GPUs you use |
+| High-memory work | `memory` | use when compute memory is insufficient |
+
+## Modules
 
 ```bash
 module avail
-module spider PyTorch
-module spider cuda
-```
-
-### Modules ที่ใช้บ่อย
-
-```bash
-# Python พื้นฐาน
-module load cray-python/3.10.10
-
-# Conda/Mamba
-module load Mamba/23.11.0-0
-
-# Deep Learning
-module load cudatoolkit/24.11_12.6
-
-# MPI
-module load OpenMPI/4.1.2
-
-# CUDA
-module load cuda/12.6
-
-# Scientific
-module load netCDF/4.8
-module load HDF5/1.12.2
-```
-
-## ตัวอย่าง SLURM Job
-
-### CPU Job
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=hpc-test
-#SBATCH --partition=compute
-#SBATCH --nodes=1
-#SBATCH --ntasks=32
-#SBATCH --time=01:00:00
-#SBATCH --output=%x_%j.out
-
-source slurm/module-loads/base.sh
-
-python my_script.py
-```
-
-### GPU Job
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=gpu-test
-#SBATCH --partition=gpu
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --gpus=1
-#SBATCH --time=02:00:00
-#SBATCH --output=%x_%j.out
-
-source slurm/module-loads/pytorch.sh
-
-python train_model.py
-```
-
-### MPI Job
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=mpi-test
-#SBATCH --partition=compute
-#SBATCH --nodes=4
-#SBATCH --ntasks-per-node=32
-#SBATCH --time=04:00:00
-#SBATCH --output=%x_%j.out
-
-source slurm/module-loads/mpi.sh
-
-srun python mpi_program.py
-```
-
-## การตรวจสอบ Job
-
-```bash
-# ดู jobs ของตัวเอง
-squeue -u $USER
-
-# ดูรายละเอียด job
-scontrol show job JOB_ID
-
-# ยกเลิก job
-scancel JOB_ID
-
-# ดูประวัติ
-sacct -u $USER --starttime=2025-01-01
-```
-
-## Tips & Best Practices
-
-### 1. ใช้ $SCRATCH สำหรับ I/O หนัก
-
-```bash
-# Copy data to scratch
-cp -r $HOME/data $SCRATCH/
-
-# Run job from scratch
-cd $SCRATCH/project
-sbatch job.sbatch
-
-# Copy results back
-cp -r results/ $HOME/
-```
-
-### 2. ใช้ Job Arrays สำหรับ Parameter Sweeps
-
-```bash
-#SBATCH --array=1-100
-
-PARAM=$(sed -n "${SLURM_ARRAY_TASK_ID}p" params.txt)
-python simulate.py --param $PARAM
-```
-
-### 3. ตรวจสอบ GPU ก่อนใช้
-
-```python
-import torch
-print(f"CUDA available: {torch.cuda.is_available()}")
-print(f"GPU count: {torch.cuda.device_count()}")
-print(f"GPU name: {torch.cuda.get_device_name(0)}")
-```
-
-### 4. Monitor Resource Usage
-
-```bash
-# ดู memory usage
-sstat -j JOB_ID --format=MaxRSS,MaxVMSize
-
-# ดู GPU usage (ใน job)
-nvidia-smi
-```
-
-## Troubleshooting
-
-### Module ไม่เจอ
-
-```bash
-module spider PACKAGE_NAME
-# ดู dependencies
-module spider cudatoolkit
+module spider python
 module spider Mamba
+module spider CUDA
+module list
 ```
 
-### Conda environment ช้า
+Load modules inside the Slurm script so the job is reproducible.
+
+## Monitoring
 
 ```bash
-# ใช้ mamba แทน conda
-mamba install package_name
+squeue -u "$USER"
+squeue -j <job-id> -o "%.18i %.9P %.20j %.8T %.20R"
+sacct -j <job-id> --format=JobID,JobName,State,Elapsed,AllocCPUS,MaxRSS,ExitCode
+tail -50 logs/<name>_<job-id>.out
+tail -50 logs/<name>_<job-id>.err
+scancel <job-id>
 ```
 
-### Job ถูก kill
+## Next
 
-ตรวจสอบ:
-- Memory limit (`--mem`)
-- Time limit (`--time`)
-- Partition ถูกต้องไหม
+Use the booklet-aligned labs:
 
 ```bash
-sacct -j JOB_ID --format=JobID,State,ExitCode,MaxRSS,Elapsed
+sed -n '1,160p' "$HOME/hpc-ignite-hands-on/lanta-experience/README.md"
 ```
-
-## Resources
-
-- [LANTA User Guide](https://docs.lanta.nstda.or.th)
-- [SLURM Documentation](https://slurm.schedmd.com/documentation.html)
-- [HPC Ignite Curriculum](https://github.com/wdiazcarballo/hpc-curriculum)

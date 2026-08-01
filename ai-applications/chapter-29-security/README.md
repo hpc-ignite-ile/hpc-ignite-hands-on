@@ -43,26 +43,4 @@ python file_permissions.py ~/research_data
 
 ## Copy-paste only บน LANTA
 
-หมายเหตุ: block นี้ช่วยลดการพิมพ์คำสั่งและสร้าง/ส่งงานให้แบบ no-editor; ถ้า script ของบทนี้ต้องใช้ package เฉพาะ ให้เตรียม environment ตามคำอธิบายของบทก่อน submit
-
-บทนี้ยังไม่มี Python script แบบ standalone ในโฟลเดอร์เดียวกัน แต่ผู้เรียนสามารถเปิดเนื้อหาแบบไม่ใช้ editor ได้ด้วย block นี้:
-
-```bash
-cat > /tmp/hpc_ignite_ai-applications-chapter-29-security.sh <<'BASH'
-#!/bin/bash
-set -euo pipefail
-
-cd "$HOME/hpc-ignite-hands-on"
-
-echo "อ่าน lab: ai-applications/chapter-29-security"
-echo "ไฟล์ในบทนี้:"
-find "ai-applications/chapter-29-security" -maxdepth 1 -type f | sort
-echo
-echo "README preview:"
-sed -n '1,180p' "ai-applications/chapter-29-security/README.md"
-echo
-echo "ถ้าจะเพิ่ม runnable Slurm lab ให้ใช้ template: docs/LAB_AUTHORING_GUIDE_TH.md"
-BASH
-
-bash /tmp/hpc_ignite_ai-applications-chapter-29-security.sh
-```
+บทนี้เป็นแนวคิดหรือ configuration เป็นหลัก จึงไม่มี Python script ขนาดเล็กให้ส่งทันที ใช้ template ใน `docs/LAB_AUTHORING_GUIDE_TH.md` เพื่อสร้าง `src/*.py` และ `jobs/*.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
