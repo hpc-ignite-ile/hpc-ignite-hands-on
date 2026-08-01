@@ -110,7 +110,13 @@ echo "  cat results/diffusion_${job_id}/README.txt"
 
 ```bash
 cd "$HOME/lanta-experience"
-mkdir -p input results src
+mkdir -p input notes results src
+
+if command -v module >/dev/null 2>&1; then
+    module purge
+    module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
+fi
+command -v python
 
 cat > src/make_sensor_data.py <<'PY'
 import csv
@@ -157,8 +163,8 @@ sha256sum input/sensor.csv results/sensor_summary.csv > notes/sensor-checksums.t
 
 ### คำอธิบายเชิงเรื่องเล่า
 
-ก่อนข้อมูลจริงจะใหญ่พอให้ต้องพึ่ง queue ผู้เรียนควรเห็นชีวิตของข้อมูลขนาดเล็กตั้งแต่เกิดจนถูกสรุป Block นี้สร้าง `input/sensor.csv` เป็นข้อมูล PM2.5 จำลอง แล้วให้ `summarize_sensor.py` อ่านข้อมูลนั้นเพื่อสร้างตารางผลลัพธ์รายสถานี พร้อม checksum ที่ทำหน้าที่เหมือนลายนิ้วมือของไฟล์
+ก่อนข้อมูลจริงจะใหญ่พอให้ต้องพึ่ง queue ผู้เรียนควรเห็นชีวิตของข้อมูลขนาดเล็กตั้งแต่เกิดจนถูกสรุป Block นี้เตรียม Python ให้พร้อมบน login node สร้าง `input/sensor.csv` เป็นข้อมูล PM2.5 จำลอง แล้วให้ `summarize_sensor.py` อ่านข้อมูลนั้นเพื่อสร้างตารางผลลัพธ์รายสถานี พร้อม checksum ที่ทำหน้าที่เหมือนลายนิ้วมือของไฟล์
 
-การรันบน login node ในที่นี้ยอมรับได้เพราะงานเล็กมากและใช้เพื่อเรียนรู้ format เท่านั้น ในงานจริง หากข้อมูลใหญ่ขึ้นหรือใช้เวลานานเกินไม่กี่นาที ควรย้ายขั้นตอนสรุปผลเข้า Slurm job ทันที การตั้ง random seed และเขียน CSV พร้อม header ทำให้ผลลัพธ์ตรวจซ้ำได้ ส่วน checksum ช่วยบอกว่า input หรือ result ถูกแก้ไขหลังจาก run หรือไม่
+การรันบน login node ในที่นี้ยอมรับได้เพราะงานเล็กมากและใช้เพื่อเรียนรู้ format เท่านั้น แต่ยังต้องโหลด Python module ให้ชัดเจน เพราะ LANTA account บางตัวไม่มีคำสั่ง `python` ใน environment ตั้งต้น ในงานจริง หากข้อมูลใหญ่ขึ้นหรือใช้เวลานานเกินไม่กี่นาที ควรย้ายขั้นตอนสรุปผลเข้า Slurm job ทันที การตั้ง random seed และเขียน CSV พร้อม header ทำให้ผลลัพธ์ตรวจซ้ำได้ ส่วน checksum ช่วยบอกว่า input หรือ result ถูกแก้ไขหลังจาก run หรือไม่
 
-เมื่อสำเร็จ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` และข้อมูลของสถานี เช่น `S0` หากพบ `FileNotFoundError` แปลว่าข้อมูล input ยังไม่ถูกสร้างหรืออยู่ผิด directory ให้รัน script สร้างข้อมูลก่อน หากสร้าง checksum ไม่ได้ ให้ตรวจว่าโฟลเดอร์ `notes` มีอยู่ และหากนำ workflow นี้ไปใช้กับข้อมูลจริง ให้เพิ่ม `.sbatch` และบันทึก log/result แยกตาม job id เพื่อไม่ให้ภาระตกบน login node
+เมื่อสำเร็จ `command -v python` จะชี้ไปยัง Python ที่ใช้งานได้ และ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` พร้อมข้อมูลของสถานี เช่น `S0` หากยังพบ `python: command not found` ให้ตรวจ `module avail python` หรือโหลด `cray-python` รุ่นที่ระบบมี หากพบ `FileNotFoundError` แปลว่าข้อมูล input ยังไม่ถูกสร้างหรืออยู่ผิด directory ให้รัน script สร้างข้อมูลก่อน หากนำ workflow นี้ไปใช้กับข้อมูลจริง ให้เพิ่ม `.sbatch` และบันทึก log/result แยกตาม job id เพื่อไม่ให้ภาระตกบน login node
