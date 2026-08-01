@@ -19,7 +19,7 @@ cd "$HOME/lanta-experience/<lab-id>"
 mkdir -p configs input jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
@@ -52,11 +52,7 @@ cd "$SLURM_SUBMIT_DIR"
 python src/main.py
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/main.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/main.sbatch)
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
 echo "Output : tail -n +1 logs/hpcig-<lab-id>_${job_id}.out"

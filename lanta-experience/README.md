@@ -12,6 +12,7 @@
 | OpenMP and MPI | [03-openmp-mpi.md](03-openmp-mpi.md) | compiled C examples launched by `srun` |
 | Scientific/data workflow | [04-science-data.md](04-science-data.md) | model/data outputs with run evidence |
 | AI/GPU check | [05-ai-gpu.md](05-ai-gpu.md) | GPU allocation log, `nvidia-smi`, PyTorch CUDA check |
+| Data and resource logs | [06-run-logs.md](06-run-logs.md) | data summary, checksums, Slurm resource-spent report |
 
 ## Working Pattern
 
@@ -20,8 +21,9 @@ Every activity follows the same visible pattern:
 1. `cd` to an event workspace.
 2. Create folders with `mkdir -p`.
 3. Create small scripts with `cat > file <<'EOF'`.
-4. Submit directly with `sbatch`.
+4. Submit directly with `sbatch -A "$LANTA_ACCOUNT"`.
 5. Read `squeue`, `sacct`, `logs/`, `results/`, and `notes/`.
+6. Finish with a data-summary log and a resource-spent log.
 
 Use this setup once after SSH to LANTA:
 
@@ -30,7 +32,7 @@ mkdir -p "$HOME/lanta-experience"
 cd "$HOME/lanta-experience"
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 

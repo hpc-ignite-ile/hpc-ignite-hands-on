@@ -8,7 +8,7 @@
 - ใช้ `cat > file <<'EOF'` เพื่อสร้างไฟล์ที่ผู้เรียนเปิดอ่านต่อได้
 - สร้าง `src/`, `jobs/`, `configs/`, `logs/`, `results/`, `notes/` ให้เห็นชัด
 - ส่งงานด้วย `sbatch` โดยตรง ไม่เรียก helper ที่ซ่อนรายละเอียดงาน
-- ถ้าต้องใช้ project account ให้ถามผ่าน `read -rp`
+- ถ้าต้องใช้ project account ให้ถามผ่าน `read -rp` แล้วส่งด้วย `sbatch -A "$LANTA_ACCOUNT"`
 - ใช้ `compute-devel` หรือ `gpu-devel` สำหรับ smoke test ก่อน
 - หลัง submit ต้องพิมพ์คำสั่ง monitor และผลลัพธ์ที่ควรอ่านต่อ
 - หลีกเลี่ยงคำสั่ง destructive เช่น `rm -rf`
@@ -23,7 +23,7 @@ cd "$HOME/lanta-experience"
 mkdir -p configs input jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
@@ -68,11 +68,7 @@ cd "$SLURM_SUBMIT_DIR"
 python src/hello_lanta.py
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/hello_lanta.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/hello_lanta.sbatch)
 echo "$job_id	hello_lanta	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
@@ -82,61 +78,14 @@ echo "  tail -50 logs/hello_${job_id}.out"
 echo "  cat results/hello_${job_id}.txt"
 ```
 
-## Block B: ส่ง Python script ใน repo โดยตรง
-
-ใช้เมื่อผู้เรียน clone repo แล้วและต้องการส่งตัวอย่าง Python หนึ่งไฟล์เข้า Slurm. เปลี่ยนแค่ `LAB_SCRIPT` ได้
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
-if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
-    export LANTA_ACCOUNT
-fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-foundation/lanta-foundation/serial_sum.py}"
-
-mkdir -p jobs logs results/python-labs
-
-cat > jobs/run_python_lab.sbatch <<'SLURM'
-#!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
-#SBATCH --time=00:05:00
-#SBATCH --output=logs/%x_%j.out
-#SBATCH --error=logs/%x_%j.err
-
-set -euo pipefail
-cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
-SLURM
-
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
-echo "Submitted job: $job_id"
-echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
-```
-
-## Block C: GPU Check
+## Block B: GPU Check
 
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
@@ -179,12 +128,58 @@ print("status", "ok")
 PY
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --parsable jobs/gpu_check.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_GPU_PARTITION" --parsable jobs/gpu_check.sbatch)
 echo "Submitted GPU check: $job_id"
 echo "Monitor: squeue -j $job_id"
 echo "Read: tail -80 logs/gpu_${job_id}.out"
+```
+
+## Block C: Data Summary And Resource Logs
+
+รันหลัง job จบ เพื่อรวมหลักฐานข้อมูลและทรัพยากรไว้ใน `notes/`.
+
+```bash
+cd "$HOME/lanta-experience"
+mkdir -p notes results
+
+RUN_STAMP=$(date +%Y%m%d-%H%M%S)
+DATA_LOG="notes/data-summary-${RUN_STAMP}.txt"
+SPENT_LOG="notes/resource-spent-${RUN_STAMP}.tsv"
+
+{
+    echo "workspace=$(pwd)"
+    echo "date=$(date -Is)"
+    echo "user=$(whoami)"
+    echo
+    echo "job history"
+    cat notes/job-history.tsv 2>/dev/null || echo "notes/job-history.tsv not found"
+    echo
+    echo "result files"
+    find results -maxdepth 2 -type f | sort
+    echo
+    echo "sensor summary"
+    if [ -f results/sensor_summary.csv ]; then
+        cat results/sensor_summary.csv
+    else
+        echo "missing results/sensor_summary.csv"
+    fi
+    echo
+    echo "checksums"
+    sha256sum input/sensor.csv results/sensor_summary.csv 2>/dev/null || true
+    sha256sum results/hello_*.txt results/pi_*.txt results/diffusion_*.csv 2>/dev/null || true
+} | tee "$DATA_LOG"
+
+if [ -s notes/job-history.tsv ]; then
+    JOB_IDS=$(cut -f1 notes/job-history.tsv | paste -sd, -)
+    sacct -j "$JOB_IDS" --format=JobID,JobName%24,Partition,Account,State,ExitCode,Elapsed,AllocCPUS,ReqMem,MaxRSS,AllocTRES%80 -P > "$SPENT_LOG"
+else
+    echo "No job history yet" > "$SPENT_LOG"
+fi
+
+sbalance 2>&1 | tee "notes/balance-${RUN_STAMP}.txt" || true
+sbill 2>&1 | tee "notes/bill-${RUN_STAMP}.txt" || true
+
+echo "Data summary: $DATA_LOG"
+echo "Resource spent: $SPENT_LOG"
+head -30 "$SPENT_LOG"
 ```

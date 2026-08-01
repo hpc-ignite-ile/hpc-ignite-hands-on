@@ -9,7 +9,7 @@ cd "$HOME/lanta-experience"
 mkdir -p configs jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
@@ -72,12 +72,7 @@ export OMP_NUM_THREADS=1
 python src/parallel_pi.py --samples 500000 --workers "${SLURM_CPUS_PER_TASK:-1}"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/parallel_pi.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/parallel_pi.sbatch)
 echo "$job_id	parallel_pi	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
@@ -97,6 +92,12 @@ echo "Read: tail -50 logs/pi_${job_id}.out && cat results/pi_${job_id}.txt"
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p configs jobs logs notes results src
+
+if [ -z "${LANTA_ACCOUNT:-}" ]; then
+    read -rp "Slurm project account: " LANTA_ACCOUNT
+    export LANTA_ACCOUNT
+fi
+export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 
 cat > configs/pi-params.csv <<'EOF'
 100000,1
@@ -140,12 +141,7 @@ LINE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" configs/pi-params.csv)
 python src/array_pi.py --line "$LINE"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "${LANTA_CPU_PARTITION:-compute-devel}" --parsable jobs/pi_array.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/pi_array.sbatch)
 echo "$job_id	pi_array	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted array job: $job_id"
 echo "Monitor: squeue -j $job_id"

@@ -9,7 +9,7 @@ cd "$HOME/lanta-experience"
 mkdir -p configs jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
@@ -86,11 +86,7 @@ validation: CSV has header i,value and N rows
 EOF
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/diffusion.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/diffusion.sbatch)
 echo "$job_id	diffusion	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted diffusion job: $job_id"
 echo "Read:"

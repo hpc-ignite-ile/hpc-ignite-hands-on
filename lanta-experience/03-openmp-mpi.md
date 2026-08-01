@@ -9,7 +9,7 @@ cd "$HOME/lanta-experience"
 mkdir -p jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
@@ -50,11 +50,7 @@ export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
 srun -c "${SLURM_CPUS_PER_TASK:-1}" results/omp_hello | sort
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/omp_hello.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/omp_hello.sbatch)
 echo "$job_id	omp_hello	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted OpenMP job: $job_id"
 echo "Read: tail -50 logs/omp_${job_id}.out"
@@ -64,7 +60,7 @@ echo "Read: tail -50 logs/omp_${job_id}.out"
 
 OpenMP เป็นบทเรียนเรื่องความขนานภายใน node เดียว โปรแกรม C ขนาดเล็กนี้ให้แต่ละ thread แนะนำตัวเอง แล้ว Slurm script ขอ 4 CPU cores เพื่อให้จำนวน thread ที่เกิดขึ้นมีพื้นฐานจากทรัพยากรที่ระบบจัดสรร ไม่ใช่จากความบังเอิญของ shell ที่ผู้ใช้เปิดอยู่
 
-การ compile ด้วย `cc -fopenmp` สะท้อนแนวปฏิบัติบน LANTA ที่ควรใช้ compiler wrapper หรือ compiler จาก module ที่ตั้งใจโหลดไว้ การตั้ง `OMP_NUM_THREADS` จาก `SLURM_CPUS_PER_TASK` ทำให้ code เคารพคำขอทรัพยากร และ `srun -c` ทำให้ Slurm เห็นการใช้ CPU ต่อ task อย่างสอดคล้องกัน
+การ compile ด้วย `cc -fopenmp` สะท้อนแนวปฏิบัติบน LANTA ที่ควรใช้ compiler ของ Cray หรือ compiler จาก module ที่ตั้งใจโหลดไว้ การตั้ง `OMP_NUM_THREADS` จาก `SLURM_CPUS_PER_TASK` ทำให้ code เคารพคำขอทรัพยากร และ `srun -c` ทำให้ Slurm เห็นการใช้ CPU ต่อ task อย่างสอดคล้องกัน
 
 เมื่อสำเร็จ log จะมีข้อความจาก thread หลายบรรทัด โดยจำนวนควรสัมพันธ์กับ CPU ที่ขอไว้ และ binary `results/omp_hello` จะถูกสร้าง หากเจอปัญหา `omp.h` ให้ตรวจ module compiler ด้วย `module avail gcc` หรือใช้ `cpeCray` หากได้ thread เพียงตัวเดียว ให้กลับไปอ่านค่า `OMP_NUM_THREADS` และ `#SBATCH --cpus-per-task` เพราะสองค่านี้คือสะพานระหว่าง Slurm กับโปรแกรม
 
@@ -73,6 +69,12 @@ OpenMP เป็นบทเรียนเรื่องความขนา�
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p jobs logs notes results src
+
+if [ -z "${LANTA_ACCOUNT:-}" ]; then
+    read -rp "Slurm project account: " LANTA_ACCOUNT
+    export LANTA_ACCOUNT
+fi
+export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 
 cat > src/mpi_hello.c <<'C'
 #include <mpi.h>
@@ -116,11 +118,7 @@ fi
 srun -n "${SLURM_NTASKS:-4}" results/mpi_hello | sort
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "${LANTA_CPU_PARTITION:-compute-devel}" --parsable jobs/mpi_hello.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/mpi_hello.sbatch)
 echo "$job_id	mpi_hello	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted MPI job: $job_id"
 echo "Read: tail -50 logs/mpi_${job_id}.out"

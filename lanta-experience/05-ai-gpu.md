@@ -9,7 +9,7 @@ cd "$HOME/lanta-experience"
 mkdir -p jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
@@ -54,11 +54,7 @@ print("status", "ok")
 PY
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --parsable jobs/gpu_check.sbatch)
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_GPU_PARTITION" --parsable jobs/gpu_check.sbatch)
 echo "$job_id	gpu_check	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted GPU check: $job_id"
 echo "Monitor: squeue -j $job_id"
