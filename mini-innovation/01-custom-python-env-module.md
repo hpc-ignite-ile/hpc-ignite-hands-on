@@ -8,11 +8,19 @@
 
 ## Copy-Paste จากเครื่อง Local
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
 ```bash
 ssh <lanta-username>@transfer.lanta.nstda.or.th
 ```
 
 ## Copy-Paste บน Transfer Host
+
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 mkdir -p "$HOME/lanta-episprint"
@@ -23,7 +31,13 @@ if [ -z "${LANTA_PROJECT:-}" ]; then
     read -rp "Project directory เช่น /project/ltXXXXXX-name หรือ /project/tn999996-north: " LANTA_PROJECT
     export LANTA_PROJECT
 fi
+```
 
+### ขั้นที่ 2: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 export EPI_ENV_NAME="${EPI_ENV_NAME:-hpc-mesa}"
 export EPI_ENV_PREFIX="${EPI_ENV_PREFIX:-$LANTA_PROJECT/envs/$EPI_ENV_NAME}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
@@ -32,7 +46,13 @@ export CONDA_PKGS_DIRS="${CONDA_PKGS_DIRS:-$LANTA_PROJECT/conda-pkgs}"
 export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$LANTA_PROJECT/pip-cache}"
 
 mkdir -p "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT/hpc-mesa" "$CONDA_PKGS_DIRS" "$PIP_CACHE_DIR"
+```
 
+### ขั้นที่ 3: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 module purge
 module load Mamba/23.11.0-0
 
@@ -44,9 +64,21 @@ if [ ! -x "$EPI_ENV_PREFIX/bin/python" ]; then
 else
     echo "Environment exists: $EPI_ENV_PREFIX"
 fi
+```
 
+### ขั้นที่ 4: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 conda run -p "$EPI_ENV_PREFIX" python -m pip install --no-cache-dir "mesa==$EPI_MODULE_VERSION"
+```
 
+### ขั้นที่ 5: สร้างไฟล์ `$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua`
+
+ขั้นนี้ทำงานหนึ่งส่วนของ workflow ให้แปะและตรวจผลก่อนขยับไปขั้นถัดไป
+
+```bash
 cat > "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" <<'LUA'
 help([[
 hpc-mesa: Python environment for LANTA EpiSprint.
@@ -60,7 +92,13 @@ prepend_path("PATH", pathJoin(prefix, "bin"))
 setenv("HPC_MESA_ENV", prefix)
 setenv("PYTHONNOUSERSITE", "1")
 LUA
+```
 
+### ขั้นที่ 6: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 python - "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" "$EPI_ENV_PREFIX" <<'PY'
 from pathlib import Path
 import sys
@@ -70,7 +108,13 @@ prefix = sys.argv[2]
 text = modulefile.read_text(encoding="utf-8").replace("__EPI_ENV_PREFIX__", prefix)
 modulefile.write_text(text, encoding="utf-8")
 PY
+```
 
+### ขั้นที่ 7: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 chmod -R g+rwX "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT" "$CONDA_PKGS_DIRS" "$PIP_CACHE_DIR" 2>/dev/null || true
 find "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT" -type d -exec chmod g+s {} \; 2>/dev/null || true
 
@@ -88,7 +132,13 @@ import yaml
 import networkx
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+```
 
+### ขั้นที่ 8: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 print("python", sys.version.split()[0])
 print("mesa", mesa.__version__)
 print("numpy", numpy.__version__)
@@ -99,7 +149,13 @@ print("pyyaml", yaml.__version__)
 print("networkx", networkx.__version__)
 print("mesa_api", "RandomActivation and MultiGrid OK")
 PY
+```
 
+### ขั้นที่ 9: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 cat > notes/hpc-mesa-env.sh <<EOF
 export LANTA_PROJECT="$LANTA_PROJECT"
 export EPI_ENV_PREFIX="$EPI_ENV_PREFIX"
@@ -108,7 +164,13 @@ export EPI_MODULE_VERSION="$EPI_MODULE_VERSION"
 module use "$EPI_MODULE_ROOT"
 module load "hpc-mesa/$EPI_MODULE_VERSION"
 EOF
+```
 
+### ขั้นที่ 10: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 cat notes/hpc-mesa-env.sh
 ```
 

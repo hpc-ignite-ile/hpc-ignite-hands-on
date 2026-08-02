@@ -14,6 +14,12 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/climate-grid"
 cd "$HOME/hpc-ignite-standalone/climate-grid"
@@ -30,7 +36,13 @@ SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
 fi
+```
 
+### ขั้นที่ 2: สร้าง source code `src/climate_grid.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/climate_grid.py <<'PYCODE'
 from pathlib import Path
 import csv, math
@@ -42,7 +54,14 @@ with out.open("w", newline="", encoding="utf-8") as handle:
         for lon in range(98, 103): writer.writerow([lat, lon, f"{30 - 0.4 * (lat - 16) + math.sin(lon):.2f}", f"{4 + 0.5 * (lat - 16) + 0.1 * (lon - 98):.2f}"])
 print(f"result={out}")
 PYCODE
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/climate-grid.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/climate-grid.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=climate-grid
@@ -62,7 +81,13 @@ cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 python src/climate_grid.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/climate-grid.sbatch)
 echo "$job_id	climate-grid	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

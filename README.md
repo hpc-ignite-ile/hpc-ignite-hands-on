@@ -9,6 +9,8 @@
 
 ## เริ่มแบบ Standalone บน LANTA
 
+ผู้ใช้ที่ต้องการตั้งค่า private key หรือ alias `ssh lanta` สามารถเริ่มจาก [docs/SSH_PRIVATE_KEY_LANTA_TH.md](docs/SSH_PRIVATE_KEY_LANTA_TH.md)
+
 ```bash
 ssh <username>@lanta.nstda.or.th
 mkdir -p "$HOME/hpc-ignite-standalone"

@@ -14,6 +14,12 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/chemistry-preflight"
 cd "$HOME/hpc-ignite-standalone/chemistry-preflight"
@@ -30,7 +36,13 @@ SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
 fi
+```
 
+### ขั้นที่ 2: สร้าง source code `src/molecular_mass.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/molecular_mass.py <<'PYCODE'
 from pathlib import Path
 import json
@@ -40,7 +52,14 @@ molecules = {"water": {"H": 2, "O": 1}, "methane": {"C": 1, "H": 4}, "glycine": 
 summary = {name: sum(weights[e] * c for e, c in formula.items()) for name, formula in molecules.items()}
 out = Path("results/molecular_mass.json"); out.write_text(json.dumps(summary, indent=2), encoding="utf-8"); print(json.dumps(summary, indent=2))
 PYCODE
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/chem-mass.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/chem-mass.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=chem-mass
@@ -59,7 +78,13 @@ cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 python src/molecular_mass.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/chem-mass.sbatch)
 echo "$job_id	chem-mass	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

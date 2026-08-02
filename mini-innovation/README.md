@@ -58,6 +58,10 @@ LANTA EpiSprint ใช้แบบจำลอง SEIR แบบ agent-based sim
 
 หลังเตรียม environment/module แล้ว ผู้ใช้ตรวจ Mesa ได้ด้วย job สั้น ๆ:
 
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/lanta-episprint"/{jobs,logs,results}
 cd "$HOME/lanta-episprint"
@@ -68,7 +72,13 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-/project/<project>/modules}"
+```
 
+### ขั้นที่ 2: สร้าง Slurm script `jobs/epi_smoke.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/epi_smoke.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=epi-smoke
@@ -94,7 +104,13 @@ print("mesa", mesa.__version__)
 print("api", "RandomActivation MultiGrid")
 PY
 SLURM
+```
 
+### ขั้นที่ 3: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")

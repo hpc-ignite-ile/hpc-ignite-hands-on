@@ -14,6 +14,12 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/hazard-grid"
 cd "$HOME/hpc-ignite-standalone/hazard-grid"
@@ -30,7 +36,13 @@ SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
 fi
+```
 
+### ขั้นที่ 2: สร้าง source code `src/hazard_score.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/hazard_score.py <<'PYCODE'
 from pathlib import Path
 import csv
@@ -41,7 +53,14 @@ with out.open("w", newline="", encoding="utf-8") as handle:
     for cell, slope, rain, exposure in [(1,12,80,0.4),(2,30,120,0.7),(3,8,40,0.2),(4,24,100,0.8)]: writer.writerow([cell, slope, rain, exposure, f"{0.4*slope/45 + 0.4*rain/150 + 0.2*exposure:.3f}"])
 print(f"result={out}")
 PYCODE
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/hazard-grid.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/hazard-grid.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=hazard-grid
@@ -60,7 +79,13 @@ cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 python src/hazard_score.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/hazard-grid.sbatch)
 echo "$job_id	hazard-grid	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

@@ -14,6 +14,12 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/core-mpi-rank"
 cd "$HOME/hpc-ignite-standalone/core-mpi-rank"
@@ -22,7 +28,13 @@ mkdir -p jobs logs notes results src
 if [ -z "${LANTA_CPU_PARTITION:-}" ]; then export LANTA_CPU_PARTITION="compute-devel"; fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
 SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
+```
 
+### ขั้นที่ 2: สร้างไฟล์ `src/mpi_hello.c`
+
+ขั้นนี้ทำงานหนึ่งส่วนของ workflow ให้แปะและตรวจผลก่อนขยับไปขั้นถัดไป
+
+```bash
 cat > src/mpi_hello.c <<'C_CODE'
 #include <mpi.h>
 #include <stdio.h>
@@ -34,7 +46,14 @@ int main(int argc, char **argv) {
     MPI_Finalize(); return 0;
 }
 C_CODE
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/mpi_rank.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/mpi_rank.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=mpi-rank
@@ -53,6 +72,13 @@ mkdir -p "results/${SLURM_JOB_ID}"
 cc src/mpi_hello.c -o "results/${SLURM_JOB_ID}/mpi_hello"
 srun -n "$SLURM_NTASKS" "results/${SLURM_JOB_ID}/mpi_hello" | sort | tee "results/${SLURM_JOB_ID}/ranks.txt"
 SLURM
+```
+
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/mpi_rank.sbatch)
 echo "$job_id	mpi_rank	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

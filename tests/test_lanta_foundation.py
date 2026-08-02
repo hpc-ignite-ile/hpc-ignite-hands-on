@@ -94,6 +94,22 @@ class LantaFoundationTests(unittest.TestCase):
             if "```bash" in text:
                 self.assertIn("BASH_COMMAND_REFERENCE_TH.md", text, f"missing command reference link in {path}")
 
+    def test_bash_blocks_are_short_semantic_tasks(self) -> None:
+        max_lines = 60
+        for path in REPO_ROOT.rglob("*.md"):
+            if ".git" in path.parts:
+                continue
+            text = path.read_text(encoding="utf-8")
+            for match in re.finditer(r"```bash\n(.*?)\n```", text, flags=re.DOTALL):
+                block = match.group(1)
+                lines = block.splitlines()
+                self.assertTrue(any(line.strip() for line in lines), f"empty bash block in {path}")
+                self.assertLessEqual(
+                    len(lines),
+                    max_lines,
+                    f"bash block in {path} has {len(lines)} lines; split into one semantic task per block",
+                )
+
     def test_learner_docs_do_not_use_hidden_submit_helpers(self) -> None:
         learner_docs = [
             REPO_ROOT / "README.md",

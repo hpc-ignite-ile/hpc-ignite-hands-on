@@ -14,6 +14,12 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/foundation-visible"
 cd "$HOME/hpc-ignite-standalone/foundation-visible"
@@ -30,7 +36,13 @@ SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
 fi
+```
 
+### ขั้นที่ 2: สร้าง source code `src/foundation_visible.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/foundation_visible.py <<'PYCODE'
 from pathlib import Path
 import json
@@ -57,7 +69,14 @@ from pathlib import Path
 Path("results/pi.txt").write_text("pi_smoke=3.14159\n", encoding="utf-8")
 print("results/pi.txt")
 PYCODE
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/foundation-visible.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/foundation-visible.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=foundation-visible
@@ -76,7 +95,13 @@ cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 python src/foundation_visible.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/foundation-visible.sbatch)
 echo "$job_id	foundation-visible	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

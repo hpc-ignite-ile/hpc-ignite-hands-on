@@ -14,6 +14,12 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/gpu-pytorch"
 cd "$HOME/hpc-ignite-standalone/gpu-pytorch"
@@ -22,7 +28,13 @@ mkdir -p jobs logs notes results src
 if [ -z "${LANTA_GPU_PARTITION:-}" ]; then export LANTA_GPU_PARTITION="gpu-devel"; fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
 SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
+```
 
+### ขั้นที่ 2: สร้าง source code `src/gpu_torch_smoke.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/gpu_torch_smoke.py <<'PYCODE'
 from pathlib import Path
 import json
@@ -35,7 +47,14 @@ if torch.cuda.is_available():
 Path("results/gpu_torch_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
 print(json.dumps(summary, indent=2))
 PYCODE
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/gpu_torch.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/gpu_torch.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=gpu-torch
@@ -58,6 +77,13 @@ nvidia-smi | tee "results/${SLURM_JOB_ID}/nvidia-smi.txt"
 python src/gpu_torch_smoke.py | tee "results/${SLURM_JOB_ID}/torch.txt"
 cp results/gpu_torch_summary.json "results/${SLURM_JOB_ID}/gpu_torch_summary.json"
 SLURM
+```
+
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --parsable jobs/gpu_torch.sbatch)
 echo "$job_id	gpu_torch	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

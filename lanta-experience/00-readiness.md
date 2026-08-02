@@ -8,6 +8,12 @@
 
 ## Copy-Paste
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/lanta-experience"
 cd "$HOME/lanta-experience"
@@ -20,7 +26,13 @@ mkdir -p configs input jobs logs notes results src
     echo "host=$(hostname)"
     echo "home=$HOME"
 } > notes/readiness.txt
+```
 
+### ขั้นที่ 2: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 {
     echo "== files =="
     find . -maxdepth 2 -type d | sort
@@ -41,14 +53,26 @@ mkdir -p configs input jobs logs notes results src
     echo "== live module probes for real mini workflows =="
     module avail cray-python Mamba cpeCray WPS WRF WRFchem QuantumESPRESSO GROMACS GDAL BLAST+ Apptainer 2>&1 || true
 } | tee notes/system-check.txt
+```
 
+### ขั้นที่ 3: สร้าง config `configs/run-small.env`
+
+ขั้นนี้สร้างค่ากำกับการทดลอง เพื่อให้ parameter แยกจาก code และตรวจซ้ำได้
+
+```bash
 cat > configs/run-small.env <<'EOF'
 INPUT=input/sample.csv
 OUTPUT=results/sample-summary.csv
 WORKERS=4
 MODE=small
 EOF
+```
 
+### ขั้นที่ 4: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 cat notes/readiness.txt
 cat configs/run-small.env
 ```

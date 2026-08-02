@@ -8,6 +8,12 @@
 
 ## Copy-Paste CPU Baseline
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p configs jobs logs notes results src
@@ -17,7 +23,13 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+```
 
+### ขั้นที่ 2: สร้าง source code `src/parallel_pi.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/parallel_pi.py <<'PY'
 import argparse
 import math
@@ -59,7 +71,14 @@ Path(f"results/pi_{run_id}.txt").write_text(
 )
 print(f"pi={pi} workers={workers} result=results/pi_{run_id}.txt")
 PY
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/parallel_pi.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/parallel_pi.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=parallel_pi
@@ -80,7 +99,13 @@ export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 python src/parallel_pi.py --samples 500000 --workers "${SLURM_CPUS_PER_TASK:-1}"
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/parallel_pi.sbatch)
 echo "$job_id	parallel_pi	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
@@ -98,6 +123,12 @@ Slurm script ขอ 4 CPU cores และตั้ง `OMP_NUM_THREADS`, `OPENBL
 
 ## Copy-Paste Job Array
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p configs jobs logs notes results src
@@ -107,14 +138,27 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+```
 
+### ขั้นที่ 2: สร้าง config `configs/pi-params.csv`
+
+ขั้นนี้สร้างค่ากำกับการทดลอง เพื่อให้ parameter แยกจาก code และตรวจซ้ำได้
+
+```bash
 cat > configs/pi-params.csv <<'EOF'
 100000,1
 200000,2
 400000,4
 800000,4
 EOF
+```
 
+
+### ขั้นที่ 3: สร้าง source code `src/array_pi.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/array_pi.py <<'PY'
 import argparse
 import subprocess
@@ -129,7 +173,14 @@ subprocess.check_call([
     "--workers", workers,
 ])
 PY
+```
 
+
+### ขั้นที่ 4: สร้าง Slurm script `jobs/pi_array.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/pi_array.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=pi_array
@@ -152,7 +203,13 @@ export MKL_NUM_THREADS=1
 LINE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" configs/pi-params.csv)
 python src/array_pi.py --line "$LINE"
 SLURM
+```
 
+### ขั้นที่ 5: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/pi_array.sbatch)
 echo "$job_id	pi_array	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted array job: $job_id"

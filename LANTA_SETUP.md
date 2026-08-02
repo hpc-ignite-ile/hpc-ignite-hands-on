@@ -6,6 +6,8 @@
 
 ## 1. SSH To LANTA
 
+สำหรับการตั้งค่า SSH private key และ alias `ssh lanta` ให้ดู [docs/SSH_PRIVATE_KEY_LANTA_TH.md](docs/SSH_PRIVATE_KEY_LANTA_TH.md)
+
 ```bash
 ssh <username>@lanta.nstda.or.th
 ```

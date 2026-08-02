@@ -33,6 +33,12 @@ sed -n '1,120p' lanta-experience/README.md
 | คำสั่ง | ความหมาย | ตัวอย่างใน repo | หลักฐานที่ควรเห็น |
 |---|---|---|---|
 | `ssh` | เปิด shell บนเครื่องระยะไกล | `ssh <username>@lanta.nstda.or.th` | prompt เปลี่ยนเป็นเครื่อง LANTA |
+| `ssh -i KEY` | ระบุ private key ที่ใช้กับ host นี้ | `ssh -i ~/.ssh/id_rsa_lanta <username>@lanta.nstda.or.th` | client เสนอ key ที่เลือกไว้ |
+| `ssh -N -L LOCAL:HOST:REMOTE` | เปิด SSH tunnel โดยส่ง local port ไปยัง service ภายใน LANTA | `ssh -N -L 8877:lanta-c-065:8731 <username>@lanta.nstda.or.th` | terminal ค้างเพื่อรักษา tunnel และ browser เปิดผ่าน `127.0.0.1` |
+| `ssh -o NAME=value` | ตั้ง option เฉพาะครั้งให้ OpenSSH | `ssh -o ExitOnForwardFailure=yes ...` | tunnel fail ทันทีเมื่อ forward port ขัดข้อง |
+| `ssh-keygen` | สร้างคู่กุญแจ private/public สำหรับ SSH | `ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_lanta -C "lanta-$(whoami)"` | มีไฟล์ key และ `.pub` |
+| `ssh-copy-id` | ติดตั้ง public key ไปยัง `authorized_keys` บน server | `ssh-copy-id -i ~/.ssh/id_rsa_lanta.pub <username>@lanta.nstda.or.th` | login รอบถัดไปใช้ key ได้ |
+| `ssh -G HOST` | แสดง config ที่ OpenSSH ใช้จริงกับ host | `ssh -G lanta | grep identityfile` | เห็น key path ที่ alias ใช้ |
 | `scp` | copy ไฟล์หนึ่งชุดผ่าน SSH | `scp local-file <username>@transfer.lanta.nstda.or.th:/project/<project-id>/` | ไฟล์ปลายทางมีขนาดตรงกับต้นทาง |
 | `rsync -rvz` | sync folder ผ่าน SSH พร้อมรายงานรายการไฟล์ | `rsync -rvz ./local-folder/ ...` | output แสดงไฟล์ที่ส่ง และปลายทางเปิดอ่านได้ |
 | `git clone` | download repo ครั้งแรกสำหรับสำเนา reference ของผู้สอน | `git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git` | มี folder `hpc-ignite-hands-on/` |
@@ -56,6 +62,8 @@ sed -n '1,120p' lanta-experience/README.md
 | `cat file` | พิมพ์ทั้งไฟล์ | ใช้อ่าน config หรือ result สั้น ๆ |
 | `cat > file <<'EOF'` | heredoc สร้างไฟล์จากข้อความหลายบรรทัด | ใช้สร้าง `.py`, `.sbatch`, `.env`, `.lua` ผ่าน terminal |
 | `<<'PY'` หรือ `<<'SLURM'` | quoted heredoc marker | shell จะเก็บ `$VAR` ภายใน block ไว้ตามตัวอักษรก่อนเขียนไฟล์ |
+| `~/.ssh/config` | config ของ OpenSSH client | ใช้สร้าง alias เช่น `Host lanta` |
+| `~/.ssh/authorized_keys` | รายการ public key ที่ server ยอมรับ | ใช้ฝั่ง LANTA เพื่ออนุญาต key ของผู้ใช้ |
 | `head -20 file` | อ่าน 20 บรรทัดแรก | ใช้ตรวจหัวไฟล์ log หรือ CSV |
 | `tail -50 file` | อ่าน 50 บรรทัดท้าย | ใช้อ่าน error หรือผลท้าย job |
 | `tail -n +1 file` | พิมพ์ไฟล์ตั้งแต่บรรทัดแรก | ใช้ให้เห็นไฟล์ทั้งชุดพร้อมชื่อคำสั่งชัดเจน |
@@ -93,6 +101,10 @@ sed -n '1,120p' lanta-experience/README.md
 | `"${SBATCH_ACCOUNT[@]}"` | ขยาย array เป็น argument หลายชิ้น | รักษา quoting ของ account option |
 | `source file.sh` | รัน script ใน shell ปัจจุบัน | ใช้กับ helper script ของผู้สอนหรือ session env; standalone lab เขียน `module load` ใน `jobs/*.sbatch` โดยตรง |
 | `chmod -R g+rwX path` | ให้ group อ่าน/เขียน และเข้า folder ได้ | ใช้กับ project environment ที่หลายคนใช้ร่วมกัน |
+| `chmod u+x file` | เพิ่มสิทธิ์ execute ให้เจ้าของไฟล์ | ใช้กับ script ที่ต้องการเปิดอ่านหรือรันโดยตรง |
+| `chmod 700 ~/.ssh` | ให้เจ้าของเข้า folder `.ssh` ได้คนเดียว | ใช้ก่อนติดตั้ง `authorized_keys` |
+| `chmod 600 private_key` | ให้เจ้าของอ่าน/เขียน private key ได้คนเดียว | ใช้กับ `~/.ssh/id_rsa_lanta` และ `~/.ssh/config` |
+| `chmod 644 public_key.pub` | ให้ public key อ่านได้ตามปกติ | ใช้กับ `~/.ssh/id_rsa_lanta.pub` |
 | `2>/dev/null` | ส่ง stderr ทิ้ง | ใช้ลดเสียงรบกวนเมื่อ probe module fallback |
 | `2>&1` | รวม stderr เข้ากับ stdout | ใช้เก็บ error และ output ลง log เดียวกัน |
 | `|| true` | ให้ script เดินต่อเมื่อ command probe ล้มเหลว | ใช้กับคำสั่งตรวจระบบที่เป็นข้อมูลประกอบ |
@@ -134,8 +146,10 @@ sed -n '1,120p' lanta-experience/README.md
 | `python script.py` | รัน Python script | stdout/log แสดงผลลัพธ์และไฟล์ output ถูกสร้าง |
 | `python -c "code"` | รัน Python สั้น ๆ จาก command line | ใช้ตรวจ import หรือ version |
 | `python - <<'PY' ... PY` | ส่ง Python program ผ่าน heredoc | ใช้สร้าง smoke test ที่อ่านง่ายใน `.sbatch` |
+| `python -m json.tool file` | ตรวจและ format JSON ด้วย standard library | ใช้ตรวจว่าไฟล์ `.ipynb` เป็น JSON ที่อ่านได้ |
 | `python -m pip install ...` | ใช้ pip ผ่าน interpreter ที่เลือกไว้ | package เข้า environment เดียวกับ `python` |
 | `jupyter lab` | เปิด Jupyter server | log แสดง URL พร้อม token และ node ที่รัน |
+| `which command` | แสดง executable ที่ shell จะเรียกใช้ | ใช้ยืนยันว่า `python` หรือ `jupyter` มาจาก environment ที่ต้องการ |
 
 สำหรับ training สด ให้ทดสอบ import package สำคัญทันที เช่น `import mesa`, `import torch`, หรือ `import netCDF4` แล้วบันทึก version ลง log
 

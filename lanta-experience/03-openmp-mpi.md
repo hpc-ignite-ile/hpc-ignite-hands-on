@@ -8,6 +8,12 @@
 
 ## Copy-Paste OpenMP
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p jobs logs notes results src
@@ -17,7 +23,13 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+```
 
+### ขั้นที่ 2: สร้างไฟล์ `src/omp_hello.c`
+
+ขั้นนี้ทำงานหนึ่งส่วนของ workflow ให้แปะและตรวจผลก่อนขยับไปขั้นถัดไป
+
+```bash
 cat > src/omp_hello.c <<'C'
 #include <stdio.h>
 #include <omp.h>
@@ -32,7 +44,14 @@ int main(void) {
     return 0;
 }
 C
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/omp_hello.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/omp_hello.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=omp_hello
@@ -55,7 +74,13 @@ export OMP_PLACES=cores
 export OMP_PROC_BIND=close
 srun -c "${SLURM_CPUS_PER_TASK:-1}" results/omp_hello | sort
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/omp_hello.sbatch)
 echo "$job_id	omp_hello	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted OpenMP job: $job_id"
@@ -72,6 +97,12 @@ Slurm script ขอ `--cpus-per-task=4` แล้วตั้ง `OMP_NUM_THREAD
 
 ## Copy-Paste MPI
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p jobs logs notes results src
@@ -81,7 +112,13 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+```
 
+### ขั้นที่ 2: สร้างไฟล์ `src/mpi_hello.c`
+
+ขั้นนี้ทำงานหนึ่งส่วนของ workflow ให้แปะและตรวจผลก่อนขยับไปขั้นถัดไป
+
+```bash
 cat > src/mpi_hello.c <<'C'
 #include <mpi.h>
 #include <stdio.h>
@@ -99,7 +136,14 @@ int main(int argc, char **argv) {
     return 0;
 }
 C
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/mpi_hello.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/mpi_hello.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=mpi_hello
@@ -119,7 +163,13 @@ mkdir -p results
 cc src/mpi_hello.c -o results/mpi_hello
 srun -n "${SLURM_NTASKS:-4}" results/mpi_hello | sort
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/mpi_hello.sbatch)
 echo "$job_id	mpi_hello	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted MPI job: $job_id"

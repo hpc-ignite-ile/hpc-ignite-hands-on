@@ -8,6 +8,12 @@
 
 ## Copy-Paste Diffusion Model
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p configs jobs logs notes results src
@@ -17,13 +23,26 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+```
 
+### ขั้นที่ 2: สร้าง config `configs/diffusion-small.env`
+
+ขั้นนี้สร้างค่ากำกับการทดลอง เพื่อให้ parameter แยกจาก code และตรวจซ้ำได้
+
+```bash
 cat > configs/diffusion-small.env <<'EOF'
 N=300
 STEPS=600
 ALPHA=0.15
 EOF
+```
 
+
+### ขั้นที่ 3: สร้าง source code `src/diffusion_1d.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/diffusion_1d.py <<'PY'
 import argparse
 import csv
@@ -58,7 +77,14 @@ with open(args.output, "w", newline="", encoding="utf-8") as handle:
         writer.writerow([i, f"{value:.8f}"])
 print(f"output={args.output} elapsed={time.time() - t0:.3f}")
 PY
+```
 
+
+### ขั้นที่ 4: สร้าง Slurm script `jobs/diffusion.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/diffusion.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=diffusion
@@ -89,7 +115,13 @@ result: results/diffusion_${SLURM_JOB_ID}.csv
 validation: CSV has header i,value and N rows
 EOF
 SLURM
+```
 
+### ขั้นที่ 5: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/diffusion.sbatch)
 echo "$job_id	diffusion	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted diffusion job: $job_id"
@@ -108,6 +140,12 @@ echo "  cat results/diffusion_${job_id}/README.txt"
 
 ## Copy-Paste Small Data Summary
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p input notes results src
@@ -117,7 +155,13 @@ if command -v module >/dev/null 2>&1; then
     module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
 fi
 command -v python
+```
 
+### ขั้นที่ 2: สร้าง source code `src/make_sensor_data.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/make_sensor_data.py <<'PY'
 import csv
 import math
@@ -134,7 +178,14 @@ with open("input/sensor.csv", "w", newline="", encoding="utf-8") as handle:
             value = 18 + 10 * math.sin(minute / 1440 * 6.283) + random.random() * 5 + station
             writer.writerow([minute, f"S{station}", f"{value:.2f}"])
 PY
+```
 
+
+### ขั้นที่ 3: สร้าง source code `src/summarize_sensor.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/summarize_sensor.py <<'PY'
 import csv
 import statistics
@@ -154,7 +205,13 @@ with open("results/sensor_summary.csv", "w", newline="", encoding="utf-8") as ha
         writer.writerow([station, len(values), f"{statistics.mean(values):.2f}", f"{max(values):.2f}"])
 print("results/sensor_summary.csv")
 PY
+```
 
+### ขั้นที่ 4: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 python src/make_sensor_data.py
 python src/summarize_sensor.py
 head results/sensor_summary.csv

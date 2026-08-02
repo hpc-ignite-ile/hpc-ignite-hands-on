@@ -8,11 +8,19 @@
 
 ## Copy-Paste จากเครื่อง Local
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
 ## Copy-Paste เตรียม Code และ Scenario บน LANTA
+
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของ EpiSprint และตั้งค่า account, project, partition, และ module path ที่ใช้ร่วมกันทั้งหน้า
 
 ```bash
 mkdir -p "$HOME/lanta-episprint"
@@ -22,73 +30,47 @@ mkdir -p configs jobs logs notes prompts results src
 if [ -f notes/session-env.sh ]; then
     source notes/session-env.sh
 fi
-
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
     read -rp "Slurm project account เช่น ltXXXXXX หรือ tn999996: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-
 if [ -z "${LANTA_PROJECT:-}" ]; then
     read -rp "Project directory เช่น /project/ltXXXXXX-name หรือ /project/tn999996-north: " LANTA_PROJECT
     export LANTA_PROJECT
 fi
-
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
+```
 
-if [ ! -f "$EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua" ]; then
-    echo "module_missing: $EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua"
-    echo "ให้ทำหน้า 01-custom-python-env-module.md ก่อน"
-    exit 1
-fi
+### ขั้นที่ 2: ตรวจ Mesa module
 
+ขั้นนี้ยืนยันว่า environment จากหน้า 01 พร้อมใช้ก่อนสร้างและส่ง simulation job
+
+```bash
+module purge
+module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT}"
+module load hpc-mesa/2.3.4
+python - <<'PY'
+import mesa, pandas
+print("mesa", mesa.__version__)
+print("pandas", pandas.__version__)
+PY
+```
+
+### ขั้นที่ 3: เขียน schema และ agent behavior
+
+ขั้นนี้สร้างครึ่งแรกของ `src/epi_model.py`: กำหนดสถานะ SEIR, scenario, และพฤติกรรมของ agent หนึ่งคน
+
+```bash
 cat > src/epi_model.py <<'PY'
-from __future__ import annotations
-
 from collections import Counter
 from dataclasses import dataclass
-from typing import Dict, List
 
 from mesa import Agent, Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation
 
-S = "S"
-E = "E"
-I = "I"
-R = "R"
-
-
-class Person(Agent):
-    def __init__(self, unique_id: int, model: "EpiModel", age_group: str, compliance: float):
-        super().__init__(unique_id, model)
-        self.age_group = age_group
-        self.compliance = compliance
-        self.state = S
-        self.days_in_state = 0
-
-    def step(self) -> None:
-        if self.state in (E, I):
-            self.days_in_state += 1
-
-        if self.state == E and self.days_in_state >= self.model.incubation_days:
-            self.state = I
-            self.days_in_state = 0
-        elif self.state == I and self.days_in_state >= self.model.recovery_days:
-            self.state = R
-            self.days_in_state = 0
-
-        should_isolate = (
-            self.state == I
-            and self.model.policy in {"isolation", "combined"}
-            and self.model.random.random() < self.model.isolation_strength * self.compliance
-        )
-        if not should_isolate:
-            x, y = self.pos
-            dx = self.model.random.choice([-1, 0, 1])
-            dy = self.model.random.choice([-1, 0, 1])
-            self.model.grid.move_agent(self, ((x + dx) % self.model.width, (y + dy) % self.model.height))
-
+S, E, I, R = "S", "E", "I", "R"
 
 @dataclass
 class Scenario:
@@ -100,178 +82,146 @@ class Scenario:
     agents: int
     days: int
 
+class Person(Agent):
+    def __init__(self, unique_id, model, compliance):
+        super().__init__(unique_id, model)
+        self.compliance = compliance
+        self.state = S
+        self.days = 0
+
+    def step(self):
+        if self.state in (E, I):
+            self.days += 1
+        if self.state == E and self.days >= self.model.incubation_days:
+            self.state, self.days = I, 0
+        elif self.state == I and self.days >= self.model.recovery_days:
+            self.state, self.days = R, 0
+
+        isolating = self.state == I and self.model.policy in {"isolation", "combined"}
+        isolating = isolating and self.model.random.random() < 0.75 * self.compliance
+        if isolating:
+            return
+        x, y = self.pos
+        dx, dy = self.model.random.choice([-1, 0, 1]), self.model.random.choice([-1, 0, 1])
+        self.model.grid.move_agent(self, ((x + dx) % self.model.width, (y + dy) % self.model.height))
+PY
+```
+
+### ขั้นที่ 4: เติม model dynamics และ sanity count
+
+ขั้นนี้เติมครึ่งหลังของ `src/epi_model.py`: สร้างประชากรบน grid, คำนวณการติดเชื้อ, และคืนจำนวน `S/E/I/R` รายวัน
+
+```bash
+cat >> src/epi_model.py <<'PY'
 
 class EpiModel(Model):
-    def __init__(
-        self,
-        scenario: Scenario,
-        width: int = 70,
-        height: int = 70,
-        initial_infected_fraction: float = 0.01,
-        incubation_days: int = 3,
-        recovery_days: int = 7,
-    ):
+    def __init__(self, scenario, width=70, height=70):
         super().__init__()
         self.random.seed(scenario.seed)
         self.scenario = scenario
         self.policy = scenario.policy
         self.beta = scenario.beta
-        self.compliance = scenario.compliance
-        self.width = width
-        self.height = height
-        self.incubation_days = incubation_days
-        self.recovery_days = recovery_days
-        self.isolation_strength = 0.75
+        self.width, self.height = width, height
+        self.incubation_days, self.recovery_days = 3, 7
         self.grid = MultiGrid(width, height, torus=True)
         self.schedule = RandomActivation(self)
         self.new_exposures = 0
-
-        age_choices = ["child", "adult", "older"]
-        age_weights = [0.20, 0.65, 0.15]
         for i in range(scenario.agents):
-            age_group = self.random.choices(age_choices, weights=age_weights, k=1)[0]
             compliance = min(1.0, max(0.0, self.random.gauss(scenario.compliance, 0.12)))
-            person = Person(i, self, age_group, compliance)
+            person = Person(i, self, compliance)
             self.schedule.add(person)
             self.grid.place_agent(person, (self.random.randrange(width), self.random.randrange(height)))
-
-        initial_infected = max(1, int(scenario.agents * initial_infected_fraction))
-        for person in self.random.sample(self.schedule.agents, initial_infected):
+        for person in self.random.sample(self.schedule.agents, max(1, scenario.agents // 100)):
             person.state = I
 
-    def effective_beta(self, source: Person) -> float:
-        beta = self.beta
-        if self.policy in {"mask", "combined"}:
-            beta *= 0.55
-        if self.policy in {"school_close", "combined"} and source.age_group == "child":
-            beta *= 0.45
-        return beta
+    def effective_beta(self):
+        if self.policy == "baseline":
+            return self.beta
+        if self.policy in {"mask", "isolation"}:
+            return self.beta * 0.60
+        return self.beta * 0.40
 
-    def spread(self) -> None:
+    def spread(self):
         exposed = []
         for source in self.schedule.agents:
-            if source.state != I:
-                continue
-            if self.policy in {"isolation", "combined"} and self.random.random() < self.isolation_strength * source.compliance:
-                continue
-            beta = self.effective_beta(source)
-            contacts = self.grid.get_neighbors(source.pos, moore=True, include_center=True)
-            for other in contacts:
-                if other is source or other.state != S:
-                    continue
-                if self.random.random() < beta:
-                    exposed.append(other)
-
-        seen = set()
+            if source.state == I:
+                for other in self.grid.get_neighbors(source.pos, moore=True, include_center=True):
+                    if other.state == S and self.model.random.random() < self.effective_beta():
+                        exposed.append(other)
         self.new_exposures = 0
-        for person in exposed:
-            if person.unique_id in seen or person.state != S:
-                continue
-            person.state = E
-            person.days_in_state = 0
-            seen.add(person.unique_id)
+        for person in set(exposed):
+            person.state, person.days = E, 0
             self.new_exposures += 1
 
-    def step(self) -> None:
+    def step(self):
         self.spread()
         self.schedule.step()
 
-    def counts(self, day: int) -> Dict[str, int]:
-        count = Counter(person.state for person in self.schedule.agents)
-        return {
-            "day": day,
-            "S": count.get(S, 0),
-            "E": count.get(E, 0),
-            "I": count.get(I, 0),
-            "R": count.get(R, 0),
-            "new_exposures": self.new_exposures,
-        }
+    def counts(self, day):
+        c = Counter(person.state for person in self.schedule.agents)
+        return {"day": day, "S": c[S], "E": c[E], "I": c[I], "R": c[R], "new_exposures": self.new_exposures}
 
-
-def run_scenario(scenario: Scenario) -> List[Dict[str, int]]:
+def run_scenario(scenario):
     model = EpiModel(scenario)
-    records = [model.counts(day=0)]
+    records = [model.counts(0)]
     for day in range(1, scenario.days + 1):
         model.step()
-        records.append(model.counts(day=day))
+        records.append(model.counts(day))
     return records
 PY
+```
 
+### ขั้นที่ 5: สร้าง runner สำหรับหนึ่ง scenario
+
+ขั้นนี้สร้าง `src/run_scenario.py` ให้รับ parameter จาก command line แล้วเขียน daily CSV และ summary CSV
+
+```bash
 cat > src/run_scenario.py <<'PY'
-import argparse
-import csv
-import os
+import argparse, csv, os
 from pathlib import Path
-
 from epi_model import Scenario, run_scenario
 
+p = argparse.ArgumentParser()
+p.add_argument("--scenario-id", required=True)
+p.add_argument("--policy", required=True, choices=["baseline", "mask", "isolation", "combined"])
+p.add_argument("--beta", type=float, required=True)
+p.add_argument("--compliance", type=float, required=True)
+p.add_argument("--seed", type=int, required=True)
+p.add_argument("--agents", type=int, default=3000)
+p.add_argument("--days", type=int, default=60)
+a = p.parse_args()
 
-def default_run_id(scenario_id: str) -> str:
-    array_job = os.environ.get("SLURM_ARRAY_JOB_ID")
-    array_task = os.environ.get("SLURM_ARRAY_TASK_ID")
-    job_id = os.environ.get("SLURM_JOB_ID", "manual")
-    if array_job and array_task:
-        return f"{array_job}_{array_task}_{scenario_id}"
-    return f"{job_id}_{scenario_id}"
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--scenario-id", required=True)
-parser.add_argument("--policy", required=True, choices=["baseline", "mask", "isolation", "school_close", "combined"])
-parser.add_argument("--beta", type=float, required=True)
-parser.add_argument("--compliance", type=float, required=True)
-parser.add_argument("--seed", type=int, required=True)
-parser.add_argument("--agents", type=int, default=5000)
-parser.add_argument("--days", type=int, default=90)
-args = parser.parse_args()
-
-scenario = Scenario(
-    scenario_id=args.scenario_id,
-    policy=args.policy,
-    beta=args.beta,
-    compliance=args.compliance,
-    seed=args.seed,
-    agents=args.agents,
-    days=args.days,
-)
-
+scenario = Scenario(a.scenario_id, a.policy, a.beta, a.compliance, a.seed, a.agents, a.days)
 records = run_scenario(scenario)
-run_id = default_run_id(args.scenario_id)
+job = os.environ.get("SLURM_ARRAY_JOB_ID", os.environ.get("SLURM_JOB_ID", "manual"))
+task = os.environ.get("SLURM_ARRAY_TASK_ID", "0")
+run_id = f"{job}_{task}_{scenario.scenario_id}"
 Path("results").mkdir(exist_ok=True)
-daily_path = Path(f"results/epi_daily_{run_id}.csv")
-summary_path = Path(f"results/epi_summary_{run_id}.csv")
+daily = Path(f"results/epi_daily_{run_id}.csv")
+summary = Path(f"results/epi_summary_{run_id}.csv")
 
-with daily_path.open("w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(f, fieldnames=["day", "S", "E", "I", "R", "new_exposures"])
-    writer.writeheader()
-    writer.writerows(records)
-
-peak = max(records, key=lambda row: row["I"])
+with daily.open("w", newline="", encoding="utf-8") as f:
+    w = csv.DictWriter(f, fieldnames=["day", "S", "E", "I", "R", "new_exposures"])
+    w.writeheader(); w.writerows(records)
+peak = max(records, key=lambda r: r["I"])
 final = records[-1]
-summary = {
-    "scenario_id": scenario.scenario_id,
-    "policy": scenario.policy,
-    "beta": scenario.beta,
-    "compliance": scenario.compliance,
-    "seed": scenario.seed,
-    "agents": scenario.agents,
-    "days": scenario.days,
-    "peak_day": peak["day"],
-    "peak_I": peak["I"],
-    "attack_rate": round((final["E"] + final["I"] + final["R"]) / scenario.agents, 6),
-    "daily_file": str(daily_path),
-}
-
-with summary_path.open("w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(f, fieldnames=list(summary))
-    writer.writeheader()
-    writer.writerow(summary)
-
-print(f"summary={summary_path}")
-print(f"daily={daily_path}")
-print(f"peak_I={summary['peak_I']} attack_rate={summary['attack_rate']}")
+row = {"scenario_id": scenario.scenario_id, "policy": scenario.policy, "beta": scenario.beta,
+       "compliance": scenario.compliance, "seed": scenario.seed, "agents": scenario.agents,
+       "peak_day": peak["day"], "peak_I": peak["I"],
+       "attack_rate": round((final["E"] + final["I"] + final["R"]) / scenario.agents, 6)}
+with summary.open("w", newline="", encoding="utf-8") as f:
+    w = csv.DictWriter(f, fieldnames=list(row)); w.writeheader(); w.writerow(row)
+print(f"summary={summary}")
+print(f"daily={daily}")
+print(f"peak_I={row['peak_I']} attack_rate={row['attack_rate']}")
 PY
+```
 
+### ขั้นที่ 6: สร้างตัวรวมผลลัพธ์
+
+ขั้นนี้สร้าง `src/merge_results.py` เพื่อรวม summary CSV หลายไฟล์และคำนวณค่าเฉลี่ยราย policy
+
+```bash
 cat > src/merge_results.py <<'PY'
 from pathlib import Path
 import pandas as pd
@@ -281,113 +231,113 @@ if not files:
     raise SystemExit("missing results/epi_summary_*.csv")
 
 df = pd.concat([pd.read_csv(path) for path in files], ignore_index=True)
-Path("results").mkdir(exist_ok=True)
-merged = Path("results/epi_summary_all.csv")
-df.to_csv(merged, index=False)
-
-table = (
-    df.groupby("policy", as_index=False)
-    .agg(runs=("scenario_id", "count"), mean_peak_I=("peak_I", "mean"), mean_attack_rate=("attack_rate", "mean"))
-    .sort_values("mean_peak_I")
-)
+df.to_csv("results/epi_summary_all.csv", index=False)
+table = df.groupby("policy", as_index=False).agg(
+    runs=("scenario_id", "count"),
+    mean_peak_I=("peak_I", "mean"),
+    mean_attack_rate=("attack_rate", "mean"),
+).sort_values("mean_peak_I")
 table.to_csv("results/epi_policy_compare.csv", index=False)
 print(table.to_string(index=False))
-print(f"merged={merged}")
-print("compare=results/epi_policy_compare.csv")
 PY
+```
 
+### ขั้นที่ 7: สร้าง multicore runner
+
+ขั้นนี้สร้าง `src/run_many.py` เพื่อรันหลาย scenario ใน allocation เดียวตามจำนวน CPU ที่ Slurm ให้มา
+
+```bash
 cat > src/run_many.py <<'PY'
-import argparse
-import csv
-import multiprocessing as mp
-import os
-import subprocess
-
+import argparse, csv, multiprocessing as mp, os, subprocess
 
 def run(row):
-    cmd = [
-        "python", "src/run_scenario.py",
-        "--scenario-id", row["scenario_id"],
-        "--policy", row["policy"],
-        "--beta", row["beta"],
-        "--compliance", row["compliance"],
-        "--seed", row["seed"],
-        "--agents", row["agents"],
-        "--days", row["days"],
-    ]
+    cmd = ["python", "src/run_scenario.py"]
+    for key in ["scenario_id", "policy", "beta", "compliance", "seed", "agents", "days"]:
+        cmd += ["--" + key.replace("_", "-"), row[key]]
     subprocess.check_call(cmd)
     return row["scenario_id"]
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--csv", default="configs/epi_scenarios.csv")
-parser.add_argument("--workers", type=int, default=int(os.environ.get("SLURM_CPUS_PER_TASK", "1")))
-args = parser.parse_args()
-
-with open(args.csv, newline="", encoding="utf-8") as f:
-    rows = list(csv.DictReader(f))
-
-workers = max(1, min(args.workers, len(rows)))
+p = argparse.ArgumentParser()
+p.add_argument("--csv", default="configs/epi_scenarios.csv")
+p.add_argument("--workers", type=int, default=int(os.environ.get("SLURM_CPUS_PER_TASK", "1")))
+a = p.parse_args()
+rows = list(csv.DictReader(open(a.csv, newline="", encoding="utf-8")))
+workers = max(1, min(a.workers, len(rows)))
 print(f"running {len(rows)} scenarios with workers={workers}")
 with mp.Pool(processes=workers) as pool:
     for scenario_id in pool.imap_unordered(run, rows):
         print(f"done {scenario_id}")
 PY
+```
 
+### ขั้นที่ 8: สร้างตาราง scenario
+
+ขั้นนี้สร้าง input หลักของการทดลอง ทุกแถวคือหนึ่ง scenario ที่ Slurm array หรือ multicore runner จะอ่าน
+
+```bash
 cat > configs/epi_scenarios.csv <<'EOF'
 scenario_id,policy,beta,compliance,seed,agents,days
-baseline_1,baseline,0.18,0.40,101,5000,90
-baseline_2,baseline,0.18,0.55,102,5000,90
-baseline_3,baseline,0.20,0.40,103,5000,90
-mask_1,mask,0.18,0.40,201,5000,90
-mask_2,mask,0.18,0.55,202,5000,90
-mask_3,mask,0.20,0.40,203,5000,90
-isolation_1,isolation,0.18,0.40,301,5000,90
-isolation_2,isolation,0.18,0.55,302,5000,90
-isolation_3,isolation,0.20,0.40,303,5000,90
-combined_1,combined,0.18,0.40,401,5000,90
-combined_2,combined,0.18,0.55,402,5000,90
-combined_3,combined,0.20,0.40,403,5000,90
+baseline_1,baseline,0.18,0.40,101,3000,60
+baseline_2,baseline,0.18,0.55,102,3000,60
+baseline_3,baseline,0.20,0.40,103,3000,60
+mask_1,mask,0.18,0.40,201,3000,60
+mask_2,mask,0.18,0.55,202,3000,60
+mask_3,mask,0.20,0.40,203,3000,60
+isolation_1,isolation,0.18,0.40,301,3000,60
+isolation_2,isolation,0.18,0.55,302,3000,60
+isolation_3,isolation,0.20,0.40,303,3000,60
+combined_1,combined,0.18,0.40,401,3000,60
+combined_2,combined,0.18,0.55,402,3000,60
+combined_3,combined,0.20,0.40,403,3000,60
 EOF
+```
 
+### ขั้นที่ 9: สร้าง AI scaffold
+
+ขั้นนี้สร้าง prompt สำหรับใช้ AI ช่วยตรวจ scenario, resource request และคำอธิบายผล โดยยึด log และ output เป็นหลักฐาน
+
+```bash
 cat > prompts/ai-scaffold-th.md <<'EOF'
-# Prompt สำหรับ AI Scaffold
+# AI Scaffold สำหรับ LANTA EpiSprint
 
-ใช้ prompt นี้กับ AI assistant เพื่อช่วยตั้งคำถาม ออกแบบ scenario ตรวจ resource request และอธิบายผลโดยอ้างอิงหลักฐานจาก code, config, job log และ result file
+Scenario coach: สร้าง scenario เพิ่มในรูปแบบ CSV โดยเปลี่ยนทีละปัจจัย และอธิบายตัวแปรควบคุม
 
-## Scenario coach
+Slurm reviewer: ตรวจ account, partition, walltime, cpus-per-task, array concurrency, output log และ reproducibility ของ job script
 
-เรากำลังทำ LANTA EpiSprint ด้วย SEIR agent-based simulation บน LANTA
-ช่วยสร้าง scenario เพิ่ม 6 แถวในรูปแบบ CSV โดยให้เปลี่ยนทีละปัจจัย
-คอลัมน์คือ scenario_id,policy,beta,compliance,seed,agents,days
-ขอให้ runtime สั้นพอสำหรับ compute-devel และอธิบายว่าปัจจัยใดถูกควบคุม
-
-## Slurm reviewer
-
-ประเมินความเหมาะสมของ resource request ใน Slurm script นี้สำหรับงานสด 40 คน
-เน้น account, partition, walltime, cpus-per-task, array concurrency, output log และ reproducibility
-
-## Results tutor
-
-จาก epi_policy_compare.csv ช่วยอธิบายเป็นภาษาไทยว่า policy ใดลด peak_I ได้ดีที่สุด
-ให้พูดถึง uncertainty, random seed, attack_rate และข้อจำกัดของแบบจำลอง synthetic
+Results tutor: อ่าน epi_policy_compare.csv แล้วอธิบาย policy, peak_I, attack_rate, random seed, uncertainty และข้อจำกัดของแบบจำลอง synthetic
 EOF
+```
 
+### ขั้นที่ 10: ตรวจ syntax ก่อนส่งงาน
+
+ขั้นนี้ใช้ Python compile check เพื่อจับ syntax error ตั้งแต่บน login node และยืนยันว่า module ที่ใช้คือ `hpc-mesa/2.3.4`
+
+```bash
 module purge
 module use "$EPI_MODULE_ROOT"
 module load hpc-mesa/2.3.4
-
 python -m py_compile src/epi_model.py src/run_scenario.py src/merge_results.py src/run_many.py
-echo "สร้าง source, scenario, และ prompt เรียบร้อย"
+head -5 configs/epi_scenarios.csv
+echo "source, scenario, prompt พร้อมสำหรับ Slurm"
 ```
 
 ## Example 1: Single Slurm Job
 
 วิธีนี้ใช้สำหรับ smoke test ก่อนให้ผู้ใช้ทั้งห้องรัน array ให้รัน single job ให้ผ่านก่อนเสมอ
 
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-episprint"
+```
 
+### ขั้นที่ 2: สร้าง Slurm script `jobs/epi_single.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/epi_single.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=epi-single
@@ -414,7 +364,13 @@ python src/run_scenario.py \
     --agents 5000 \
     --days 90
 SLURM
+```
 
+### ขั้นที่ 3: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/epi_single.sbatch)
 echo "$job_id	epi_single	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted single job: $job_id"
@@ -426,9 +382,19 @@ echo "Read: tail -60 logs/epi_single_${job_id}.out"
 
 วิธีนี้ใช้ตาราง scenario แล้วให้ Slurm แตกงานย่อย ผู้ใช้แต่ละทีมสามารถรัน array สั้น ๆ ของตนเองได้
 
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-episprint"
+```
 
+### ขั้นที่ 2: สร้าง Slurm script `jobs/epi_array.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/epi_array.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=epi-array
@@ -460,7 +426,13 @@ python src/run_scenario.py \
     --agents "$agents" \
     --days "$days"
 SLURM
+```
 
+### ขั้นที่ 3: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/epi_array.sbatch)
 echo "$job_id	epi_array	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted array job: $job_id"
@@ -483,9 +455,19 @@ cat results/epi_policy_compare.csv
 
 วิธีนี้ใช้ `SLURM_CPUS_PER_TASK` เพื่อให้ Python เปิดหลาย process ภายในหนึ่ง allocation ผู้ใช้จะเห็นความต่างระหว่าง job array กับหลาย worker ใน job เดียว
 
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-episprint"
+```
 
+### ขั้นที่ 2: สร้าง Slurm script `jobs/epi_multicore.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/epi_multicore.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=epi-multicore
@@ -507,7 +489,13 @@ export OMP_NUM_THREADS=1
 python src/run_many.py --csv configs/epi_scenarios.csv --workers "${SLURM_CPUS_PER_TASK:-1}"
 python src/merge_results.py
 SLURM
+```
 
+### ขั้นที่ 3: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/epi_multicore.sbatch)
 echo "$job_id	epi_multicore	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted multicore job: $job_id"

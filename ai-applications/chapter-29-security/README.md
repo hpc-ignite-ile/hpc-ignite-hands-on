@@ -14,16 +14,43 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/ai-security"
 cd "$HOME/hpc-ignite-standalone/ai-security"
 mkdir -p input notes results
+```
+
+### ขั้นที่ 2: สร้าง input `input/public.txt`
+
+ขั้นนี้สร้างข้อมูลตัวอย่างขนาดเล็ก เพื่อให้ workflow มี input จริงและตรวจ output เทียบได้
+
+```bash
 cat > input/public.txt <<'EOF'
 public training note
 EOF
+```
+
+### ขั้นที่ 3: สร้าง input `input/private.env`
+
+ขั้นนี้สร้างข้อมูลตัวอย่างขนาดเล็ก เพื่อให้ workflow มี input จริงและตรวจ output เทียบได้
+
+```bash
 cat > input/private.env <<'EOF'
 API_TOKEN=FAKE_TOKEN_FOR_SECURITY_EXERCISE
 EOF
+```
+
+### ขั้นที่ 4: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 chmod 600 input/private.env
 python - <<'PYCODE'
 from pathlib import Path

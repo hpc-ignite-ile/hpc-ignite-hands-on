@@ -8,6 +8,12 @@
 
 ## Copy-Paste
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p jobs logs notes results src
@@ -17,7 +23,13 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
+```
 
+### ขั้นที่ 2: สร้าง Slurm script `jobs/gpu_check.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/gpu_check.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=gpu_check
@@ -57,7 +69,13 @@ print("matrix_sum", float(y.sum().cpu()))
 print("status", "ok")
 PY
 SLURM
+```
 
+### ขั้นที่ 3: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_GPU_PARTITION" --parsable jobs/gpu_check.sbatch)
 echo "$job_id	gpu_check	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted GPU check: $job_id"

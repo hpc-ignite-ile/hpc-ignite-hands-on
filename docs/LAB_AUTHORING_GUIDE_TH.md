@@ -1,45 +1,67 @@
 # แนวทางเขียน Lab แบบ Heredoc-First
 
-ทุก lab ใหม่ควรมีหัวข้อ `Copy-paste only` เพื่อให้ผู้ใช้เริ่มได้จาก terminal และเห็นไฟล์ที่ตนเองสร้างจริง พร้อมรายละเอียดการส่งงานใน `jobs/*.sbatch`
+ทุก lab ใหม่ควรมีหัวข้อ `Copy-paste only` เพื่อให้ผู้ใช้เริ่มจาก terminal ได้ทันที เห็นไฟล์จริงที่ตนเองสร้าง และเข้าใจว่าแต่ละ block ทำงานส่วนใดของ workflow
 
 ดูคำอธิบายคำสั่ง Bash, Slurm และ syntax ที่ใช้ใน template ได้ที่ [BASH_COMMAND_REFERENCE_TH.md](BASH_COMMAND_REFERENCE_TH.md)
 
-## โครงสร้างที่แนะนำ
+## หลักการเขียน
 
-1. เปิดด้วยเป้าหมายสั้น ๆ ว่าผู้ใช้จะทำอะไร
-2. ให้ copy-paste block ก่อนคำอธิบายละเอียด
-3. ใน block ให้สร้างไฟล์ด้วย heredoc
-4. ส่งงานด้วย `sbatch` โดยตรง
-5. พิมพ์คำสั่งดูคิวและดูผลลัพธ์
-6. หลัง block ให้บอก checkpoint ว่าควรเห็นไฟล์หรือข้อความใด
-7. ถ้ามี error ให้บอกคำสั่งแรกที่ควรตรวจ เช่น `tail`, `squeue`, `sacct`, หรือ `module avail`
+1. หนึ่ง code block ทำหนึ่ง semantic task เช่น เตรียม workspace, สร้าง source, สร้าง config, สร้าง Slurm script, ส่งงาน, หรืออ่านผล
+2. ก่อน code block ต้องมีคำอธิบายสั้น ๆ ว่า block นี้ทำอะไร ใช้ไฟล์ใด และผู้ใช้ควรตรวจหลักฐานใดหลังรัน
+3. หลังสร้างไฟล์สำคัญ ให้ผู้ใช้เปิดอ่านหรือบอกจุดที่ควรสังเกต เช่น output path, parameter, module, และ resource request
+4. ส่งงานด้วย `sbatch` จาก `jobs/*.sbatch` ที่สร้างในหน้า hand-on นั้นโดยตรง
+5. ใช้ `compute-devel` หรือ `gpu-devel` สำหรับ smoke test ก่อนขยายขนาดงาน
+6. เก็บ job id, log, result, config และ version ให้ใช้ตรวจซ้ำได้
 
-## Template
+## Template แบบ Block สั้น
+
+### ขั้นที่ 1: เตรียม Workspace
+
+block นี้สร้าง path และ folder มาตรฐานของ lab
 
 ```bash
-mkdir -p "$HOME/lanta-experience/<lab-id>"
-cd "$HOME/lanta-experience/<lab-id>"
+mkdir -p "$HOME/hpc-ignite-standalone/<lab-id>"
+cd "$HOME/hpc-ignite-standalone/<lab-id>"
 mkdir -p configs input jobs logs notes results src
+```
 
+### ขั้นที่ 2: ตั้งค่า Account และ Partition
+
+block นี้รับ account และกำหนด partition สำหรับ smoke job
+
+```bash
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
     read -rp "Slurm project account: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+```
 
+### ขั้นที่ 3: สร้าง Source File
+
+block นี้สร้างโปรแกรมหลัก ผู้ใช้ควรอ่าน output path ก่อนส่งงาน
+
+```bash
 cat > src/main.py <<'PY'
 from pathlib import Path
 import os
 
 Path("results").mkdir(exist_ok=True)
 job_id = os.environ.get("SLURM_JOB_ID", "manual")
-Path(f"results/output_{job_id}.txt").write_text("Hello from HPC Ignite\n", encoding="utf-8")
-print(f"results/output_{job_id}.txt")
+out = Path(f"results/output_{job_id}.txt")
+out.write_text("Hello from HPC Ignite\n", encoding="utf-8")
+print(out)
 PY
+```
 
+### ขั้นที่ 4: สร้าง Slurm Script
+
+block นี้กำหนด resource, module และคำสั่งที่ compute node จะรัน
+
+```bash
 cat > jobs/main.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-<lab-id>
+#SBATCH --job-name=hpcig-main
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -54,24 +76,33 @@ module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null ||
 cd "$SLURM_SUBMIT_DIR"
 python src/main.py
 SLURM
-
-job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/main.sbatch)
-echo "Submitted job: $job_id"
-echo "Monitor: squeue -j $job_id"
-echo "Output : tail -n +1 logs/hpcig-<lab-id>_${job_id}.out"
 ```
 
-หลัง code block ให้เขียน checkpoint แบบสั้น:
+### ขั้นที่ 5: ส่งงานและอ่าน Log
 
-- ✅ เมื่อสำเร็จ ผู้ใช้จะเห็น job id จาก `sbatch`
-- ✅ เมื่อ job จบ ผู้ใช้จะเห็นไฟล์ `results/output_<jobid>.txt`
-- ⚠️ หาก submit error ให้ตรวจ `LANTA_ACCOUNT` และ partition ด้วย `sinfo`
+block นี้ส่งงาน บันทึก job id และพิมพ์คำสั่งตรวจหลักฐาน
 
-## Checklist ก่อน merge lab ใหม่
+```bash
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/main.sbatch)
+echo "$job_id	hpcig-main	$(date -Is)" >> notes/job-history.tsv
+echo "Monitor: squeue -j $job_id"
+echo "Log: tail -n +1 logs/hpcig-main_${job_id}.out"
+```
 
-- มีหัวข้อ `Copy-paste only`
+## Checkpoint
+
+- เมื่อ submit สำเร็จ ผู้ใช้เห็น job id จาก `sbatch`
+- เมื่อ job จบ ผู้ใช้เห็น `COMPLETED` และ `ExitCode` เป็น `0:0` จาก `sacct`
+- ใน `logs/` มี stdout/stderr ของ job id นั้น
+- ใน `results/` มีไฟล์ output ที่ source file ระบุไว้
+
+## Checklist ก่อน Merge Lab ใหม่
+
+- มีขั้นจาก SSH หรือ link ไปหน้า SSH setup
+- ทุก Bash code block มีเป้าหมายเดียวและมีคำอธิบายอยู่ก่อน block
+- Bash code block ใน tutorial ควรสั้นพอสำหรับสอนสด โดยตั้งเป้า 60 บรรทัดหรือน้อยกว่า
 - ใช้ terminal และ heredoc แทนขั้นตอน `nano`, `vim`, หรือแก้ไฟล์ด้วยมือ
-- สร้างไฟล์งานใน workspace ของ lab เช่น `jobs/*.sbatch` และ `src/*.py`
+- สร้างไฟล์งานใน workspace ของ lab เช่น `jobs/*.sbatch`, `src/*.py`, `configs/*`, `input/*`
 - เขียน `jobs/*.sbatch` ให้ผู้ใช้เปิดอ่านและส่งด้วย `sbatch` โดยตรง
 - heredoc marker ใช้ quoted form เช่น `<<'PY'` เพื่อกัน shell expand โค้ด
 - ใช้ partition devel/limited เป็นค่าเริ่มต้นสำหรับ smoke test

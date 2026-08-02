@@ -8,6 +8,12 @@
 
 ## Copy-Paste
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p notes results
@@ -33,6 +39,13 @@ SPENT_LOG="notes/resource-spent-${RUN_STAMP}.tsv"
     else
         echo "missing results/sensor_summary.csv"
     fi
+```
+
+### ขั้นที่ 2: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
     echo
     echo "diffusion summaries"
     for file in results/diffusion_*.csv; do
@@ -46,7 +59,13 @@ SPENT_LOG="notes/resource-spent-${RUN_STAMP}.tsv"
     sha256sum input/sensor.csv results/sensor_summary.csv 2>/dev/null || true
     sha256sum results/hello_*.txt results/pi_*.txt results/diffusion_*.csv 2>/dev/null || true
 } | tee "$DATA_LOG"
+```
 
+### ขั้นที่ 3: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 if [ -s notes/job-history.tsv ]; then
     JOB_IDS=$(cut -f1 notes/job-history.tsv | paste -sd, -)
     sacct -j "$JOB_IDS" --format=JobID,JobName%24,Partition,Account,State,ExitCode,Elapsed,AllocCPUS,ReqMem,MaxRSS,AllocTRES%80 -P > "$SPENT_LOG"
@@ -56,7 +75,13 @@ fi
 
 sbalance 2>&1 | tee "notes/balance-${RUN_STAMP}.txt" || true
 sbill 2>&1 | tee "notes/bill-${RUN_STAMP}.txt" || true
+```
 
+### ขั้นที่ 4: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 echo "Data summary: $DATA_LOG"
 echo "Resource spent: $SPENT_LOG"
 head -30 "$SPENT_LOG"

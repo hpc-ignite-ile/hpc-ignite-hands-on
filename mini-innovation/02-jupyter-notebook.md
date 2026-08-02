@@ -1,103 +1,162 @@
-# 02 ใช้ Jupyter Notebook บน LANTA
+# 02 ใช้ Jupyter Notebook บน LANTA ผ่าน Slurm และ SSH Tunnel
 
-หน้านี้เปิด Jupyter Lab บน compute node ผ่าน Slurm allocation แล้ว tunnel กลับมาเปิดใน browser บนเครื่อง local ใช้ environment และ module จาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
+หน้านี้เปิด JupyterLab บน compute node ของ LANTA ผ่าน Slurm allocation แล้วส่ง port กลับมาเปิดใน browser บนเครื่อง local ด้วย SSH tunnel ใช้ environment และ module จาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
 
-คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `sbatch`, `squeue`, `tail`, `scancel`, heredoc, `python - <<'PY'`, และ SSH tunnel `-L`
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `sbatch`, `squeue`, `tail`, `scancel`, `python - <<'PY'`, `jupyter lab`, `chmod`, SSH tunnel `-L` และ option `-o`
+
+## ภาพรวม
+
+```text
+เครื่อง Local -> LANTA Login Node -> Slurm Allocation -> Compute Node
+      ^                                                    |
+      |---------------- SSH Tunnel ไปยัง Jupyter ----------|
+```
+
+Jupyter kernel ใช้ CPU และ memory ต่อเนื่องระหว่างอ่านข้อมูล สร้างกราฟ หรือทดลอง model จึงให้ Slurm จัดสรรทรัพยากรบน compute node แล้วเก็บหลักฐานใน queue, log และ job history
+
+บทนี้เหมาะกับการสำรวจ `results/epi_summary_*.csv`, ตรวจ output ของ epidemic ABS, สร้างกราฟ policy comparison และดูข้อมูล resource ที่ notebook ใช้จริง
 
 ## Copy-Paste จากเครื่อง Local
+
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: Login เข้า LANTA
+
+block นี้เปิด shell บน login node เพื่อสร้างไฟล์และส่ง Slurm job
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
+ผู้ใช้ที่ตั้ง alias ตาม [../docs/SSH_PRIVATE_KEY_LANTA_TH.md](../docs/SSH_PRIVATE_KEY_LANTA_TH.md) สามารถใช้ `ssh lanta`
+
 ## Copy-Paste บน LANTA
+
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม Workspace
+
+block นี้สร้างพื้นที่ทำงานและ folder สำหรับ config, Slurm script, log, notebook และผลลัพธ์
 
 ```bash
 mkdir -p "$HOME/lanta-episprint"
 cd "$HOME/lanta-episprint"
 mkdir -p configs jobs logs notes notebooks results src
+pwd
+```
 
+### ขั้นที่ 2: โหลดค่า Session เดิม
+
+block นี้โหลด account, project และ module root จากหน้า 00 เมื่อเคยบันทึกไว้
+
+```bash
 if [ -f notes/session-env.sh ]; then
     source notes/session-env.sh
 fi
+```
 
+### ขั้นที่ 3: ตั้งค่า Account และ Project
+
+block นี้รับค่า Slurm account และ project directory ที่ใช้หา module `hpc-mesa/2.3.4`
+
+```bash
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
     read -rp "Slurm project account เช่น ltXXXXXX หรือ tn999996: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-
 if [ -z "${LANTA_PROJECT:-}" ]; then
     read -rp "Project directory เช่น /project/ltXXXXXX-name หรือ /project/tn999996-north: " LANTA_PROJECT
     export LANTA_PROJECT
 fi
-
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
+```
 
-cat > notebooks/episprint_explore.ipynb <<'IPYNB'
-{
- "cells": [
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "# LANTA EpiSprint\\n",
-    "\\n",
-    "Notebook นี้ใช้สำรวจผลลัพธ์ epidemic ABS แบบสั้น เมื่อยังรอผลลัพธ์จริง cell จะสร้างข้อมูลตัวอย่างเพื่อสาธิตโครงสร้างข้อมูลก่อน"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "from pathlib import Path\\n",
-    "import pandas as pd\\n",
-    "import matplotlib.pyplot as plt\\n",
-    "\\n",
-    "summary_files = sorted(Path('results').glob('epi_summary_*.csv'))\\n",
-    "if summary_files:\\n",
-    "    df = pd.concat([pd.read_csv(path) for path in summary_files], ignore_index=True)\\n",
-    "else:\\n",
-    "    df = pd.DataFrame([\\n",
-    "        {'policy': 'baseline', 'peak_I': 540, 'attack_rate': 0.62},\\n",
-    "        {'policy': 'mask', 'peak_I': 340, 'attack_rate': 0.41},\\n",
-    "        {'policy': 'isolation', 'peak_I': 280, 'attack_rate': 0.35},\\n",
-    "        {'policy': 'combined', 'peak_I': 180, 'attack_rate': 0.22},\\n",
-    "    ])\\n",
-    "df"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "ax = df.groupby('policy')[['peak_I', 'attack_rate']].mean().sort_values('peak_I').plot(kind='bar', secondary_y='attack_rate')\\n",
-    "ax.set_title('EpiSprint policy comparison')\\n",
-    "ax.set_ylabel('mean peak infectious agents')\\n",
-    "plt.tight_layout()"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "name": "python",
-   "version": "3.10"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
-IPYNB
+### ขั้นที่ 4: ตรวจ Module และ Jupyter
 
+block นี้ยืนยันว่า Python, JupyterLab, pandas และ matplotlib มาจาก environment ที่เตรียมไว้
+
+```bash
+module purge
+module use "$EPI_MODULE_ROOT"
+module load hpc-mesa/2.3.4
+which python
+python --version
+which jupyter
+jupyter lab --version
+python - <<'PY'
+import pandas, matplotlib
+print("pandas", pandas.__version__)
+print("matplotlib", matplotlib.__version__)
+PY
+```
+
+### ขั้นที่ 5: สร้าง Notebook ตัวอย่าง
+
+block นี้สร้าง notebook สำหรับอ่านผล epidemic ABS, สร้าง policy summary, วาดกราฟ และตรวจ resource จาก Slurm environment
+
+```bash
+python - <<'PY'
+from pathlib import Path
+import json
+
+cells = [
+    ("markdown", "# LANTA EpiSprint\\nสำรวจผล epidemic ABS และ resource ของ Slurm"),
+    ("code", """from pathlib import Path
+import pandas as pd
+
+files = sorted(Path('results').glob('epi_summary_*.csv'))
+df = pd.concat([pd.read_csv(p) for p in files], ignore_index=True) if files else pd.DataFrame([
+    {'policy': 'baseline', 'peak_I': 540, 'attack_rate': 0.62},
+    {'policy': 'mask', 'peak_I': 340, 'attack_rate': 0.41},
+    {'policy': 'isolation', 'peak_I': 280, 'attack_rate': 0.35},
+    {'policy': 'combined', 'peak_I': 180, 'attack_rate': 0.22},
+])
+policy_summary = df.groupby('policy')[['peak_I', 'attack_rate']].mean().sort_values('peak_I')
+policy_summary"""),
+    ("code", """from pathlib import Path
+import matplotlib.pyplot as plt
+Path('results').mkdir(exist_ok=True)
+ax = policy_summary.plot(kind='bar', secondary_y='attack_rate', figsize=(9, 5))
+ax.set_title('EpiSprint policy comparison')
+ax.set_ylabel('Mean peak infectious agents')
+ax.right_ax.set_ylabel('Mean attack rate')
+plt.tight_layout()
+policy_summary.to_csv('results/policy_summary.csv')"""),
+    ("code", """from pathlib import Path
+import os, socket
+print('hostname', socket.gethostname())
+print('cwd', Path.cwd())
+print('SLURM_JOB_ID', os.environ.get('SLURM_JOB_ID'))
+print('SLURM_CPUS_PER_TASK', os.environ.get('SLURM_CPUS_PER_TASK'))
+print('SLURM_SUBMIT_DIR', os.environ.get('SLURM_SUBMIT_DIR'))"""),
+]
+
+nb = {"cells": [], "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}}, "nbformat": 4, "nbformat_minor": 5}
+for kind, source in cells:
+    cell = {"cell_type": kind, "metadata": {}, "source": source.splitlines(True)}
+    if kind == "code":
+        cell.update({"execution_count": None, "outputs": []})
+    nb["cells"].append(cell)
+Path("notebooks/episprint_explore.ipynb").write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8")
+print("notebooks/episprint_explore.ipynb")
+PY
+```
+
+### ขั้นที่ 6: ตรวจ Notebook JSON
+
+block นี้ตรวจว่าไฟล์ `.ipynb` เป็น JSON ที่ Jupyter อ่านได้
+
+```bash
+python -m json.tool notebooks/episprint_explore.ipynb >/dev/null
+ls -lh notebooks/episprint_explore.ipynb
+```
+
+### ขั้นที่ 7: สร้าง Slurm Script สำหรับ JupyterLab
+
+block นี้สร้าง job script ที่ขอ CPU และ memory, โหลด module, เลือก port, พิมพ์ tunnel command, จำกัด thread ของ numerical libraries และเริ่ม JupyterLab
+
+```bash
 cat > jobs/jupyter_episprint.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=epi-jupyter
@@ -121,57 +180,133 @@ print(random.randint(7000, 9999))
 PY
 )
 node=$(hostname -s)
+export XDG_RUNTIME_DIR="${SLURM_JOBTMP:-/tmp/${USER}-jupyter-${SLURM_JOB_ID}}"
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 700 "$XDG_RUNTIME_DIR"
+export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export OPENBLAS_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export NUMEXPR_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
 
-echo "Jupyter node: ${node}"
-echo "Jupyter port: ${port}"
-echo
-echo "Copy this command into a NEW LOCAL terminal:"
-echo "ssh -N -L ${port}:${node}:${port} ${USER}@lanta.nstda.or.th"
-echo
-echo "Then open the URL printed by Jupyter below."
+echo "JupyterLab on LANTA"
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Compute node: ${node}"
+echo "Port: ${port}"
+echo "Working dir: $(pwd)"
+echo "Local tunnel:"
+echo "ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -L ${port}:${node}:${port} ${USER}@lanta.nstda.or.th"
+echo "Browser URL appears below. Use 127.0.0.1 with the token from Jupyter."
 
-if [ -n "${SLURM_JOBTMP:-}" ]; then
-    export XDG_RUNTIME_DIR="$SLURM_JOBTMP"
-fi
-
-jupyter lab --no-browser --ip="${node}" --port="${port}" --notebook-dir="$(pwd)"
+jupyter lab --no-browser --ip="${node}" --port="${port}" --ServerApp.port_retries=0 --notebook-dir="$(pwd)"
 SLURM
+```
 
+### ขั้นที่ 8: ตรวจ Slurm Script
+
+block นี้ตรวจสิทธิ์และเปิดดูส่วนต้นของ job script ก่อน submit
+
+```bash
+chmod u+x jobs/jupyter_episprint.sbatch
+sed -n '1,120p' jobs/jupyter_episprint.sbatch
+```
+
+### ขั้นที่ 9: ส่ง Jupyter Job
+
+block นี้ส่ง job เข้า Slurm และบันทึก job id ลง `notes/job-history.tsv`
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/jupyter_episprint.sbatch)
-echo "$job_id	jupyter_episprint	$(date -Is)" >> notes/job-history.tsv
+printf "%s\t%s\t%s\n" "$job_id" "jupyter_episprint" "$(date -Is)" >> notes/job-history.tsv
 echo "Submitted Jupyter job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Wait 10-30 seconds, then read:"
-echo "tail -80 logs/jupyter_${job_id}.out"
+echo "Read log: tail -80 logs/jupyter_${job_id}.out"
+```
+
+### ขั้นที่ 10: อ่าน Log เพื่อหา Node, Port และ URL
+
+block นี้ใช้เมื่อ job เริ่มเป็น `R` แล้ว เพื่ออ่าน tunnel command และ URL ที่มี token
+
+```bash
+squeue -j "$job_id"
+tail -80 "logs/jupyter_${job_id}.out"
+grep -E 'Compute node:|Port:|127.0.0.1|token=' "logs/jupyter_${job_id}.out" || true
 ```
 
 ## Copy-Paste กลับไปที่เครื่อง Local
 
-หลัง `tail -80 logs/jupyter_<jobid>.out` แสดงบรรทัด `ssh -N -L ...` ให้ copy บรรทัดนั้นมาเปิดใน terminal ใหม่บนเครื่อง local
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เปิด SSH Tunnel
+
+เปิด terminal ใหม่บนเครื่อง local แล้วใช้ command ที่ log พิมพ์ให้ โดยแทน `<port>` และ `<node>` จาก log ของ job ปัจจุบัน
 
 ```bash
-ssh -N -L <port>:<node>:<port> <lanta-username>@lanta.nstda.or.th
+ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -L <port>:<node>:<port> <lanta-username>@lanta.nstda.or.th
 ```
 
-จากนั้นเปิด URL ที่ Jupyter พิมพ์ไว้ เช่น
+terminal ที่รัน tunnel จะค้างอยู่เป็นปกติ เพราะ `-N` ใช้ connection สำหรับ port forwarding อย่างเดียว
+
+### ขั้นที่ 2: เปิด Browser
+
+ใช้ URL จาก log โดยเปลี่ยน host เป็น `127.0.0.1` และใช้ token ให้ครบ
 
 ```text
-http://127.0.0.1:<port>/lab?token=...
+http://127.0.0.1:<port>/lab?token=<token-from-log>
 ```
 
-## คำอธิบาย
+เมื่อ JupyterLab เปิดแล้ว ให้เข้า folder `notebooks/` และเปิด `episprint_explore.ipynb`
 
-Jupyter ใน lab นี้รันภายใน Slurm allocation บน compute node เพราะ kernel ใช้ CPU และ memory ต่อเนื่องระหว่างวิเคราะห์ข้อมูล การส่ง `jobs/jupyter_episprint.sbatch` เข้า `compute-devel` ทำให้มีหลักฐานด้าน resource ใน queue และ log ส่วน SSH tunnel ทำให้ browser บนเครื่อง local เชื่อมไปยัง Jupyter ที่รันอยู่บน node ภายใน LANTA ได้อย่างปลอดภัย
+### กรณี Local Port ชนกัน
 
-ไฟล์ notebook ตัวอย่างอยู่ที่ `notebooks/episprint_explore.ipynb` ช่วงเริ่มกิจกรรม notebook ใช้ข้อมูลตัวอย่างเพื่อสาธิต schema และกราฟ หลังจากรันหน้า ABS แล้ว notebook จะอ่าน `results/epi_summary_*.csv` จริงเพื่อเปรียบเทียบ policy
+ใช้ local port อื่นได้ โดยคง remote port จาก log ไว้เหมือนเดิม
+
+```bash
+ssh -N -o ExitOnForwardFailure=yes -L 8877:<node>:<remote-port-from-log> <lanta-username>@lanta.nstda.or.th
+```
+
+จากนั้นเปิด `http://127.0.0.1:8877/lab?token=<token-from-log>`
 
 ## ปิดงานเมื่อใช้เสร็จ
 
-บน LANTA ให้ยกเลิก job เพื่อคืนทรัพยากร
+### ขั้นที่ 1: ยกเลิก Slurm Job บน LANTA
+
+block นี้คืนทรัพยากร compute node หลังจบ session
 
 ```bash
 squeue -u "$USER"
 scancel <jobid>
+squeue -j <jobid>
 ```
 
-เมื่อต้องแก้ปัญหา browser ให้ตรวจสามจุดนี้ตามลำดับ: job ยังอยู่ใน `squeue`, tunnel command ใช้ port และ node ตรงกับ log, และ URL มี token ครบ
+### ขั้นที่ 2: ปิด Tunnel บนเครื่อง Local
+
+กด `Ctrl+C` ใน terminal ที่รัน `ssh -N -L ...`
+
+## ตรวจผลและปรับทรัพยากร
+
+หลังจบงาน ใช้ `sacct` เพื่ออ่านทรัพยากรที่ใช้จริง
+
+```bash
+sacct -j <jobid> --format=JobID,JobName,Partition,State,Elapsed,AllocCPUS,ReqMem,MaxRSS,ExitCode
+```
+
+สถานะ `CANCELLED` หลังผู้ใช้สั่ง `scancel` ถือเป็นรูปแบบปกติของ interactive Jupyter session ที่ปิดด้วยตนเอง ถ้า `MaxRSS` ต่ำกว่า `ReqMem` มาก ให้ลด `#SBATCH --mem` รอบถัดไป ถ้าเห็น `OUT_OF_MEMORY` ให้เพิ่ม memory ทีละระดับ
+
+## Debug Checklist
+
+| อาการ | ตรวจด้วยคำสั่ง | หลักฐานที่ต้องตรงกัน |
+|---|---|---|
+| Browser เชื่อมต่อขัดข้อง | `squeue -j <jobid>` | job ยังเป็น `R` |
+| Tunnel ใช้ค่าคนละ session | `tail -80 logs/jupyter_<jobid>.out` | node และ port ตรงกับ tunnel |
+| Token ขาด | `grep -E 'token=' logs/jupyter_<jobid>.out` | URL มี `?token=` ครบ |
+| Module หา JupyterLab ขาด | `module use "$EPI_MODULE_ROOT"; module load hpc-mesa/2.3.4; which jupyter` | path ชี้เข้า custom environment |
+| Job pending นาน | `squeue -j <jobid> -o "%.18i %.9P %.20j %.8u %.2t %.10M %.6D %R"` | reason อธิบาย queue, account หรือ partition |
+| Kernel เปิดขัดข้อง | `tail -100 logs/jupyter_<jobid>.err` | error ชี้ runtime, package หรือ quota |
+
+## แนวปฏิบัติ
+
+- เก็บ token และ URL ไว้เฉพาะ session ของผู้ใช้
+- รัน JupyterLab ผ่าน Slurm allocation บน compute node
+- ใช้ notebook สำหรับสำรวจข้อมูล สร้างกราฟ และ debug แบบ interactive
+- ย้ายงานที่รันยาวหรือรันซ้ำหลาย scenario ไปเป็น Python script แล้วส่งด้วย `sbatch`
+- เก็บผลลัพธ์ขนาดใหญ่ใน project storage และให้ notebook อ่านจาก path หรือ symbolic link ที่ควบคุมได้

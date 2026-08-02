@@ -14,15 +14,59 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/materials-qe"
 cd "$HOME/hpc-ignite-standalone/materials-qe"
-mkdir -p jobs logs notes results
+mkdir -p input jobs logs notes results
 
 if [ -z "${LANTA_CPU_PARTITION:-}" ]; then export LANTA_CPU_PARTITION="compute-devel"; fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
 SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
+```
 
+### ขั้นที่ 2: สร้าง Quantum ESPRESSO input template
+
+ขั้นนี้สร้าง input deck ของ Si SCF แยกจาก job script เพื่อให้ผู้ใช้อ่านพารามิเตอร์ทางวัสดุศาสตร์ เช่น lattice, `ecutwfc`, และ k-point ได้ชัดเจน
+
+```bash
+cat > input/si_scf.in.template <<'EOF'
+&CONTROL
+  calculation = 'scf',
+  prefix = 'si_smoke',
+  pseudo_dir = '__PSEUDO_DIR__',
+  outdir = '__OUTDIR__'
+/
+&SYSTEM
+  ibrav = 2,
+  celldm(1) = 10.20,
+  nat = 2,
+  ntyp = 1,
+  ecutwfc = 18.0
+/
+&ELECTRONS
+  conv_thr = 1.0d-6
+/
+ATOMIC_SPECIES
+Si 28.0855 __PSEUDO_NAME__
+ATOMIC_POSITIONS alat
+Si 0.00 0.00 0.00
+Si 0.25 0.25 0.25
+K_POINTS automatic
+2 2 2 0 0 0
+EOF
+```
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/qe_si_preflight.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่หา pseudopotential, เติมค่าใน template, แล้วรัน `pw.x` บน compute node
+
+```bash
 cat > jobs/qe_si_preflight.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=qe-si-preflight
@@ -40,36 +84,26 @@ cd "$SLURM_SUBMIT_DIR"
 OUT="results/${SLURM_JOB_ID}"; mkdir -p "$OUT"
 command -v pw.x | tee "$OUT/pw_path.txt"
 PSEUDO_FILE="$(find /project/common/QuantumEspresso -iname 'Si*.UPF' -print -quit 2>/dev/null || true)"
-if [ -z "$PSEUDO_FILE" ]; then pw.x -h > "$OUT/pw_help.txt" 2>&1 || true; echo "pseudo_status=shared_si_pseudo_pending" | tee "$OUT/summary.txt"; exit 0; fi
-PSEUDO_DIR="$(dirname "$PSEUDO_FILE")"; PSEUDO_NAME="$(basename "$PSEUDO_FILE")"; export ESPRESSO_TMPDIR="${ESPRESSO_TMPDIR:-${SCRATCH:-/tmp}/qe_${SLURM_JOB_ID}}"; mkdir -p "$ESPRESSO_TMPDIR"
-cat > "$OUT/si_scf.in" <<EOF
-&CONTROL
-  calculation = 'scf',
-  prefix = 'si_smoke',
-  pseudo_dir = '$PSEUDO_DIR',
-  outdir = '$ESPRESSO_TMPDIR'
-/
-&SYSTEM
-  ibrav = 2,
-  celldm(1) = 10.20,
-  nat = 2,
-  ntyp = 1,
-  ecutwfc = 18.0
-/
-&ELECTRONS
-  conv_thr = 1.0d-6
-/
-ATOMIC_SPECIES
-Si 28.0855 $PSEUDO_NAME
-ATOMIC_POSITIONS alat
-Si 0.00 0.00 0.00
-Si 0.25 0.25 0.25
-K_POINTS automatic
-2 2 2 0 0 0
-EOF
+if [ -z "$PSEUDO_FILE" ]; then
+    pw.x -h > "$OUT/pw_help.txt" 2>&1 || true
+    echo "pseudo_status=shared_si_pseudo_pending" | tee "$OUT/summary.txt"
+    exit 0
+fi
+PSEUDO_DIR="$(dirname "$PSEUDO_FILE")"
+PSEUDO_NAME="$(basename "$PSEUDO_FILE")"
+export ESPRESSO_TMPDIR="${ESPRESSO_TMPDIR:-${SCRATCH:-/tmp}/qe_${SLURM_JOB_ID}}"
+mkdir -p "$ESPRESSO_TMPDIR"
+sed -e "s#__PSEUDO_DIR__#$PSEUDO_DIR#g" -e "s#__PSEUDO_NAME__#$PSEUDO_NAME#g" -e "s#__OUTDIR__#$ESPRESSO_TMPDIR#g" input/si_scf.in.template > "$OUT/si_scf.in"
 srun -n "$SLURM_NTASKS" pw.x -inp "$OUT/si_scf.in" | tee "$OUT/si_scf.out"
 grep -E "total energy|convergence has been achieved" "$OUT/si_scf.out" > "$OUT/qe_summary.txt" || true
 SLURM
+```
+
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/qe_si_preflight.sbatch)
 echo "$job_id	qe_si_preflight	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

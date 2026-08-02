@@ -4,7 +4,11 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `mkdir -p`, `tee`, `read -rp`, `export` และ `source`
 
+เมื่อต้องตั้งค่า private key หรือ alias `ssh lanta` ให้ดู [../docs/SSH_PRIVATE_KEY_LANTA_TH.md](../docs/SSH_PRIVATE_KEY_LANTA_TH.md)
+
 ## Copy-Paste จากเครื่อง Local
+
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
 แทน `<lanta-username>` ด้วยบัญชี LANTA ของตนเอง
 
@@ -19,6 +23,12 @@ ssh <lanta-username>@transfer.lanta.nstda.or.th
 ```
 
 ## Copy-Paste บน LANTA
+
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 mkdir -p "$HOME/lanta-episprint"/{configs,jobs,logs,notes,notebooks,prompts,results,src}
@@ -39,7 +49,13 @@ cd "$HOME/lanta-episprint"
     echo "== queue =="
     squeue -u "$USER" 2>&1 || true
 } | tee notes/connect-check.txt
+```
 
+### ขั้นที่ 2: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
     read -rp "Slurm project account เช่น ltXXXXXX หรือ tn999996: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
@@ -49,7 +65,13 @@ if [ -z "${LANTA_PROJECT:-}" ]; then
     read -rp "Project directory เช่น /project/ltXXXXXX-name หรือ /project/tn999996-north: " LANTA_PROJECT
     export LANTA_PROJECT
 fi
+```
 
+### ขั้นที่ 3: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
+```bash
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 
@@ -59,7 +81,13 @@ export LANTA_PROJECT="$LANTA_PROJECT"
 export LANTA_CPU_PARTITION="$LANTA_CPU_PARTITION"
 export EPI_MODULE_ROOT="$EPI_MODULE_ROOT"
 EOF
+```
 
+### ขั้นที่ 4: ตรวจไฟล์และ log
+
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+
+```bash
 cat notes/session-env.sh
 ```
 

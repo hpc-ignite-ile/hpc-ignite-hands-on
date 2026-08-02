@@ -8,6 +8,12 @@
 
 ## Copy-Paste
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 cd "$HOME/lanta-experience"
 mkdir -p configs input jobs logs notes results src
@@ -17,7 +23,13 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+```
 
+### ขั้นที่ 2: สร้าง source code `src/hello_lanta.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/hello_lanta.py <<'PY'
 from pathlib import Path
 import os
@@ -38,7 +50,14 @@ lines = [
 out.write_text("\n".join(lines) + "\n", encoding="utf-8")
 print(out)
 PY
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/hello_lanta.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/hello_lanta.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=hello_lanta
@@ -56,7 +75,13 @@ module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null ||
 cd "$SLURM_SUBMIT_DIR"
 python src/hello_lanta.py
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/hello_lanta.sbatch)
 echo "$job_id	hello_lanta	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"

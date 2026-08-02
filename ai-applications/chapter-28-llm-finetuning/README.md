@@ -14,6 +14,12 @@
 
 ## Copy-Paste บน LANTA
 
+แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+
+### ขั้นที่ 1: เตรียม workspace และตัวแปร
+
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/ai-lora-math"
 cd "$HOME/hpc-ignite-standalone/ai-lora-math"
@@ -30,7 +36,13 @@ SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
 fi
+```
 
+### ขั้นที่ 2: สร้าง source code `src/lora_math.py`
+
+ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
+
+```bash
 cat > src/lora_math.py <<'PYCODE'
 from pathlib import Path
 import json, math, random
@@ -42,7 +54,14 @@ updates = [[sum(A[i][k] * B[k][j] for k in range(rank)) for j in range(base_dim)
 summary = {"base_dim": base_dim, "lora_rank": rank, "trainable_parameters": base_dim * rank + rank * base_dim, "update_frobenius_norm": math.sqrt(sum(x*x for row in updates for x in row))}
 out = Path("results/lora_math_summary.json"); out.write_text(json.dumps(summary, indent=2), encoding="utf-8"); print(json.dumps(summary, indent=2))
 PYCODE
+```
 
+
+### ขั้นที่ 3: สร้าง Slurm script `jobs/lora-math.sbatch`
+
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+
+```bash
 cat > jobs/lora-math.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=lora-math
@@ -61,7 +80,13 @@ cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 python src/lora_math.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
+```
 
+### ขั้นที่ 4: ส่งงานเข้า Slurm
+
+ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+
+```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/lora-math.sbatch)
 echo "$job_id	lora-math	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
