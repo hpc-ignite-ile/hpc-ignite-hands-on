@@ -247,6 +247,21 @@ class LantaFoundationTests(unittest.TestCase):
             self.assertIn("#SBATCH --ntasks=4", text)
             self.assertIn("srun -n", text)
 
+    def test_mini_innovation_jupyter_env_is_declared(self) -> None:
+        setup = (REPO_ROOT / "mini-innovation" / "01-custom-python-env-module.md").read_text(encoding="utf-8")
+        notebook = (REPO_ROOT / "mini-innovation" / "02-jupyter-notebook.md").read_text(encoding="utf-8")
+        for marker in ['"jupyterlab>=4,<5"', '"notebook>=7,<8"', "ipykernel", "jupyter lab --version"]:
+            self.assertIn(marker, setup)
+        self.assertIn("jupyter lab --no-browser", notebook)
+
+    def test_epidemic_tutorial_uses_model_rng_and_small_training_load(self) -> None:
+        text = (REPO_ROOT / "mini-innovation" / "03-epidemic-abs-examples.md").read_text(encoding="utf-8")
+        self.assertNotIn("other.state == S and self.model.random.random()", text)
+        self.assertIn("self.random.random()", text)
+        self.assertIn("#SBATCH --array=1-8%2", text)
+        self.assertIn("--agents 1500", text)
+        self.assertIn("--days 45", text)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -146,7 +146,7 @@ class EpiModel(Model):
         for source in self.schedule.agents:
             if source.state == I:
                 for other in self.grid.get_neighbors(source.pos, moore=True, include_center=True):
-                    if other.state == S and self.model.random.random() < self.effective_beta():
+                    if other.state == S and self.random.random() < self.effective_beta():
                         exposed.append(other)
         self.new_exposures = 0
         for person in set(exposed):
@@ -187,8 +187,8 @@ p.add_argument("--policy", required=True, choices=["baseline", "mask", "isolatio
 p.add_argument("--beta", type=float, required=True)
 p.add_argument("--compliance", type=float, required=True)
 p.add_argument("--seed", type=int, required=True)
-p.add_argument("--agents", type=int, default=3000)
-p.add_argument("--days", type=int, default=60)
+p.add_argument("--agents", type=int, default=1200)
+p.add_argument("--days", type=int, default=35)
 a = p.parse_args()
 
 scenario = Scenario(a.scenario_id, a.policy, a.beta, a.compliance, a.seed, a.agents, a.days)
@@ -223,21 +223,28 @@ PY
 
 ```bash
 cat > src/merge_results.py <<'PY'
+import argparse
+import glob
 from pathlib import Path
 import pandas as pd
 
-files = sorted(Path("results").glob("epi_summary_*.csv"))
+p = argparse.ArgumentParser()
+p.add_argument("--pattern", default="results/epi_summary_*.csv")
+p.add_argument("--output-prefix", default="results/epi")
+a = p.parse_args()
+
+files = [Path(path) for path in sorted(glob.glob(a.pattern))]
 if not files:
-    raise SystemExit("missing results/epi_summary_*.csv")
+    raise SystemExit(f"missing files for pattern: {a.pattern}")
 
 df = pd.concat([pd.read_csv(path) for path in files], ignore_index=True)
-df.to_csv("results/epi_summary_all.csv", index=False)
+df.to_csv(f"{a.output_prefix}_summary_all.csv", index=False)
 table = df.groupby("policy", as_index=False).agg(
     runs=("scenario_id", "count"),
     mean_peak_I=("peak_I", "mean"),
     mean_attack_rate=("attack_rate", "mean"),
 ).sort_values("mean_peak_I")
-table.to_csv("results/epi_policy_compare.csv", index=False)
+table.to_csv(f"{a.output_prefix}_policy_compare.csv", index=False)
 print(table.to_string(index=False))
 PY
 ```
@@ -277,18 +284,14 @@ PY
 ```bash
 cat > configs/epi_scenarios.csv <<'EOF'
 scenario_id,policy,beta,compliance,seed,agents,days
-baseline_1,baseline,0.18,0.40,101,3000,60
-baseline_2,baseline,0.18,0.55,102,3000,60
-baseline_3,baseline,0.20,0.40,103,3000,60
-mask_1,mask,0.18,0.40,201,3000,60
-mask_2,mask,0.18,0.55,202,3000,60
-mask_3,mask,0.20,0.40,203,3000,60
-isolation_1,isolation,0.18,0.40,301,3000,60
-isolation_2,isolation,0.18,0.55,302,3000,60
-isolation_3,isolation,0.20,0.40,303,3000,60
-combined_1,combined,0.18,0.40,401,3000,60
-combined_2,combined,0.18,0.55,402,3000,60
-combined_3,combined,0.20,0.40,403,3000,60
+baseline_1,baseline,0.18,0.40,101,1200,35
+baseline_2,baseline,0.20,0.55,102,1200,35
+mask_1,mask,0.18,0.40,201,1200,35
+mask_2,mask,0.20,0.55,202,1200,35
+isolation_1,isolation,0.18,0.40,301,1200,35
+isolation_2,isolation,0.20,0.55,302,1200,35
+combined_1,combined,0.18,0.40,401,1200,35
+combined_2,combined,0.20,0.55,402,1200,35
 EOF
 ```
 
@@ -343,9 +346,9 @@ cat > jobs/epi_single.sbatch <<'SLURM'
 #SBATCH --job-name=epi-single
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
-#SBATCH --mem=2G
-#SBATCH --time=00:10:00
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1G
+#SBATCH --time=00:06:00
 #SBATCH --output=logs/epi_single_%j.out
 #SBATCH --error=logs/epi_single_%j.err
 
@@ -361,8 +364,8 @@ python src/run_scenario.py \
     --beta 0.18 \
     --compliance 0.45 \
     --seed 42 \
-    --agents 5000 \
-    --days 90
+    --agents 1500 \
+    --days 45
 SLURM
 ```
 
@@ -400,10 +403,10 @@ cat > jobs/epi_array.sbatch <<'SLURM'
 #SBATCH --job-name=epi-array
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
-#SBATCH --mem=2G
-#SBATCH --time=00:12:00
-#SBATCH --array=1-12%4
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1G
+#SBATCH --time=00:08:00
+#SBATCH --array=1-8%2
 #SBATCH --output=logs/epi_array_%A_%a.out
 #SBATCH --error=logs/epi_array_%A_%a.err
 
@@ -447,8 +450,11 @@ echo "Results: ls results/epi_summary_${job_id}_*.csv"
 cd "$HOME/lanta-episprint"
 module use "$EPI_MODULE_ROOT"
 module load hpc-mesa/2.3.4
-python src/merge_results.py | tee notes/epi-policy-compare.txt
-cat results/epi_policy_compare.csv
+python src/merge_results.py \
+    --pattern "results/epi_summary_${job_id}_*.csv" \
+    --output-prefix "results/epi_array_${job_id}" \
+    | tee notes/epi-policy-compare.txt
+cat "results/epi_array_${job_id}_policy_compare.csv"
 ```
 
 ## Example 3: Multicore Ensemble ในหนึ่ง Node
@@ -473,9 +479,9 @@ cat > jobs/epi_multicore.sbatch <<'SLURM'
 #SBATCH --job-name=epi-multicore
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=4G
-#SBATCH --time=00:15:00
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=2G
+#SBATCH --time=00:08:00
 #SBATCH --output=logs/epi_multicore_%j.out
 #SBATCH --error=logs/epi_multicore_%j.err
 
@@ -487,7 +493,9 @@ cd "$SLURM_SUBMIT_DIR"
 export OMP_NUM_THREADS=1
 
 python src/run_many.py --csv configs/epi_scenarios.csv --workers "${SLURM_CPUS_PER_TASK:-1}"
-python src/merge_results.py
+python src/merge_results.py \
+    --pattern "results/epi_summary_${SLURM_JOB_ID}_*.csv" \
+    --output-prefix "results/epi_multicore_${SLURM_JOB_ID}"
 SLURM
 ```
 
@@ -522,4 +530,4 @@ cat notes/job-history.tsv 2>/dev/null || true
 cat notes/epi-policy-compare.txt 2>/dev/null || true
 ```
 
-เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_summary_all.csv` และ `epi_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ, จำนวนวันตรงกับค่า `days`, ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวน agent, และ policy comparison อ้างอิงหลาย scenario หรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`
+เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ, จำนวนวันตรงกับค่า `days`, ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวน agent, และ policy comparison อ้างอิงหลาย scenario หรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`
