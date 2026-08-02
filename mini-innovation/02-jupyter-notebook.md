@@ -18,6 +18,8 @@ Jupyter kernel ใช้ CPU และ memory ต่อเนื่องระ�
 
 บทนี้เหมาะกับการสำรวจ `results/epi_summary_*.csv`, ตรวจ output ของ epidemic ABS, สร้างกราฟ policy comparison และดูข้อมูล resource ที่ notebook ใช้จริง
 
+หลังมีผลจากทั้ง EpiSprint และ Twin-B MicroCosim แล้ว ใช้ [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อสร้าง notebook และรูปเปรียบเทียบจากตารางกลางชุดเดียวกัน
+
 ## เลือกวิธีเปิด JupyterLab
 
 | วิธี | JupyterLab server | Python kernel | เหมาะกับสถานการณ์ |

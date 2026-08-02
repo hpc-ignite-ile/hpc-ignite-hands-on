@@ -151,9 +151,24 @@ sed -n '1,120p' lanta-experience/README.md
 | `python -m ipykernel install --user --name NAME --display-name "..."` | ลงทะเบียน Python interpreter เป็น Jupyter kernel ของผู้ใช้ | JupyterLab เห็น kernel ชื่อที่ตั้งไว้ |
 | `jupyter lab` | เปิด Jupyter server | log แสดง URL พร้อม token และ node ที่รัน |
 | `jupyter kernelspec list` | แสดงรายการ kernel ที่ JupyterLab เปิดใช้ได้ | มี kernel เช่น `hpc-mesa` |
+| `VAR=value command` | ตั้ง environment variable เฉพาะ command หนึ่งครั้ง | ใช้ส่ง result directory ให้ script โดยกระทบ shell ถัดไปน้อย |
 | `which command` | แสดง executable ที่ shell จะเรียกใช้ | ใช้ยืนยันว่า `python` หรือ `jupyter` มาจาก environment ที่ต้องการ |
 
 สำหรับ training สด ให้ทดสอบ import package สำคัญทันที เช่น `import mesa`, `import torch`, หรือ `import netCDF4` แล้วบันทึก version ลง log
+
+## Plot และ Visualization
+
+| คำสั่งหรือ syntax | ความหมาย | หลักฐานที่ควรเห็น |
+|---|---|---|
+| `gnuplot script.gp` | รัน plot script ของ gnuplot | ได้ไฟล์รูปตาม `set output` |
+| `set datafile separator "\t"` | บอก gnuplot ว่า input เป็น TSV | column ถูกอ่านตรงกับตาราง |
+| `set terminal pngcairo size W,H` | กำหนด output เป็น PNG และขนาดภาพ | รูปมี resolution เหมาะกับ slide หรือ notebook |
+| `set output "figures/name.png"` | กำหนดไฟล์รูปปลายทาง | มี PNG ใน folder `figures/` |
+| `plot "file.tsv" using X:Y title "..."` | เลือก column X และ Y จากตารางเพื่อวาดกราฟ | แกนและ legend ตรงกับตัวชี้วัด |
+| `with linespoints` | วาดเส้นพร้อม marker | เหมาะกับค่าที่เรียงตาม policy หรือ timestep |
+| `with labels point` | วาดจุดพร้อม label จาก column ข้อความ | เหมาะกับ scatter ที่ต้องอ่านชื่อ policy |
+| `matplotlib.use("Agg")` | ใช้ backend สำหรับสร้างรูปใน batch job | Python สร้าง PNG ได้บน compute node แบบ headless |
+| `plt.savefig("figures/name.png", dpi=160)` | เขียนรูปจาก Matplotlib ลงไฟล์ | PNG มีขนาดมากกว่าศูนย์และเปิดดูได้ |
 
 ## Slurm
 

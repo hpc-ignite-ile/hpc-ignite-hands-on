@@ -655,6 +655,8 @@ scientific model ใช้สมการสมดุลความร้อน
 
 การออกแบบนี้เหมาะกับ LANTA เพราะผู้ใช้เห็นความหมายของ HPC ผ่านการกระจาย scenario มากกว่าการรัน simulation เดี่ยว งานหนึ่งชิ้นมี config, source, scheduler evidence, output CSV และ summary table ครบวงจร จึงใช้สอน reproducibility, coupling contract, policy sensitivity และการตรวจผลแบบ evidence-based ได้ในเวลาสั้น
 
+เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อวาด trade-off ระหว่าง energy และ comfort จาก summary CSV เป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG
+
 ## ต่อกับ Twin-B เต็ม
 
 เมื่อทีมมี EnergyPlus, `pyenergyplus`, IDF และ EPW พร้อมใช้งาน ให้แทน `ThermalSurrogate.advance()` ด้วย callback จาก EnergyPlus แล้วคง interface เดิมไว้ ได้แก่ `zone_temp_c`, `occupants`, `setpoint_c` และ `energy_kwh` วิธีนี้ช่วยให้ tutorial ขนาดเล็กขยายไปสู่ digital twin อาคารเต็มรูปแบบตามแนวทางของ Twin-B ได้โดยรักษาโครงสร้าง experiment เดิม

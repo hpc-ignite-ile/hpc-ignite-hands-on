@@ -531,3 +531,5 @@ cat notes/epi-policy-compare.txt 2>/dev/null || true
 ```
 
 เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ, จำนวนวันตรงกับค่า `days`, ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวน agent, และ policy comparison อ้างอิงหลาย scenario หรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`
+
+เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อแปลง summary CSV เป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG

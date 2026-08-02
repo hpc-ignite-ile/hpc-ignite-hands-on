@@ -285,6 +285,25 @@ class LantaFoundationTests(unittest.TestCase):
         ]:
             self.assertIn(marker, text)
 
+    def test_mini_innovation_output_display_declares_notebook_and_gnuplot(self) -> None:
+        readme = (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "mini-innovation" / "05-output-display-jupyter-gnuplot.md").read_text(encoding="utf-8")
+        self.assertIn("05-output-display-jupyter-gnuplot.md", readme)
+        for marker in [
+            "display_epi_policy.tsv",
+            "display_twinb_policy.tsv",
+            "mini_innovation_display.ipynb",
+            "figures/epi_policy_matplotlib.png",
+            "figures/twinb_tradeoff_matplotlib.png",
+            "plots/epi_policy.gp",
+            "plots/twinb_tradeoff.gp",
+            "gnuplot plots/epi_policy.gp",
+            "gnuplot plots/twinb_tradeoff.gp",
+            "matplotlib.use(\"Agg\")",
+            "JupyterLab",
+        ]:
+            self.assertIn(marker, text)
+
 
 if __name__ == "__main__":
     unittest.main()

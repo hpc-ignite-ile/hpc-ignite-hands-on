@@ -38,6 +38,7 @@ Twin-B MicroCosim ย่อแนวคิดจาก building digital twin ท
 | [02-jupyter-notebook.md](02-jupyter-notebook.md) | เปิด Jupyter Notebook ผ่าน Slurm allocation | สำรวจผลลัพธ์แบบ interactive |
 | [03-epidemic-abs-examples.md](03-epidemic-abs-examples.md) | สร้างและรัน epidemic ABS 3 วิธี | lab หลักของ mini innovation |
 | [04-building-cosimulation-twinb.md](04-building-cosimulation-twinb.md) | สร้าง co-simulation แบบ Twin-B MicroCosim | แสดงการทำงานร่วมกันของ scientific model และ ABS |
+| [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) | แสดงผล EpiSprint และ Twin-B ด้วย Jupyter, Matplotlib และ gnuplot | สื่อสาร evidence จาก CSV เป็นรูปและ notebook |
 
 ทุกหน้าเริ่มจากเครื่อง local ด้วย `ssh` เข้า LANTA หรือมี link กลับไปยังหน้าเชื่อมต่อกลาง ผู้ใช้จึงเปิดหน้าใดหน้าหนึ่งแล้วเริ่มทำต่อได้ทันที
 
@@ -61,6 +62,7 @@ Twin-B MicroCosim ย่อแนวคิดจาก building digital twin ท
 - Multicore Python ภายในหนึ่ง node
 - การออกแบบ experiment แบบ reproducible
 - การออกแบบ co-simulation และ data contract ระหว่าง model
+- การแสดงผลจากตารางกลางด้วย Jupyter, Matplotlib และ gnuplot
 - AI scaffolding สำหรับตั้งคำถาม ออกแบบ scenario ตรวจ Slurm script และอธิบายผลโดยอ้างอิง code, config, log และ CSV
 
 ## Standalone Smoke Job
