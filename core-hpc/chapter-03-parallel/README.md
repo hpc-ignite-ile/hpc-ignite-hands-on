@@ -1,5 +1,7 @@
 # บทที่ 3: การเขียนโปรแกรมแบบขนาน
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 3: Parallel Programming with MPI and Multiprocessing
 
 ## เริ่มรันงานจิ๋วบน LANTA
@@ -100,4 +102,4 @@ data = comm.bcast(data, root=0)
 
 ## Copy-paste only บน LANTA
 
-บทนี้เป็นแนวคิดหรือ configuration เป็นหลัก จึงไม่มี Python script ขนาดเล็กให้ส่งทันที ใช้ template ใน `docs/LAB_AUTHORING_GUIDE_TH.md` เพื่อสร้าง `src/*.py` และ `jobs/*.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
+บทนี้เป็นแนวคิดหรือ configuration เป็นหลัก ให้เริ่มจาก template ใน `docs/LAB_AUTHORING_GUIDE_TH.md` เพื่อสร้าง `src/*.py` และ `jobs/*.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง

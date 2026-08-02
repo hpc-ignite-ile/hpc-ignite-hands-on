@@ -1,5 +1,7 @@
 # บทที่ 24: AI สำหรับการปกป้องป่า
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 24: AI for Forest Protection
 
 ## เริ่มรันงานจิ๋วบน LANTA

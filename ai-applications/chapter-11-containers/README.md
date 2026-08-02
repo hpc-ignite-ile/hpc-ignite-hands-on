@@ -1,5 +1,7 @@
 # บทที่ 11: Containers สำหรับ HPC
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 11: Containers (Apptainer)
 
 ## เริ่มรันงานจิ๋วบน LANTA
@@ -10,7 +12,7 @@ mkdir -p logs results
 sbatch -p compute-devel ai-applications/chapter-11-containers/jobs/apptainer_smoke.sbatch
 ```
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น version ของ `Apptainer/1.1.6` และผลจาก Python demo สั้น ๆ โดยไม่ต้อง pull image ระหว่าง workshop
+หลังส่ง job นี้ ผู้ใช้ควรเห็น version ของ `Apptainer/1.1.6` และผลจาก Python demo สั้น ๆ ที่ใช้ runtime เตรียมไว้ในระบบระหว่าง workshop
 
 ## วัตถุประสงค์การเรียนรู้
 

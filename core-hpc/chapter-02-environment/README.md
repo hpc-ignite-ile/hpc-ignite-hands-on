@@ -1,5 +1,7 @@
 # บทที่ 2: สภาพแวดล้อม HPC และระบบ LANTA
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 2: HPC Environment and LANTA System
 
 ## วัตถุประสงค์การเรียนรู้

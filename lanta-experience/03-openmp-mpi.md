@@ -2,6 +2,8 @@
 
 ในบทนี้ผู้ใช้จะรัน OpenMP เพื่อดู thread ใน node เดียว และรัน MPI เพื่อดูหลาย process ที่สื่อสารกันผ่าน `srun`.
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `cc`, `srun`, `module load cpeCray`, `OMP_NUM_THREADS`, `#SBATCH --ntasks` และ `#SBATCH --cpus-per-task`
+
 ## Copy-Paste OpenMP
 
 ```bash
@@ -64,7 +66,7 @@ echo "Read: tail -50 logs/omp_${job_id}.out"
 
 Slurm script ขอ `--cpus-per-task=4` แล้วตั้ง `OMP_NUM_THREADS` จากค่านี้ ผู้ใช้จึงเห็นความสัมพันธ์ระหว่าง CPU ที่ขอจาก Slurm กับ thread ที่โปรแกรมใช้จริง
 
-เมื่อสำเร็จ log จะมีข้อความ `hello from thread ...` หลายบรรทัด และมีไฟล์ binary `results/omp_hello` หาก compile ไม่พบ `omp.h` ให้ตรวจ compiler module หากได้ thread เพียงตัวเดียว ให้ตรวจ `OMP_NUM_THREADS` และ `#SBATCH --cpus-per-task`
+เมื่อสำเร็จ log จะมีข้อความ `hello from thread ...` หลายบรรทัด และมีไฟล์ binary `results/omp_hello` เมื่อ compile error ที่ `omp.h` ให้ตรวจ compiler module เมื่อได้ thread เพียงตัวเดียว ให้ตรวจ `OMP_NUM_THREADS` และ `#SBATCH --cpus-per-task`
 
 ## Copy-Paste MPI
 
@@ -128,4 +130,4 @@ echo "Read: tail -50 logs/mpi_${job_id}.out"
 
 ตัวอย่างนี้เริ่มจาก 1 node และ 4 tasks เพื่อให้ตรวจง่ายก่อนขยายไปหลาย node การใช้ `srun` ทำให้ Slurm เป็นผู้จัดการ rank และทรัพยากรของงานโดยตรง
 
-เมื่อสำเร็จ log จะมี 4 บรรทัดจาก `rank 0 of 4` ถึง rank สุดท้าย หาก compile ไม่พบ `mpi.h` ให้ตรวจ `cpeCray` หรือ MPI module หากจำนวน rank ไม่ตรงกับที่ขอ ให้ตรวจ `#SBATCH --ntasks` และคำสั่ง `srun -n`
+เมื่อสำเร็จ log จะมี 4 บรรทัดจาก `rank 0 of 4` ถึง rank สุดท้าย เมื่อ compile error ที่ `mpi.h` ให้ตรวจ `cpeCray` หรือ MPI module เมื่อจำนวน rank คลาดจากที่ขอ ให้ตรวจ `#SBATCH --ntasks` และคำสั่ง `srun -n`

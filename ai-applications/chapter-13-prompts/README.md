@@ -1,5 +1,7 @@
 # บทที่ 13: Prompt Engineering
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 13: Prompt Engineering for HPC
 
 ## วัตถุประสงค์การเรียนรู้

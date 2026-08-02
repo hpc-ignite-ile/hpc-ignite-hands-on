@@ -2,7 +2,9 @@
 
 หน้านี้ใช้เมื่อทีมต้องเตรียม environment กลางสำหรับ mini innovation แบบ epidemic ABS โดยติดตั้ง Mesa, scientific Python และ Jupyter ลงใน project space แล้วสร้าง Lmod module เพื่อให้ผู้ใช้โหลดได้ง่าย
 
-ถ้ายังไม่เคยเข้า LANTA ให้ดู [00-connect-to-lanta.md](00-connect-to-lanta.md) ก่อน หน้านี้เริ่มจากเครื่อง local และใช้ transfer host เพราะมีการดาวน์โหลด package
+สำหรับการเริ่มจากเครื่อง local ให้ดู [00-connect-to-lanta.md](00-connect-to-lanta.md) ก่อน หน้านี้ใช้ transfer host เพราะมีการดาวน์โหลด package
+
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `mamba create`, `conda run`, `python -m pip`, heredoc, Lua modulefile, `chmod`, `module use` และ `module load`
 
 ## Copy-Paste จากเครื่อง Local
 
@@ -112,7 +114,7 @@ cat notes/hpc-mesa-env.sh
 
 ## คำอธิบาย
 
-ในขั้นตอนนี้ ทีมจะสร้าง environment แบบ `--prefix` ใน project space เพื่อให้ใช้ร่วมกันได้ทั้งกลุ่ม ไม่ผูกกับ home directory ของคนใดคนหนึ่ง
+ในขั้นตอนนี้ ทีมจะสร้าง environment แบบ `--prefix` ใน project space เพื่อให้ใช้ร่วมกันได้ทั้งกลุ่มและอ้างอิง path กลางของ project
 
 คำสั่งนี้ตั้ง `CONDA_PKGS_DIRS` และ `PIP_CACHE_DIR` ไปที่ project เพื่อให้ cache เขียนได้ และติดตั้ง `mesa==2.3.4` เพราะ tutorial ใช้ API เช่น `mesa.time.RandomActivation` และ `mesa.space.MultiGrid`
 
@@ -138,4 +140,4 @@ which python
 python -c "import mesa; from mesa.time import RandomActivation; print('mesa', mesa.__version__, 'ok')"
 ```
 
-ถ้า `module load hpc-mesa/2.3.4` ไม่พบ module ให้ตรวจว่า `EPI_MODULE_ROOT` ชี้ไปที่ project เดียวกับที่สร้าง environment หรือไม่ ถ้า `python` ไม่ใช่ path ใต้ project ให้ `module purge` แล้ว `module use ...` และ `module load ...` ใหม่
+เมื่อ `module load hpc-mesa/2.3.4` แจ้ง module error ให้ตรวจว่า `EPI_MODULE_ROOT` ชี้ไปที่ project เดียวกับที่สร้าง environment เมื่อ `which python` ชี้ออกนอก project ให้ `module purge` แล้ว `module use ...` และ `module load ...` ใหม่

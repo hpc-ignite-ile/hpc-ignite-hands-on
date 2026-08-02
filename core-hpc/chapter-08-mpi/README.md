@@ -1,5 +1,7 @@
 # บทที่ 8: การเขียนโปรแกรม MPI ขั้นสูง
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 8: Advanced MPI Programming
 
 ## เริ่มรันงานจิ๋วบน LANTA

@@ -2,7 +2,9 @@
 
 บทนี้เป็นฐานสำหรับผู้ใช้ HPC Ignite ที่ต้องการเริ่มจากศูนย์บน LANTA โดยเน้นลำดับเดียวกับ booklet: login, files, modules, job script, monitoring, results และ next experiment.
 
-แนวทางใหม่คือ copy-paste เป็นหลัก แต่ไม่ใช้ helper ที่ซ่อนรายละเอียดงาน. ผู้ใช้จะสร้างไฟล์ `.py` และ `.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
+แนวทางใหม่คือ copy-paste เป็นหลัก ผู้ใช้จะสร้างไฟล์ `.py` และ `.sbatch` ด้วย heredoc เห็นรายละเอียด resource request และส่งด้วย `sbatch` โดยตรง
+
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md)
 
 ## สิ่งที่จะได้ฝึก
 
@@ -164,5 +166,5 @@ sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" foundation/lanta-foundat
 
 - เริ่มจาก `compute-devel` สำหรับ smoke test ขนาดเล็ก
 - ถ้า account ต้องระบุ project ให้ตั้ง `LANTA_ACCOUNT` ก่อน submit
-- งาน foundation ไม่ใช้ GPU และไม่ติดตั้ง dependency เพิ่ม
+- งาน foundation ใช้ CPU และ environment ที่มีอยู่ในระบบ
 - เมื่อต่อยอดไปบท GPU/AI ให้ใช้ `gpu-devel` ก่อน full run เสมอ

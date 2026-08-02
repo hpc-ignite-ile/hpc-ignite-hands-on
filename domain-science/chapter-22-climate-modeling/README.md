@@ -1,5 +1,7 @@
 # บทที่ 22: การจำลองภูมิอากาศ
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 22: Climate Modeling
 
 ## เริ่มรันงานจิ๋วบน LANTA

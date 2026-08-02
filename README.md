@@ -5,6 +5,8 @@
 
 คู่มือฝึกปฏิบัติบน LANTA Supercomputer แบบ copy-paste ได้ทันที ผู้ใช้จะสร้างไฟล์จริงด้วย heredoc, ส่งงานด้วย `sbatch`, แล้วตรวจ log และผลลัพธ์ด้วยตนเอง
 
+คำสั่ง Bash, Slurm และ syntax ที่ใช้ใน repo นี้อธิบายรวมไว้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `sed`, `ssh`, `module`, `sbatch`, heredoc, `#SBATCH`, pipe, redirection และตัวแปรของ shell
+
 ## เริ่มบน LANTA
 
 ```bash
@@ -15,6 +17,8 @@ cd hpc-ignite-hands-on
 # เปิดเส้นทาง lab หลัก
 sed -n '1,120p' lanta-experience/README.md
 ```
+
+ตัวอย่าง `sed -n '1,120p' ...` ใช้เปิดดูบรรทัดที่ 1 ถึง 120 ของไฟล์ ดูคำอธิบายเต็มที่ [docs/BASH_COMMAND_REFERENCE_TH.md#sed](docs/BASH_COMMAND_REFERENCE_TH.md#sed)
 
 จากนั้นให้ผู้ใช้เปิด [lanta-experience/01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) แล้วแปะ block บน LANTA เพื่อสร้าง `src/hello_lanta.py`, สร้าง `jobs/hello_lanta.sbatch`, ส่งงานด้วย `sbatch`, และอ่านผลลัพธ์ใน `logs/` กับ `results/`
 
@@ -87,7 +91,7 @@ sbatch -p compute-devel core-hpc/chapter-02-environment/jobs/environment_audit.s
 
 ## รูปแบบ Copy-Paste
 
-ทุก lab ควรให้ผู้ใช้เห็นไฟล์ที่สร้างจริง ไม่ซ่อนงานไว้ใน helper script ตัวอย่างขั้นต่ำคือ:
+ทุก lab ควรให้ผู้ใช้เห็นไฟล์ที่สร้างจริงและเห็นรายละเอียดการส่งงานใน `.sbatch` ตัวอย่างขั้นต่ำคือ:
 
 ```bash
 mkdir -p jobs logs results src
@@ -118,7 +122,7 @@ sbatch -p compute-devel jobs/main.sbatch
 
 ✅ เมื่อสำเร็จ ผู้ใช้จะเห็น job id จาก `sbatch` และอ่าน log ได้จาก `logs/`
 
-ดู checklist สำหรับการเขียน lab เพิ่มเติมได้ที่ [docs/LAB_AUTHORING_GUIDE_TH.md](docs/LAB_AUTHORING_GUIDE_TH.md)
+ดู checklist สำหรับการเขียน lab เพิ่มเติมได้ที่ [docs/LAB_AUTHORING_GUIDE_TH.md](docs/LAB_AUTHORING_GUIDE_TH.md) และดูคำอธิบายคำสั่งใน block นี้ได้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md)
 
 ## LANTA Notes
 

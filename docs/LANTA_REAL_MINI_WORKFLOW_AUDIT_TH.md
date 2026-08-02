@@ -10,9 +10,9 @@ Repo: `hpc-ignite-ile/hpc-ignite-hands-on`
 Repo นี้มีสองบุคลิก
 
 1. `lanta-experience/`, `foundation/lanta-foundation/`, และ `mini-innovation/` เป็นรูปแบบที่ดีแล้ว: เริ่มจาก workspace, สร้างไฟล์ด้วย heredoc, ส่ง `sbatch`, เก็บ log/result/provenance, และใช้ runtime สั้น
-2. `core-hpc/`, `ai-applications/`, และ `domain-science/` หลายบทมีเนื้อหาวิชาที่ดี แต่ runnable block มักเป็น `run_python_lab.sbatch` กลาง ๆ ที่ใช้ `base.sh` แล้วรัน Python synthetic script เพียงไฟล์เดียว ทำให้ยังไม่เห็นพลังของ LANTA module หรือ workflow จริงของแต่ละสาขา
+2. `core-hpc/`, `ai-applications/`, และ `domain-science/` หลายบทมีเนื้อหาวิชาที่ดี แต่ runnable block มักเป็น `run_python_lab.sbatch` กลาง ๆ ที่ใช้ `base.sh` แล้วรัน Python synthetic script เพียงไฟล์เดียว จึงแสดง LANTA module และ workflow จริงของแต่ละสาขาได้จำกัด
 
-ทิศทางที่ควรไปคือ **ไม่ทำให้ทุกบทเป็นงานใหญ่** แต่ให้ทุกบทมีอย่างน้อยหนึ่ง **real miniature workflow**:
+ทิศทางที่ควรไปคือกำหนดขอบเขตให้แต่ละบทมีอย่างน้อยหนึ่ง **real miniature workflow** ที่รันสั้นและตรวจหลักฐานได้:
 
 - ใช้ module จริงของ LANTA
 - ใช้ input/config ขนาดเล็ก
@@ -50,10 +50,10 @@ Python environment facts:
 
 Implication:
 
-- ใช้ `cray-python` สำหรับ standard library, NumPy, pandas, SciPy แบบไม่ plot
+- ใช้ `cray-python` สำหรับ standard library, NumPy, pandas, SciPy และงานที่เว้นขั้น plot
 - ใช้ `netcdf-py39` สำหรับ data, NetCDF, xarray, Matplotlib
 - ใช้ `pytorch-2.2.2` สำหรับ GPU/PyTorch smoke tests
-- อย่าให้บทเรียนสดพึ่งการ `pip install` หรือสร้าง env ใหญ่ในห้อง ยกเว้นเป็นหน้า environment โดยเฉพาะ
+- ใช้ `pip install` หรือการสร้าง env ใหญ่เฉพาะหน้า environment โดยเฉพาะ และเตรียม shared env สำหรับบทเรียนสด
 
 ## มาตรฐานใหม่ที่ควรใช้
 
@@ -61,7 +61,7 @@ Implication:
 
 | งาน | วิธีรันที่แนะนำ |
 |---|---|
-| Python เล็ก ไม่ plot | `module load cray-python/3.10.10` |
+| Python เล็กที่เว้นขั้น plot | `module load cray-python/3.10.10` |
 | Python data/plot/NetCDF | `module load Mamba/23.11.0-0`; `conda activate netcdf-py39` |
 | PyTorch GPU | `module load Mamba/23.11.0-0`; `conda activate pytorch-2.2.2`; `gpu-devel` |
 | C/OpenMP/MPI | `module reset`; `module load cpeCray/25.03`; compile with `cc`; run with `srun` |
@@ -94,7 +94,7 @@ src/
 
 - `module load Miniconda3` ในตัวอย่างใหม่ เพราะ live module ที่เห็นคือ `Mamba/23.11.0-0` และ `Miniforge3/25.3.0-3`
 - ชื่อ module เก่า เช่น `PyTorch/2.0.1-CUDA-11.7.0`, `TensorFlow/2.11.0-CUDA-11.7.0`, `WRF-Chem/4.4`, `Spark/3.3.0`
-- `mpirun` ใน Slurm job ถ้าไม่ได้มีเหตุผลเฉพาะ ใช้ `srun` เป็นค่าเริ่มต้นบน LANTA
+- ใช้ `srun` เป็นค่าเริ่มต้นใน Slurm job บน LANTA และใช้ `mpirun` เฉพาะกรณีที่มีเหตุผลด้าน runtime ชัดเจน
 - GPU examples ที่ submit ไป `compute-devel`
 - Domain chapters ที่พูดถึงซอฟต์แวร์จริงแต่รันเฉพาะ synthetic Python
 - การดาวน์โหลด dataset/model ตอน workshop สด
@@ -119,9 +119,9 @@ src/
 
 | Path | สถานะปัจจุบัน | วิธีที่ดีกว่า |
 |---|---|---|
-| `module-loads/base.sh` | โหลด `cray-python` และ `Mamba`; ดีสำหรับ foundation | ระบุชัดว่าเหมาะกับ Python เบา ๆ เท่านั้น เพราะ `cray-python` ไม่มี Matplotlib |
+| `module-loads/base.sh` | โหลด `cray-python` และ `Mamba`; ดีสำหรับ foundation | ระบุชัดว่าเหมาะกับ Python เบา ๆ เท่านั้น และให้ใช้ `netcdf-py39` สำหรับงาน Matplotlib |
 | `module-loads/mpi.sh` | พยายามโหลด OpenMPI ก่อน | เปลี่ยน default เป็น `cpeCray/25.03` และ Cray MPI wrapper; `OpenMPI` เป็น fallback เท่านั้น |
-| `module-loads/pytorch.sh` | โหลด CUDA/NCCL แต่ไม่ได้ activate env | เพิ่ม `conda activate pytorch-2.2.2` หรือสร้าง `pytorch-shared.sh` แยก |
+| `module-loads/pytorch.sh` | โหลด CUDA/NCCL และยังขาดขั้น activate env | เพิ่ม `conda activate pytorch-2.2.2` หรือสร้าง `pytorch-shared.sh` แยก |
 | `module-loads/tensorflow.sh` | อ้าง module เก่า `TensorFlow/2.11.0-CUDA-11.7.0` | ปรับเป็น `Mamba/23.11.0-0` + `tensorflow-2.12.1`; หรือ mark legacy |
 | `templates/` | มี shape พื้นฐาน | เพิ่ม template เฉพาะ `netcdf-postprocess.sbatch`, `qe-scf.sbatch`, `gromacs-gpu-smoke.sbatch`, `bio-cli-smoke.sbatch`, `apptainer-smoke.sbatch` |
 
@@ -133,7 +133,7 @@ src/
 | `dask.yaml` | เหมาะกับ Dask | ใช้เฉพาะบท Dask และระบุ project-prefix env สำหรับ workshop |
 | `ml-gpu.yaml` | pin CUDA 11.7 และ package เยอะ | สำหรับ smoke test ใช้ shared `pytorch-2.2.2`; ใช้ไฟล์นี้เฉพาะ custom training |
 | `mpi.yaml` | ใช้ `mpi4py` จาก conda | ต้องทดสอบกับ LANTA MPI จริง ถ้าสอน MPI จริงให้เพิ่ม C MPI examples ที่ใช้ CPE ก่อน |
-| `lanta-foundation.yaml` | เล็กดี | ใช้สำหรับ CI/local ไม่จำเป็นต้องใช้ใน LANTA ถ้า `cray-python` พอ |
+| `lanta-foundation.yaml` | เล็กดี | ใช้สำหรับ CI/local; บน LANTA ให้เริ่มจาก `cray-python` เมื่อ package พอ |
 
 ### `requirements/`
 
@@ -144,7 +144,7 @@ src/
 
 ### `scripts/`
 
-สถานะ: folder นี้มีอยู่แต่ยังไม่มี script ในการตรวจครั้งนี้
+สถานะ: folder นี้มีอยู่และยังว่างในการตรวจครั้งนี้
 
 วิธีที่ดีกว่า:
 
@@ -156,7 +156,7 @@ src/
 
 | Path | สถานะปัจจุบัน | วิธีที่ดีกว่า |
 |---|---|---|
-| `test_lanta_foundation.py` | ตรวจ foundation และ event docs บางส่วน | เพิ่ม static tests ว่า README ไม่อ้าง module เก่า, README-listed files มีจริง, GPU labs ใช้ `gpu-devel`, MPI labs ใช้ `srun -n >1`, domain chapters มี `jobs/*.sbatch` ที่ใช้ module จริง |
+| `test_lanta_foundation.py` | ตรวจ foundation และ event docs บางส่วน | เพิ่ม static tests ว่า README เลี่ยง module เก่า, README-listed files มีจริง, GPU labs ใช้ `gpu-devel`, MPI labs ใช้ `srun -n >1`, domain chapters มี `jobs/*.sbatch` ที่ใช้ module จริง |
 
 ### `foundation/chapter-00/`
 
@@ -192,7 +192,7 @@ src/
 | `03-openmp-mpi.md` | ดีมาก; ปรับ MPI ให้ prefer `cpeCray/25.03` และ `srun`; เพิ่ม `OMP_PLACES=cores`, `OMP_PROC_BIND=close` |
 | `04-science-data.md` | diffusion เป็น real miniature science workflow; sensor summary ควรมี Slurm version และ optional NetCDF preflight ด้วย `netcdf-py39` |
 | `05-ai-gpu.md` | ดีสำหรับ GPU smoke; ควร centralize เป็น `module-loads/pytorch-shared.sh` |
-| `06-run-logs.md` | ดีมาก; เพิ่ม robust case เมื่อ `sacct` delay หรือไม่มี input บางไฟล์ |
+| `06-run-logs.md` | ดีมาก; เพิ่ม robust case เมื่อ `sacct` delay หรือ input บางไฟล์ขาด |
 
 ### `mini-innovation/`
 
@@ -205,18 +205,18 @@ src/
 - สร้าง Lmod module เอง
 - Jupyter ผ่าน Slurm allocation
 - model script + config + job array + multicore
-- AI scaffold เป็น prompt file ไม่ใช่คำตอบลอย ๆ
+- AI scaffold เป็น prompt file ที่ผูกกับหลักฐาน
 
 เพิ่มได้:
 
-- `jobs/smoke.sbatch` ที่อยู่ใน repo จริง ไม่ใช่สร้างจาก tutorial อย่างเดียว
+- `jobs/smoke.sbatch` ที่อยู่ใน repo จริงและสอดคล้องกับ tutorial
 - static test ตรวจว่า Python heredoc ใน tutorial compile ได้
 
 ## `core-hpc/` Folder
 
 ### `chapter-02-environment/`
 
-สถานะ: ดีเป็น environment audit แต่ README อ้างไฟล์ที่ไม่มี เช่น `slurm_basics.py`, `filesystem_demo.py`, `sbatch/environment_check.sbatch`
+สถานะ: ดีเป็น environment audit แต่ README อ้าง path ที่ยังขาด เช่น `slurm_basics.py`, `filesystem_demo.py`, `sbatch/environment_check.sbatch`
 
 Better miniature workflow:
 
@@ -228,7 +228,7 @@ Better miniature workflow:
 
 ### `chapter-03-parallel/`
 
-สถานะ: มี MPI Python scripts จริง แต่ README copy-paste บอกว่าไม่มี script ขนาดเล็ก
+สถานะ: มี MPI Python scripts จริง แต่ README copy-paste บอกว่ายังขาด script ขนาดเล็ก
 
 Better miniature workflow:
 
@@ -238,7 +238,7 @@ Better miniature workflow:
 - run `parallel_sum.py` หรือ `monte_carlo_pi.py` ขนาดเล็ก
 - เก็บ CSV ว่า ranks, elapsed, result เป็นอย่างไร
 
-ถ้า `mpi4py` ไม่เข้ากับ system MPI ให้มี C MPI hello เป็น fallback ที่ compile ด้วย `cc`
+เมื่อ `mpi4py` ขัดกับ system MPI ให้มี C MPI hello เป็น fallback ที่ compile ด้วย `cc`
 
 ### `chapter-04-deep-learning/`
 
@@ -254,7 +254,7 @@ Better miniature workflow:
 
 ### `chapter-05-big-data/`
 
-สถานะ: synthetic pandas/chunking ดี แต่ยังไม่เป็น job-scoped data workflow
+สถานะ: synthetic pandas/chunking ดี และยังขาด job-scoped data workflow
 
 Better miniature workflow:
 
@@ -265,7 +265,7 @@ Better miniature workflow:
 
 ### `chapter-06-visualization/`
 
-สถานะ: Matplotlib example ต้องการ env ที่มี Matplotlib แต่ `base.sh` อาจไม่พอ
+สถานะ: Matplotlib example ต้องการ env ที่มี Matplotlib ส่วน `base.sh` มี package coverage จำกัด
 
 Better miniature workflow:
 
@@ -277,7 +277,7 @@ Better miniature workflow:
 
 ### `chapter-07-dask/`
 
-สถานะ: ต้องใช้ Dask env จริง; copy block ปัจจุบันใช้ `base.sh` และ memory 1G ซึ่งเสี่ยงไม่พอ
+สถานะ: ต้องใช้ Dask env จริง; copy block ปัจจุบันใช้ `base.sh` และ memory 1G ซึ่งมีความเสี่ยงด้านทรัพยากร
 
 Better miniature workflow:
 
@@ -299,17 +299,17 @@ Better miniature workflow:
 
 ### `chapter-09-spark/`
 
-สถานะ: README อ้าง `Spark/3.3.0` แต่ live module list ของ `tn642` ไม่เห็น Spark
+สถานะ: README อ้าง `Spark/3.3.0` แต่ live module list ของ `tn642` ว่างจาก Spark
 
 Better miniature workflow:
 
-- ถ้า `module spider Spark` ไม่พบ ให้ mark chapter เป็น optional
+- เมื่อ `module spider Spark` ว่าง ให้ mark chapter เป็น optional
 - หรือเปลี่ยนเป็น local PySpark-in-one-allocation only ถ้ามี project env ที่ติดตั้ง PySpark แล้ว
 - สำหรับ training จริง ให้ใช้ Dask chapter แทน Spark จนกว่า Spark module/env จะ verify
 
 ### `chapter-10-gpu/`
 
-สถานะ: GPU story ดี แต่ CuPy ไม่มี shared env ที่ยืนยันแล้ว
+สถานะ: GPU story ดี แต่ CuPy ยังขาด shared env ที่ยืนยันแล้ว
 
 Better miniature workflow:
 
@@ -334,7 +334,7 @@ Better miniature workflow:
 
 ### `chapter-12-ai-development/`
 
-สถานะ: README ส่ง PyTorch distributed script ผ่าน CPU wrapper ซึ่งไม่ตรงกับเป้าหมาย
+สถานะ: README ส่ง PyTorch distributed script ผ่าน CPU wrapper ซึ่งคลาดจากเป้าหมาย
 
 Better miniature workflow:
 
@@ -346,13 +346,13 @@ Better miniature workflow:
 
 ### `chapter-13-prompts/`
 
-สถานะ: เป็น concept chapter ไม่ควรต้องใช้ Slurm เสมอไป
+สถานะ: เป็น concept chapter ที่เหมาะกับ login-node/static prompt workflow และ optional Slurm formatter
 
 Better miniature workflow:
 
 - เปลี่ยนเป็น AI scaffold lab: generate Slurm review prompt from actual `jobs/*.sbatch`, compare AI suggestion with LANTA policy checklist
-- ไม่ใส่ API key หรือบังคับ external API บน LANTA
-- ถ้ารันบน LANTA ให้เป็น Python static prompt formatter ไม่ใช่ network call
+- ใช้ prompt และตัวอย่างที่ตัด API key, token และ secret ออกจาก lab
+- ถ้ารันบน LANTA ให้เป็น Python static prompt formatter แทน network call
 
 ### `chapter-28-llm-finetuning/`
 
@@ -371,7 +371,7 @@ Better miniature workflow:
 
 Better miniature workflow:
 
-- login-node workflow ไม่ต้อง submit Slurm
+- ทำเป็น login-node workflow สำหรับตรวจ permission และ secret pattern
 - create sample directory, set permissions, run file permission audit
 - add secret-scan static exercise: detect fake token pattern in sample files
 - avoid `ssh-copy-id` as default because LANTA login may use site-controlled auth/2FA

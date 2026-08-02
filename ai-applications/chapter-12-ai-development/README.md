@@ -1,5 +1,7 @@
 # บทที่ 12: AI Development บน HPC
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 12: AI Development on HPC
 
 ## เริ่มรันงานจิ๋วบน LANTA

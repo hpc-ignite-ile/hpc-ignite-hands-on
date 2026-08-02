@@ -83,6 +83,16 @@ class LantaFoundationTests(unittest.TestCase):
         ]:
             self.assertTrue((event_dir / name).exists())
 
+    def test_bash_command_reference_is_linked_from_command_docs(self) -> None:
+        reference = REPO_ROOT / "docs" / "BASH_COMMAND_REFERENCE_TH.md"
+        self.assertTrue(reference.exists())
+        for path in REPO_ROOT.rglob("*.md"):
+            if path == reference or ".git" in path.parts:
+                continue
+            text = path.read_text(encoding="utf-8")
+            if "```bash" in text:
+                self.assertIn("BASH_COMMAND_REFERENCE_TH.md", text, f"missing command reference link in {path}")
+
     def test_learner_docs_do_not_use_hidden_submit_helpers(self) -> None:
         learner_docs = [
             REPO_ROOT / "README.md",

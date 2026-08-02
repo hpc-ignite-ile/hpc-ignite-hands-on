@@ -2,6 +2,8 @@
 
 ใช้ตรวจว่า job ได้ GPU จริงก่อนเริ่มงาน AI ที่กินทรัพยากรมาก.
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `nvidia-smi`, `conda activate`, `python - <<'PY'`, `sbatch`, `squeue`, `tail` และ `CUDA_VISIBLE_DEVICES`
+
 ## Copy-Paste
 
 ```bash
@@ -67,7 +69,7 @@ echo "Read: tail -80 logs/gpu_${job_id}.out"
 
 ใน job นี้ `nvidia-smi` ใช้ตรวจระดับเครื่อง ส่วน `torch.cuda.is_available()` ใช้ตรวจระดับ Python หากสองคำสั่งนี้ผ่าน ผู้ใช้จึงค่อยขยายไปสู่ model training
 
-เมื่อสำเร็จ log จะมีตารางจาก `nvidia-smi`, ค่า `cuda_available True`, จำนวน GPU มากกว่าศูนย์ และ `status ok` หลังคำนวณ matrix บน GPU หาก `conda activate pytorch-2.2.2` ล้มเหลว ให้ใช้ `conda env list` ตรวจ environment หาก `nvidia-smi` ผ่านแต่ PyTorch ไม่เห็น CUDA ให้ตรวจว่า submit ผ่าน `sbatch` และมี `CUDA_VISIBLE_DEVICES` ใน job หรือไม่
+เมื่อสำเร็จ log จะมีตารางจาก `nvidia-smi`, ค่า `cuda_available True`, จำนวน GPU มากกว่าศูนย์ และ `status ok` หลังคำนวณ matrix บน GPU เมื่อ `conda activate pytorch-2.2.2` error ให้ใช้ `conda env list` ตรวจ environment เมื่อ `nvidia-smi` ผ่านแต่ PyTorch ยังรายงาน CUDA unavailable ให้ตรวจว่า job ส่งผ่าน `sbatch` และ log มี `CUDA_VISIBLE_DEVICES`
 
 ## Next Modification
 

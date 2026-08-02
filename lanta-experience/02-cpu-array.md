@@ -2,6 +2,8 @@
 
 ต่อจากงานแรกด้วยงาน CPU ที่ใช้หลาย worker และ job array สำหรับหลายชุดพารามิเตอร์.
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `sed`, job array, `SLURM_ARRAY_TASK_ID`, `sbatch`, `squeue`, `ls`, `OMP_NUM_THREADS` และ `python`
+
 ## Copy-Paste CPU Baseline
 
 ```bash
@@ -88,9 +90,9 @@ echo "Read: tail -50 logs/pi_${job_id}.out && cat results/pi_${job_id}.txt"
 
 ในขั้นตอนนี้ ผู้ใช้จะรันโปรแกรม `parallel_pi.py` เพื่อประมาณค่า pi ด้วย Monte Carlo โปรแกรมจะแบ่งงานตามจำนวน worker ที่อ่านจาก `SLURM_CPUS_PER_TASK`
 
-Slurm script ขอ 4 CPU cores และตั้ง `OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`, และ `MKL_NUM_THREADS` เป็น 1 เพื่อไม่ให้ library ภายใน Python ใช้ thread เกินกว่าที่ขอไว้
+Slurm script ขอ 4 CPU cores และตั้ง `OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`, และ `MKL_NUM_THREADS` เป็น 1 เพื่อจำกัดจำนวน thread ภายใน Python ให้สอดคล้องกับ resource ที่ขอไว้
 
-เมื่อสำเร็จ log จะมีข้อความ `pi=... workers=4` และไฟล์ `results/pi_<job-id>.txt` จะมีจำนวน sample, worker, ค่า pi และเวลารัน ค่า pi ควรอยู่ใกล้ 3.14 หากงานช้าให้ลด sample หาก worker ไม่ตรงกับ CPU ที่ขอไว้ ให้ตรวจ `#SBATCH --cpus-per-task` และ argument `--workers`
+เมื่อสำเร็จ log จะมีข้อความ `pi=... workers=4` และไฟล์ `results/pi_<job-id>.txt` จะมีจำนวน sample, worker, ค่า pi และเวลารัน ค่า pi ควรอยู่ใกล้ 3.14 เมื่องานใช้เวลานาน ให้ลด sample เมื่อ worker คลาดจาก CPU ที่ขอไว้ ให้ตรวจ `#SBATCH --cpus-per-task` และ argument `--workers`
 
 ## Copy-Paste Job Array
 
@@ -162,4 +164,4 @@ echo "Read: ls logs/pi_array_${job_id}_*.out results/pi_${job_id}_*.txt"
 
 Slurm ใช้ `SLURM_ARRAY_TASK_ID` เพื่อเลือกบรรทัดจากไฟล์ config และใช้ `%A_%a` ในชื่อ log เพื่อแยก array job id กับ task id ออกจากกัน วิธีนี้เหมาะกับงานหลาย seed หลาย input file หรือหลายค่าพารามิเตอร์
 
-เมื่อสำเร็จ ผู้ใช้จะเห็น log หลายไฟล์ เช่น `logs/pi_array_<jobid>_1.out` และผลลัพธ์หลายไฟล์ เช่น `results/pi_<array-jobid>_1.txt` หาก task ใดล้มเหลว ให้เปิด error log ของ task นั้นก่อน หาก `sed` อ่านบรรทัดว่าง แสดงว่า `--array` ยาวกว่าไฟล์ config
+เมื่อสำเร็จ ผู้ใช้จะเห็น log หลายไฟล์ เช่น `logs/pi_array_<jobid>_1.out` และผลลัพธ์หลายไฟล์ เช่น `results/pi_<array-jobid>_1.txt` เมื่อต้องแก้ task ใด ให้เปิด error log ของ task นั้นก่อน เมื่อ `sed` อ่านบรรทัดว่าง ให้เทียบช่วง `--array` กับจำนวนบรรทัดในไฟล์ config

@@ -1,5 +1,7 @@
 # บทที่ 21: Molecular Dynamics
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 21: Molecular Dynamics Simulations
 
 ## เริ่มรันงานจิ๋วบน LANTA

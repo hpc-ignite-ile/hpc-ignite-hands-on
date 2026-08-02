@@ -1,5 +1,7 @@
 # บทที่ 6: การสร้างภาพข้อมูล
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 6: Data Visualization
 
 ## วัตถุประสงค์การเรียนรู้

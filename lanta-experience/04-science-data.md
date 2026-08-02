@@ -2,6 +2,8 @@
 
 ใช้รูปแบบงานวิทยาศาสตร์ใน booklet: input, parameter, model script, result, evidence.
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `source`, `command -v`, `python`, `head`, `sha256sum`, `module purge`, `module load` และ redirection
+
 ## Copy-Paste Diffusion Model
 
 ```bash
@@ -100,7 +102,7 @@ echo "  cat results/diffusion_${job_id}/README.txt"
 
 เมื่อ job ทำงาน ระบบจะเขียนผลลัพธ์เป็น `results/diffusion_<job-id>.csv` และคัดลอก config กับ job script ไปไว้ใน `results/diffusion_<job-id>/` เพื่อให้ผู้ใช้ย้อนดูได้ว่ารอบนั้นใช้ค่าใด
 
-เมื่อสำเร็จ ไฟล์ CSV ต้องมี header `i,value` และจำนวนบรรทัดควรสัมพันธ์กับค่า `N` หาก `source configs/diffusion-small.env` ไม่ผ่าน ให้ตรวจว่าไม่มีช่องว่างรอบเครื่องหมาย `=` หากงานหมดเวลา ให้ลด `STEPS` ก่อนเพิ่มเวลาใน Slurm
+เมื่อสำเร็จ ไฟล์ CSV ต้องมี header `i,value` และจำนวนบรรทัดควรสัมพันธ์กับค่า `N` เมื่อ `source configs/diffusion-small.env` error ให้ตรวจรูปแบบ `KEY=value` โดยเขียนเครื่องหมาย `=` ติดกับชื่อและค่า เมื่องานหมดเวลา ให้ลด `STEPS` ก่อนเพิ่มเวลาใน Slurm
 
 ## Copy-Paste Small Data Summary
 
@@ -163,4 +165,4 @@ sha256sum input/sensor.csv results/sensor_summary.csv > notes/sensor-checksums.t
 
 ตัวอย่างนี้รันบน login node ได้เพราะข้อมูลมีขนาดเล็กมาก ใช้เพื่อฝึก format เท่านั้น หากข้อมูลใหญ่ขึ้นหรือใช้เวลานาน ให้ย้ายขั้นตอนนี้เข้า Slurm job ทันที
 
-เมื่อสำเร็จ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` และมีไฟล์ checksum ใน `notes/sensor-checksums.txt` หากพบ `python: command not found` ให้โหลด `cray-python` หากพบ `FileNotFoundError` ให้ตรวจว่าอยู่ใน `$HOME/lanta-experience` และรัน script สร้างข้อมูลก่อน
+เมื่อสำเร็จ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` และมีไฟล์ checksum ใน `notes/sensor-checksums.txt` เมื่อพบ `python: command not found` ให้โหลด `cray-python` เมื่อพบ `FileNotFoundError` ให้ตรวจว่าอยู่ใน `$HOME/lanta-experience` และรัน script สร้างข้อมูลก่อน

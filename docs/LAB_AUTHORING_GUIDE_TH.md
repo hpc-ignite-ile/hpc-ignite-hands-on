@@ -1,6 +1,8 @@
 # แนวทางเขียน Lab แบบ Heredoc-First
 
-ทุก lab ใหม่ควรมีหัวข้อ `Copy-paste only` เพื่อให้ผู้ใช้เริ่มได้โดยไม่ต้องเปิด editor แต่ยังเห็นไฟล์ที่ตนเองสร้างจริง ไม่ใช้ helper script ที่ซ่อนรายละเอียดงาน
+ทุก lab ใหม่ควรมีหัวข้อ `Copy-paste only` เพื่อให้ผู้ใช้เริ่มได้จาก terminal และเห็นไฟล์ที่ตนเองสร้างจริง พร้อมรายละเอียดการส่งงานใน `jobs/*.sbatch`
+
+ดูคำอธิบายคำสั่ง Bash, Slurm และ syntax ที่ใช้ใน template ได้ที่ [BASH_COMMAND_REFERENCE_TH.md](BASH_COMMAND_REFERENCE_TH.md)
 
 ## โครงสร้างที่แนะนำ
 
@@ -63,19 +65,19 @@ echo "Output : tail -n +1 logs/hpcig-<lab-id>_${job_id}.out"
 
 - ✅ เมื่อสำเร็จ ผู้ใช้จะเห็น job id จาก `sbatch`
 - ✅ เมื่อ job จบ ผู้ใช้จะเห็นไฟล์ `results/output_<jobid>.txt`
-- ⚠️ หาก submit ไม่ผ่าน ให้ตรวจ `LANTA_ACCOUNT` และ partition ด้วย `sinfo`
+- ⚠️ หาก submit error ให้ตรวจ `LANTA_ACCOUNT` และ partition ด้วย `sinfo`
 
 ## Checklist ก่อน merge lab ใหม่
 
 - มีหัวข้อ `Copy-paste only`
-- ไม่มีขั้นตอนที่ต้อง `nano`, `vim`, หรือแก้ไฟล์ด้วยมือ
-- ไม่สร้าง `/tmp/*.sh` แล้วสั่ง `bash /tmp/...`
-- ไม่เรียก helper submit script แทนการเขียน `jobs/*.sbatch`
+- ใช้ terminal และ heredoc แทนขั้นตอน `nano`, `vim`, หรือแก้ไฟล์ด้วยมือ
+- สร้างไฟล์งานใน workspace ของ lab เช่น `jobs/*.sbatch` และ `src/*.py`
+- เขียน `jobs/*.sbatch` ให้ผู้ใช้เปิดอ่านและส่งด้วย `sbatch` โดยตรง
 - heredoc marker ใช้ quoted form เช่น `<<'PY'` เพื่อกัน shell expand โค้ด
 - ใช้ partition devel/limited เป็นค่าเริ่มต้นสำหรับ smoke test
-- ไม่ hard-code account project ของผู้สอน
-- ไม่ hard-code token, password, SSH key หรือ secret
+- รับ account ผ่าน `LANTA_ACCOUNT` หรือค่าที่ผู้ใช้ตั้งเอง
+- ใช้ placeholder หรือ fake token สำหรับตัวอย่างด้าน secret/security
 - มีคำสั่งดูคิวและดูผลลัพธ์หลัง submit
 - ถ้า lab ต้องใช้ package เฉพาะ ให้บอก environment ที่ต้อง activate อย่างชัดเจน
 - ถ้าเป็น domain science lab ต้องมี real module-backed smoke workflow อย่างน้อย 1 งาน เช่น `jobs/*.sbatch` ที่ source `slurm/module-loads/qe.sh`, `gromacs.sh`, `geodata.sh`, `bio.sh`, `netcdf-python.sh`, หรือ `apptainer.sh`
-- หัวข้อใหญ่ที่หนักหรือมี license เช่น WRF full run, VASP, Gaussian, Amber, LLM finetuning ให้แยกเป็น instructor demo หรือ optional preflight ไม่ใช่ default live exercise
+- หัวข้อใหญ่ที่หนักหรือมี license เช่น WRF full run, VASP, Gaussian, Amber, LLM finetuning ให้แยกเป็น instructor demo หรือ optional preflight สำหรับช่วงสาธิต

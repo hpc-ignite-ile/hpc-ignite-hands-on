@@ -2,7 +2,9 @@
 
 หน้านี้สร้าง agent-based simulation แบบ SEIR สำหรับ mini innovation `LANTA EpiSprint` แล้วรัน 3 วิธีที่ใช้แนวคิดจาก lab หลักของหนังสือ: single Slurm job, job array และ multicore ensemble ภายในหนึ่ง node
 
-ถ้ายังไม่ได้สร้าง environment ให้ทำ [01-custom-python-env-module.md](01-custom-python-env-module.md) ก่อน
+เตรียม environment ด้วย [01-custom-python-env-module.md](01-custom-python-env-module.md) ก่อนเริ่มหน้านี้
+
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `module use`, `module load`, `cat > file <<'PY'`, `sbatch`, `squeue`, `tail`, job array, `SLURM_ARRAY_TASK_ID`, และ multicore worker
 
 ## Copy-Paste จากเครื่อง Local
 
@@ -35,7 +37,7 @@ export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 
 if [ ! -f "$EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua" ]; then
-    echo "ไม่พบ module: $EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua"
+    echo "module_missing: $EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua"
     echo "ให้ทำหน้า 01-custom-python-env-module.md ก่อน"
     exit 1
 fi
@@ -276,7 +278,7 @@ import pandas as pd
 
 files = sorted(Path("results").glob("epi_summary_*.csv"))
 if not files:
-    raise SystemExit("ไม่พบไฟล์ results/epi_summary_*.csv")
+    raise SystemExit("missing results/epi_summary_*.csv")
 
 df = pd.concat([pd.read_csv(path) for path in files], ignore_index=True)
 Path("results").mkdir(exist_ok=True)
@@ -351,7 +353,7 @@ EOF
 cat > prompts/ai-scaffold-th.md <<'EOF'
 # Prompt สำหรับ AI Scaffold
 
-ใช้ prompt นี้กับ AI assistant เพื่อช่วยคิดการทดลอง ไม่ใช่เพื่อให้ AI ตัดสินใจแทนผล simulation
+ใช้ prompt นี้กับ AI assistant เพื่อช่วยตั้งคำถาม ออกแบบ scenario ตรวจ resource request และอธิบายผลโดยอ้างอิงหลักฐานจาก code, config, job log และ result file
 
 ## Scenario coach
 
@@ -362,7 +364,7 @@ cat > prompts/ai-scaffold-th.md <<'EOF'
 
 ## Slurm reviewer
 
-ตรวจ Slurm script นี้ว่าขอ resource เหมาะกับงานสด 40 คนหรือไม่
+ประเมินความเหมาะสมของ resource request ใน Slurm script นี้สำหรับงานสด 40 คน
 เน้น account, partition, walltime, cpus-per-task, array concurrency, output log และ reproducibility
 
 ## Results tutor
@@ -515,11 +517,13 @@ echo "Read: tail -80 logs/epi_multicore_${job_id}.out"
 
 ## คำอธิบาย
 
-ใน lab นี้ ผู้ใช้จะรันแบบจำลอง SEIR แบบ agent-based simulation แต่ละ agent มีสถานะ `S`, `E`, `I`, หรือ `R` และเคลื่อนที่บน `MultiGrid` ของ Mesa นโยบายในตัวอย่างเป็นข้อมูล synthetic เพื่อใช้เรียนรู้เท่านั้น ไม่ใช่คำแนะนำทางสาธารณสุข
+ใน lab นี้ ผู้ใช้จะรันแบบจำลอง SEIR แบบ agent-based simulation แต่ละ agent มีสถานะ `S`, `E`, `I`, หรือ `R` และเคลื่อนที่บน `MultiGrid` ของ Mesa นโยบายในตัวอย่างเป็นข้อมูล synthetic สำหรับเรียนรู้การออกแบบ experiment, uncertainty และการอ่านหลักฐานจาก simulation
 
 ตัวอย่างที่ 1 เป็น single Slurm job สำหรับตรวจว่า code, module, account และ partition ใช้งานได้ ตัวอย่างที่ 2 ใช้ job array เพื่อรันหลาย scenario จาก CSV ตัวอย่างที่ 3 ใช้หลาย worker ภายในหนึ่ง node เพื่อให้ผู้ใช้เห็น parallelism อีกรูปแบบหนึ่ง
 
-ไฟล์ `prompts/ai-scaffold-th.md` เป็นตัวช่วยสำหรับถาม AI ให้ช่วยตรวจ scenario, ตรวจ Slurm script และช่วยอธิบาย CSV แต่หลักฐานหลักยังอยู่ที่ code, config, job log และ result file
+แนวปฏิบัติที่ดีคือรัน smoke job ก่อนเพื่อยืนยัน environment แล้วค่อยขยายเป็น array หรือ multicore ensemble บันทึก seed และพารามิเตอร์ทุกครั้ง เก็บ log แยกตาม job id และสรุปผลจากหลาย scenario เพื่อแยก pattern ของ model ออกจากความผันผวนของ run เดี่ยว
+
+ไฟล์ `prompts/ai-scaffold-th.md` เป็นตัวช่วยสำหรับถาม AI ให้ช่วยตรวจ scenario, ตรวจ Slurm script และช่วยอธิบาย CSV โดยให้คำตอบผูกกับหลักฐานหลักคือ code, config, job log และ result file
 
 ## Check
 
@@ -530,4 +534,4 @@ cat notes/job-history.tsv 2>/dev/null || true
 cat notes/epi-policy-compare.txt 2>/dev/null || true
 ```
 
-เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_summary_all.csv` และ `epi_policy_compare.csv` หากไม่มีผลลัพธ์ ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` หาก import Mesa ไม่สำเร็จ ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`
+เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_summary_all.csv` และ `epi_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ, จำนวนวันตรงกับค่า `days`, ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวน agent, และ policy comparison อ้างอิงหลาย scenario หรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`

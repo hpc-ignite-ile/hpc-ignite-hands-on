@@ -2,6 +2,8 @@
 
 ใช้หลังจากรัน lab ครบแล้ว เพื่อรวมหลักฐานของข้อมูล ผลลัพธ์ และทรัพยากรที่ใช้ไว้ใน `notes/`.
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `date`, `tee`, `find`, `head`, `wc`, `sha256sum`, `cut`, `paste`, `sacct`, `sbalance` และ `sbill`
+
 ## Copy-Paste
 
 ```bash
@@ -64,4 +66,4 @@ head -30 "$SPENT_LOG"
 
 จากนั้น block ใช้ `sacct` เพื่อดึงข้อมูลทรัพยากรของ job เช่น partition, state, elapsed time, CPU, memory และ exit code และบันทึก `sbalance` กับ `sbill` พร้อม timestamp
 
-เมื่อสำเร็จ ผู้ใช้จะได้ไฟล์ `notes/data-summary-<เวลา>.txt`, `notes/resource-spent-<เวลา>.tsv`, `notes/balance-<เวลา>.txt`, และ `notes/bill-<เวลา>.txt` หาก resource log ว่าง ให้ตรวจว่า `notes/job-history.tsv` มี job id หรือไม่ หาก `sacct` ยังไม่เห็น job ใหม่ ให้รอสักครู่แล้วรันซ้ำ
+เมื่อสำเร็จ ผู้ใช้จะได้ไฟล์ `notes/data-summary-<เวลา>.txt`, `notes/resource-spent-<เวลา>.tsv`, `notes/balance-<เวลา>.txt`, และ `notes/bill-<เวลา>.txt` เมื่อ resource log ว่าง ให้ตรวจว่า `notes/job-history.tsv` มี job id เมื่อ `sacct` ยังรอข้อมูล job ใหม่ ให้รอสักครู่แล้วรันซ้ำ

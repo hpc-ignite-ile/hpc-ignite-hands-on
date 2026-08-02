@@ -1,5 +1,7 @@
 # บทที่ 20: เคมีคอมพิวเตอร์
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 20: Computational Chemistry
 
 ## เริ่มรันงานจิ๋วบน LANTA

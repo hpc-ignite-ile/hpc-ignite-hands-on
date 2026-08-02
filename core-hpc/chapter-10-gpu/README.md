@@ -1,5 +1,7 @@
 # บทที่ 10: การเขียนโปรแกรม GPU
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 10: GPU Programming with CUDA
 
 ## เริ่มรันงานจิ๋วบน LANTA

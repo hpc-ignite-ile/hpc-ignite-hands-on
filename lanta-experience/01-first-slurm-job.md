@@ -2,6 +2,8 @@
 
 สร้าง Python script และ Slurm job script ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง.
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น heredoc, `sbatch`, `squeue`, `sacct`, `tail`, `cat`, `module purge`, `module load` และ `SLURM_SUBMIT_DIR`
+
 ## Copy-Paste
 
 ```bash
@@ -67,9 +69,9 @@ echo "  cat results/hello_${job_id}.txt"
 
 ในขั้นตอนนี้ ผู้ใช้จะสร้างไฟล์สองไฟล์ คือ `src/hello_lanta.py` สำหรับงาน Python และ `jobs/hello_lanta.sbatch` สำหรับบอก Slurm ว่าต้องใช้ทรัพยากรเท่าใด
 
-เมื่อส่งด้วย `sbatch` งานจะไม่รันบน login node แต่เข้า queue เพื่อให้ Slurm จัดไปยัง compute node ไฟล์ log จะถูกเก็บใน `logs/` และผลลัพธ์ของ Python จะถูกเก็บใน `results/`
+เมื่อส่งด้วย `sbatch` งานจะเข้า queue เพื่อให้ Slurm จัดไปยัง compute node ไฟล์ log จะถูกเก็บใน `logs/` และผลลัพธ์ของ Python จะถูกเก็บใน `results/`
 
-เมื่อสำเร็จ `sbatch` จะคืน job id ให้ผู้ใช้ จากนั้นใช้ `squeue -j <job-id>` เพื่อตรวจสถานะ และใช้ `sacct` หลังงานจบเพื่อตรวจว่าเป็น `COMPLETED` หาก submit ไม่ผ่านให้ตรวจ `LANTA_ACCOUNT` หาก job ค้างให้ดู reason ใน `squeue` หาก log แจ้งว่าไม่มี Python ให้ตรวจ `module avail python` และอย่ารัน `.sbatch` ด้วย `bash` เพราะงาน Slurm ต้องส่งผ่าน `sbatch`
+เมื่อสำเร็จ `sbatch` จะคืน job id ให้ผู้ใช้ จากนั้นใช้ `squeue -j <job-id>` เพื่อตรวจสถานะ และใช้ `sacct` หลังงานจบเพื่อตรวจว่าเป็น `COMPLETED` เมื่อ submit error ให้ตรวจ `LANTA_ACCOUNT` เมื่อ job ค้างให้ดู reason ใน `squeue` เมื่อ log แจ้งว่า Python หาย ให้ตรวจ `module avail python` และส่งงาน Slurm ผ่าน `sbatch`
 
 ## Modify
 

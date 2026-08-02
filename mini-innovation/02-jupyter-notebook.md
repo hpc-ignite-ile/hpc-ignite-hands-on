@@ -2,6 +2,8 @@
 
 หน้านี้เปิด Jupyter Lab บน compute node ผ่าน Slurm allocation แล้ว tunnel กลับมาเปิดใน browser บนเครื่อง local ใช้ environment และ module จาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `sbatch`, `squeue`, `tail`, `scancel`, heredoc, `python - <<'PY'`, และ SSH tunnel `-L`
+
 ## Copy-Paste จากเครื่อง Local
 
 ```bash
@@ -41,7 +43,7 @@ cat > notebooks/episprint_explore.ipynb <<'IPYNB'
    "source": [
     "# LANTA EpiSprint\\n",
     "\\n",
-    "Notebook นี้ใช้สำรวจผลลัพธ์ epidemic ABS แบบสั้น ถ้ายังไม่มีผลลัพธ์จริง cell จะสร้างข้อมูลตัวอย่างให้ดูรูปแบบก่อน"
+    "Notebook นี้ใช้สำรวจผลลัพธ์ epidemic ABS แบบสั้น เมื่อยังรอผลลัพธ์จริง cell จะสร้างข้อมูลตัวอย่างเพื่อสาธิตโครงสร้างข้อมูลก่อน"
    ]
   },
   {
@@ -159,9 +161,9 @@ http://127.0.0.1:<port>/lab?token=...
 
 ## คำอธิบาย
 
-Jupyter ต้องรันบน compute node ไม่ใช่ login node เพราะ kernel สามารถใช้ CPU และ memory ต่อเนื่องได้ การส่ง `jobs/jupyter_episprint.sbatch` เข้า `compute-devel` ทำให้ Slurm จัดสรรทรัพยากรให้ชัดเจน ส่วน SSH tunnel ทำให้ browser บนเครื่อง local เชื่อมไปยัง Jupyter ที่รันอยู่บน node ภายใน LANTA ได้อย่างปลอดภัย
+Jupyter ใน lab นี้รันภายใน Slurm allocation บน compute node เพราะ kernel ใช้ CPU และ memory ต่อเนื่องระหว่างวิเคราะห์ข้อมูล การส่ง `jobs/jupyter_episprint.sbatch` เข้า `compute-devel` ทำให้มีหลักฐานด้าน resource ใน queue และ log ส่วน SSH tunnel ทำให้ browser บนเครื่อง local เชื่อมไปยัง Jupyter ที่รันอยู่บน node ภายใน LANTA ได้อย่างปลอดภัย
 
-ไฟล์ notebook ตัวอย่างอยู่ที่ `notebooks/episprint_explore.ipynb` ถ้ายังไม่มีผลลัพธ์จากหน้า ABS notebook จะสร้างข้อมูลตัวอย่างเพื่อให้เห็นรูปแบบกราฟก่อน เมื่อรันหน้า ABS แล้ว notebook จะอ่าน `results/epi_summary_*.csv` จริงแทน
+ไฟล์ notebook ตัวอย่างอยู่ที่ `notebooks/episprint_explore.ipynb` ช่วงเริ่มกิจกรรม notebook ใช้ข้อมูลตัวอย่างเพื่อสาธิต schema และกราฟ หลังจากรันหน้า ABS แล้ว notebook จะอ่าน `results/epi_summary_*.csv` จริงเพื่อเปรียบเทียบ policy
 
 ## ปิดงานเมื่อใช้เสร็จ
 
@@ -172,4 +174,4 @@ squeue -u "$USER"
 scancel <jobid>
 ```
 
-ถ้า browser เปิดไม่ได้ ให้ตรวจสามจุดนี้ตามลำดับ: job ยังรันอยู่หรือไม่, tunnel command ใช้ port และ node ตรงกับ log หรือไม่, และ URL มี token ครบหรือไม่
+เมื่อต้องแก้ปัญหา browser ให้ตรวจสามจุดนี้ตามลำดับ: job ยังอยู่ใน `squeue`, tunnel command ใช้ port และ node ตรงกับ log, และ URL มี token ครบ

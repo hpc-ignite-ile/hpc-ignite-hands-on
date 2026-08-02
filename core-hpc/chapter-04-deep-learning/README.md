@@ -1,5 +1,7 @@
 # บทที่ 4: การเรียนรู้เชิงลึกบนระบบ HPC
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 4: Deep Learning with PyTorch on HPC
 
 ## เริ่มรันงานจิ๋วบน LANTA

@@ -1,5 +1,7 @@
 # บทที่ 5: การประมวลผล Big Data
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 5: Big Data Processing
 
 ## วัตถุประสงค์การเรียนรู้

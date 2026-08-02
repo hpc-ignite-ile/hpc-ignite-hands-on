@@ -2,6 +2,8 @@
 
 คู่มือเริ่มต้นสำหรับใช้ repo นี้บน LANTA ตาม booklet ของงาน LANTA HPC Experience Day: On the Move.
 
+คำสั่งและ syntax ในหน้านี้อธิบายรวมไว้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `scp`, `rsync`, `git clone`, `module`, `sbatch`, `squeue`, `sacct`, heredoc และ `#SBATCH`
+
 ## 1. SSH To LANTA
 
 ```bash
@@ -45,7 +47,7 @@ Then follow [lanta-experience/README.md](lanta-experience/README.md).
 
 ## 4. First Job Pattern
 
-The teaching pattern is direct heredoc, not a hidden submit helper:
+Teaching pattern นี้ให้ผู้ใช้เห็นไฟล์ที่สร้างจริงด้วย heredoc และเห็น `.sbatch` ที่ส่งด้วย `sbatch` โดยตรง:
 
 ```bash
 cd "$HOME/lanta-experience"
@@ -155,3 +157,5 @@ Use the booklet-aligned labs:
 ```bash
 sed -n '1,160p' "$HOME/hpc-ignite-hands-on/lanta-experience/README.md"
 ```
+
+อ่านคำอธิบาย `sed -n '1,160p' ...` ได้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md#sed](docs/BASH_COMMAND_REFERENCE_TH.md#sed)

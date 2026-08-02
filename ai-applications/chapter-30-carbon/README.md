@@ -1,5 +1,7 @@
 # บทที่ 30: Carbon Footprint และ HPC
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 30: Carbon Verification with HPC
 
 ## วัตถุประสงค์การเรียนรู้

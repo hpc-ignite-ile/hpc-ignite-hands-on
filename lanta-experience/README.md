@@ -2,6 +2,8 @@
 
 ลำดับนี้ตาม booklet `LANTA HPC Handbook` สำหรับ LANTA HPC Experience Day: On the Move ให้ผู้ใช้แปะคำสั่งทีละ block และตรวจไฟล์จริงที่สร้างขึ้น เช่น `src/*.py`, `jobs/*.sbatch`, `configs/*`, `logs/*`, `results/*`, และ `notes/*`
 
+คำสั่งและ syntax ใน lab ชุดนี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `cd`, `mkdir -p`, heredoc, `export`, `sbatch`, `squeue`, `sacct`, `srun`, `tail` และตัวแปร `SLURM_*`
+
 ## Event Flow
 
 | ช่วงใน booklet | Lab ใน repo | ผลลัพธ์ที่ควรมี |
@@ -47,9 +49,9 @@ pwd
 
 ก่อนเริ่ม lab ให้ผู้ใช้สร้างโฟลเดอร์ `lanta-experience` ไว้เป็นพื้นที่ทำงานหลัก จากนั้นสร้างโฟลเดอร์ย่อย `configs`, `input`, `jobs`, `logs`, `notes`, `results`, และ `src` ให้ครบ เพื่อแยกไฟล์คำสั่ง ไฟล์งาน ผลลัพธ์ และบันทึกออกจากกัน
 
-ในขั้นตอนนี้ ผู้ใช้ยังไม่ต้องส่ง job ใด ๆ เพียงตั้งค่า `LANTA_ACCOUNT`, `LANTA_CPU_PARTITION`, และ `LANTA_GPU_PARTITION` ให้พร้อม ตัวแปรเหล่านี้จะถูกใช้ซ้ำใน lab ถัดไป จึงไม่ต้องแก้ account หรือ partition ซ้ำในทุกไฟล์
+ในขั้นตอนนี้ ผู้ใช้ตั้งค่า `LANTA_ACCOUNT`, `LANTA_CPU_PARTITION`, และ `LANTA_GPU_PARTITION` ให้พร้อมก่อนส่ง job ตัวแปรเหล่านี้จะถูกใช้ซ้ำใน lab ถัดไป ทำให้ account และ partition คงที่ตลอดกิจกรรม
 
-เมื่อตรวจสอบ ให้ใช้ `pwd` เพื่อดูว่าผู้ใช้อยู่ใน path ที่ลงท้ายด้วย `lanta-experience` และใช้ `ls` หรือ `find . -maxdepth 1 -type d` เพื่อดูว่าโฟลเดอร์มาตรฐานถูกสร้างครบ หาก path ไม่ถูกต้อง ให้กลับไปตรวจ `$HOME` ด้วย `echo "$HOME"` แล้วรัน block เตรียมพื้นที่ใหม่อีกครั้ง
+เมื่อตรวจสอบ ให้ใช้ `pwd` เพื่อดูว่าผู้ใช้อยู่ใน path ที่ลงท้ายด้วย `lanta-experience` และใช้ `ls` หรือ `find . -maxdepth 1 -type d` เพื่อดูว่าโฟลเดอร์มาตรฐานถูกสร้างครบ หาก path คลาดจากที่ตั้งใจ ให้กลับไปตรวจ `$HOME` ด้วย `echo "$HOME"` แล้วรัน block เตรียมพื้นที่ใหม่อีกครั้ง
 
 If your project policy requires a different partition, set it before submitting:
 

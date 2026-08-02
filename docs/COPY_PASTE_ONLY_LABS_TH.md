@@ -1,13 +1,15 @@
 # Copy-Paste Only Labs สำหรับ LANTA
 
-เอกสารนี้ใช้กับผู้ใช้ที่ยังไม่ถนัด Linux CLI: ให้ copy-paste เป็นหลัก แต่ไม่ซ่อนงานไว้ใน helper script. Block ที่แปะควรสร้างไฟล์จริงด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
+เอกสารนี้ใช้กับผู้ใช้เริ่มต้น Linux CLI: ให้ copy-paste เป็นหลัก พร้อมเห็นไฟล์จริงและคำสั่งที่ใช้ส่งงาน. Block ที่แปะควรสร้างไฟล์จริงด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
+
+ดูคำอธิบายคำสั่งและ syntax ที่ใช้ใน block ได้ที่ [BASH_COMMAND_REFERENCE_TH.md](BASH_COMMAND_REFERENCE_TH.md)
 
 ## กติกาของ lab แบบ copy-paste only
 
 - หนึ่งกิจกรรมควรมี block หลักที่แปะได้ทันที
 - ใช้ `cat > file <<'EOF'` เพื่อสร้างไฟล์ที่ผู้ใช้เปิดอ่านต่อได้
 - สร้าง `src/`, `jobs/`, `configs/`, `logs/`, `results/`, `notes/` ให้เห็นชัด
-- ส่งงานด้วย `sbatch` โดยตรง ไม่เรียก helper ที่ซ่อนรายละเอียดงาน
+- ส่งงานด้วย `sbatch` โดยตรง พร้อมแสดงรายละเอียดใน `jobs/*.sbatch`
 - ถ้าต้องใช้ project account ให้ถามผ่าน `read -rp` แล้วส่งด้วย `sbatch -A "$LANTA_ACCOUNT"`
 - ใช้ `compute-devel` หรือ `gpu-devel` สำหรับ smoke test ก่อน
 - หลัง submit ต้องพิมพ์คำสั่ง monitor และผลลัพธ์ที่ควรอ่านต่อ

@@ -1,5 +1,7 @@
 # บทที่ 9: Apache Spark
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 9: Apache Spark for Distributed Computing
 
 ## วัตถุประสงค์การเรียนรู้

@@ -1,5 +1,7 @@
 # บทที่ 27: การป้องกันภัยพิบัติ
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 27: Disaster Prevention
 
 ## เริ่มรันงานจิ๋วบน LANTA

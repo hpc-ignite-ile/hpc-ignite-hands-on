@@ -1,5 +1,7 @@
 # บทที่ 0: HPC 101 - บทนำสู่การประมวลผลสมรรถนะสูง
 
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
 Chapter 0: Introduction to High-Performance Computing
 
 ## วัตถุประสงค์การเรียนรู้
@@ -31,7 +33,7 @@ chapter-00/
 # Login to LANTA
 ssh username@lanta.nstda.or.th
 
-# Clone repo (ถ้ายังไม่มี)
+# Clone repo เมื่อเริ่มครั้งแรก
 cd $HOME
 git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
 cd hpc-ignite-hands-on/foundation/chapter-00
