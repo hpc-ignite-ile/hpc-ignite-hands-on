@@ -1,0 +1,141 @@
+# 01 สร้าง Custom Python Environment และ Module
+
+หน้านี้ใช้สำหรับผู้สอนหรือทีมที่ต้องเตรียม environment กลางสำหรับ mini innovation แบบ epidemic ABS โดยติดตั้ง Mesa, scientific Python และ Jupyter ลงใน project space แล้วสร้าง Lmod module เพื่อให้ผู้เรียนโหลดใช้ง่าย
+
+ถ้ายังไม่เคยเข้า LANTA ให้ดู [00-connect-to-lanta.md](00-connect-to-lanta.md) ก่อน หน้านี้เริ่มจากเครื่อง local และใช้ transfer host เพราะมีการดาวน์โหลด package
+
+## Copy-Paste จากเครื่อง Local
+
+```bash
+ssh <lanta-username>@transfer.lanta.nstda.or.th
+```
+
+## Copy-Paste บน Transfer Host
+
+```bash
+mkdir -p "$HOME/lanta-episprint"
+cd "$HOME/lanta-episprint"
+mkdir -p logs notes
+
+if [ -z "${LANTA_PROJECT:-}" ]; then
+    read -rp "Project directory เช่น /project/ltXXXXXX-name หรือ /project/tn999996-north: " LANTA_PROJECT
+    export LANTA_PROJECT
+fi
+
+export EPI_ENV_NAME="${EPI_ENV_NAME:-hpc-mesa}"
+export EPI_ENV_PREFIX="${EPI_ENV_PREFIX:-$LANTA_PROJECT/envs/$EPI_ENV_NAME}"
+export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
+export EPI_MODULE_VERSION="${EPI_MODULE_VERSION:-2.3.4}"
+export CONDA_PKGS_DIRS="${CONDA_PKGS_DIRS:-$LANTA_PROJECT/conda-pkgs}"
+export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$LANTA_PROJECT/pip-cache}"
+
+mkdir -p "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT/hpc-mesa" "$CONDA_PKGS_DIRS" "$PIP_CACHE_DIR"
+
+module purge
+module load Mamba/23.11.0-0
+
+if [ ! -x "$EPI_ENV_PREFIX/bin/python" ]; then
+    mamba create -y -p "$EPI_ENV_PREFIX" \
+        --override-channels -c conda-forge \
+        python=3.10 pip numpy pandas scipy matplotlib pyyaml networkx tqdm \
+        jupyterlab notebook ipykernel
+else
+    echo "Environment exists: $EPI_ENV_PREFIX"
+fi
+
+conda run -p "$EPI_ENV_PREFIX" python -m pip install --no-cache-dir "mesa==$EPI_MODULE_VERSION"
+
+cat > "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" <<'LUA'
+help([[
+hpc-mesa: Python environment for LANTA EpiSprint.
+It provides Mesa, NumPy, pandas, SciPy, Matplotlib, NetworkX, PyYAML, and Jupyter.
+]])
+
+whatis("Python/Mesa environment for LANTA EpiSprint mini innovation")
+
+local prefix = "__EPI_ENV_PREFIX__"
+prepend_path("PATH", pathJoin(prefix, "bin"))
+setenv("HPC_MESA_ENV", prefix)
+setenv("PYTHONNOUSERSITE", "1")
+LUA
+
+python - "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" "$EPI_ENV_PREFIX" <<'PY'
+from pathlib import Path
+import sys
+
+modulefile = Path(sys.argv[1])
+prefix = sys.argv[2]
+text = modulefile.read_text(encoding="utf-8").replace("__EPI_ENV_PREFIX__", prefix)
+modulefile.write_text(text, encoding="utf-8")
+PY
+
+chmod -R g+rwX "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT" "$CONDA_PKGS_DIRS" "$PIP_CACHE_DIR" 2>/dev/null || true
+find "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT" -type d -exec chmod g+s {} \; 2>/dev/null || true
+
+module use "$EPI_MODULE_ROOT"
+module load "hpc-mesa/$EPI_MODULE_VERSION"
+
+python - <<'PY'
+import sys
+import mesa
+import numpy
+import pandas
+import scipy
+import matplotlib
+import yaml
+import networkx
+from mesa.time import RandomActivation
+from mesa.space import MultiGrid
+
+print("python", sys.version.split()[0])
+print("mesa", mesa.__version__)
+print("numpy", numpy.__version__)
+print("pandas", pandas.__version__)
+print("scipy", scipy.__version__)
+print("matplotlib", matplotlib.__version__)
+print("pyyaml", yaml.__version__)
+print("networkx", networkx.__version__)
+print("mesa_api", "RandomActivation and MultiGrid OK")
+PY
+
+cat > notes/hpc-mesa-env.sh <<EOF
+export LANTA_PROJECT="$LANTA_PROJECT"
+export EPI_ENV_PREFIX="$EPI_ENV_PREFIX"
+export EPI_MODULE_ROOT="$EPI_MODULE_ROOT"
+export EPI_MODULE_VERSION="$EPI_MODULE_VERSION"
+module use "$EPI_MODULE_ROOT"
+module load "hpc-mesa/$EPI_MODULE_VERSION"
+EOF
+
+cat notes/hpc-mesa-env.sh
+```
+
+## คำอธิบาย
+
+Environment นี้ถูกสร้างแบบ `--prefix` ใน project space เพื่อให้ใช้ร่วมกันได้ทั้งกลุ่ม ไม่ผูกกับ home directory ของคนใดคนหนึ่ง การตั้ง `CONDA_PKGS_DIRS` และ `PIP_CACHE_DIR` ไปที่ project ช่วยหลีกเลี่ยงปัญหา package cache กลางของระบบที่ผู้ใช้ทั่วไปอาจไม่มีสิทธิ์เขียน
+
+เรา pin `mesa==2.3.4` เพราะ tutorial แบบ Agent-Based Simulation เดิมใช้ API เช่น `mesa.time.RandomActivation` และ `mesa.space.MultiGrid` ซึ่งเข้ากับ Mesa 2.x ได้ตรงกว่า การเพิ่ม Jupyter ลง environment เดียวกันช่วยให้หน้า notebook ใช้ module เดียวกันกับ batch job ลดความสับสนระหว่าง Python หลายชุด
+
+Lmod module ที่สร้างไว้ใน `$EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua` ทำหน้าที่เพิ่ม `bin` ของ environment เข้า `PATH` และตั้ง `HPC_MESA_ENV` เพื่อให้ job script เรียก `python` ได้ตรงกับ environment ที่เตรียมไว้ ผู้เรียนจึงไม่ต้องจำ path ยาวทุกครั้ง
+
+## Check บน Login Host
+
+ออกจาก transfer host แล้วเข้า login host เพื่อทดสอบ module จากมุมมองที่ใช้ submit job
+
+```bash
+ssh <lanta-username>@lanta.nstda.or.th
+cd "$HOME/lanta-episprint"
+source notes/hpc-mesa-env.sh 2>/dev/null || true
+
+if [ -z "${EPI_MODULE_ROOT:-}" ]; then
+    read -rp "Module root เช่น /project/ltXXXXXX-name/modules: " EPI_MODULE_ROOT
+    export EPI_MODULE_ROOT
+fi
+
+module use "$EPI_MODULE_ROOT"
+module load hpc-mesa/2.3.4
+which python
+python -c "import mesa; from mesa.time import RandomActivation; print('mesa', mesa.__version__, 'ok')"
+```
+
+ถ้า `module load hpc-mesa/2.3.4` ไม่พบ module ให้ตรวจว่า `EPI_MODULE_ROOT` ชี้ไปที่ project เดียวกับที่สร้าง environment หรือไม่ ถ้า `python` ไม่ใช่ path ใต้ project ให้ `module purge` แล้ว `module use ...` และ `module load ...` ใหม่

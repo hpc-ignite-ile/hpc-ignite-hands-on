@@ -33,6 +33,7 @@ hpc-ignite-hands-on/
 ├── core-hpc/                # Reference chapters: environment, parallel, data, MPI, GPU
 ├── ai-applications/         # Reference AI chapters
 ├── domain-science/          # Reference science/domain chapters
+├── mini-innovation/         # Scaffolded epidemic ABS innovation labs
 ├── environments/            # Optional Conda/Mamba environment files
 ├── slurm/                   # Reusable Slurm templates and module-load snippets
 ├── docs/                    # Authoring guide and copy-paste conventions
@@ -50,6 +51,14 @@ hpc-ignite-hands-on/
 | OpenMP and MPI | [03-openmp-mpi.md](lanta-experience/03-openmp-mpi.md) | Compile C examples and launch with `srun` |
 | Science/data | [04-science-data.md](lanta-experience/04-science-data.md) | Run diffusion/data examples and capture evidence |
 | AI/GPU | [05-ai-gpu.md](lanta-experience/05-ai-gpu.md) | Request one GPU and verify CUDA/PyTorch |
+
+## Mini Innovation Path
+
+For a short live training activity with a scientific model, agent-based simulation, and AI scaffolding, use [mini-innovation/README.md](mini-innovation/README.md). The first mini innovation is **LANTA EpiSprint**, a Thai tutorial for epidemic ABS with Mesa, custom Python environments, Jupyter on Slurm, single jobs, job arrays, and multicore ensembles.
+
+## Real Mini Workflow Audit
+
+For a repo-wide evaluation of how to make the examples more LANTA-native, module-backed, and closer to real miniature scientific/developer workflows, see [docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md](docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md).
 
 ## Copy-Paste Style
 
