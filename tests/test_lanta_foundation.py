@@ -271,6 +271,20 @@ class LantaFoundationTests(unittest.TestCase):
         self.assertIn("--agents 1500", text)
         self.assertIn("--days 45", text)
 
+    def test_twinb_cosimulation_tutorial_declares_coupling_contract(self) -> None:
+        path = REPO_ROOT / "mini-innovation" / "04-building-cosimulation-twinb.md"
+        text = path.read_text(encoding="utf-8")
+        for marker in [
+            "wdiazcarballo/hpcignite-twinb",
+            "ThermalSurrogate",
+            "TwinBCosim",
+            "OccupantAgent",
+            "zone_temperature -> occupant comfort -> setpoint request",
+            "#SBATCH --array=1-6%2",
+            "twinb_policy_compare",
+        ]:
+            self.assertIn(marker, text)
+
 
 if __name__ == "__main__":
     unittest.main()

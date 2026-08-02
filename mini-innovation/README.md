@@ -1,6 +1,6 @@
-# Mini Innovation: LANTA EpiSprint
+# Mini Innovation: LANTA EpiSprint และ Twin-B MicroCosim
 
-แบบฝึกปฏิบัตินี้เป็น tutorial ภาษาไทยสำหรับกิจกรรมสดประมาณ 40 คน โดยใช้ mini innovation ชื่อ **LANTA EpiSprint**: แบบจำลองโรคระบาดแบบ agent-based simulation ที่มี AI เป็น scaffold ช่วยตั้งคำถาม สร้าง scenario ตรวจ Slurm และอ่านผลลัพธ์
+แบบฝึกปฏิบัตินี้เป็น tutorial ภาษาไทยสำหรับกิจกรรมสดประมาณ 40 คน โดยมีสอง innovation track ขนาดจิ๋วบน LANTA: **LANTA EpiSprint** สำหรับ epidemic ABS และ **Twin-B MicroCosim** สำหรับ co-simulation ระหว่าง scientific thermal model กับ Mesa occupant agents
 
 ดูคำอธิบายคำสั่ง Bash, Slurm และ syntax ที่ใช้ใน mini innovation ได้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md)
 
@@ -14,9 +14,16 @@
 รวมผลเป็นตาราง เปรียบเทียบ peak, attack rate และความไวของนโยบาย<br>
 ผลที่ดีต้องตรวจซ้ำได้ มี log, config, version และ sanity check รองรับ
 
+อ่านอุณหภูมิราย zone จาก model อาคาร ส่งให้ agent ประเมิน comfort<br>
+รวม setpoint request กลับไปปรับ cooling แล้วเดิน timestep ถัดไป<br>
+ให้ LANTA กระจาย policy และ seed เป็น array สั้นหลายชุด<br>
+ผลที่ดีต้องอธิบาย trade-off ระหว่าง energy, comfort และหลักฐานจาก CSV ได้
+
 ## คำอธิบายเชิงวิชาการ
 
 LANTA EpiSprint ใช้แบบจำลอง SEIR แบบ agent-based simulation บน Mesa เพื่อศึกษาความสัมพันธ์ระหว่างพฤติกรรมระดับ agent, ค่าพารามิเตอร์ของการแพร่เชื้อ, และผลรวมระดับประชากร เช่น peak infectious agents, peak day และ attack rate
+
+Twin-B MicroCosim ย่อแนวคิดจาก building digital twin ที่ใช้ scientific model ส่ง zone temperature ให้ ABS และรับ setpoint request กลับไปคำนวณ cooling energy การย่อเป็น thermal surrogate ทำให้ผู้ใช้เห็น coupling contract และ sensitivity ของ policy ในเวลาอบรมสั้น
 
 แนวใช้ที่เหมาะสมคือเริ่มจาก smoke job เพื่อยืนยันว่า environment, module, account และ partition ทำงานถูกต้อง จากนั้นใช้ job array เพื่อรันหลาย scenario จาก CSV และใช้ multicore job เพื่อรัน ensemble ภายในหนึ่ง node การออกแบบเช่นนี้ทำให้ผู้ใช้เห็น workflow วิทยาศาสตร์ขนาดจิ๋วที่มี input, code, scheduler evidence, output และ summary แยกกันชัดเจน
 
@@ -30,6 +37,7 @@ LANTA EpiSprint ใช้แบบจำลอง SEIR แบบ agent-based sim
 | [01-custom-python-env-module.md](01-custom-python-env-module.md) | สร้าง Python environment และ Lmod module สำหรับ Mesa | ใช้เมื่อทีมต้องเตรียม environment กลาง |
 | [02-jupyter-notebook.md](02-jupyter-notebook.md) | เปิด Jupyter Notebook ผ่าน Slurm allocation | สำรวจผลลัพธ์แบบ interactive |
 | [03-epidemic-abs-examples.md](03-epidemic-abs-examples.md) | สร้างและรัน epidemic ABS 3 วิธี | lab หลักของ mini innovation |
+| [04-building-cosimulation-twinb.md](04-building-cosimulation-twinb.md) | สร้าง co-simulation แบบ Twin-B MicroCosim | แสดงการทำงานร่วมกันของ scientific model และ ABS |
 
 ทุกหน้าเริ่มจากเครื่อง local ด้วย `ssh` เข้า LANTA หรือมี link กลับไปยังหน้าเชื่อมต่อกลาง ผู้ใช้จึงเปิดหน้าใดหน้าหนึ่งแล้วเริ่มทำต่อได้ทันที
 
@@ -52,6 +60,7 @@ LANTA EpiSprint ใช้แบบจำลอง SEIR แบบ agent-based sim
 - Slurm job array
 - Multicore Python ภายในหนึ่ง node
 - การออกแบบ experiment แบบ reproducible
+- การออกแบบ co-simulation และ data contract ระหว่าง model
 - AI scaffolding สำหรับตั้งคำถาม ออกแบบ scenario ตรวจ Slurm script และอธิบายผลโดยอ้างอิง code, config, log และ CSV
 
 ## Standalone Smoke Job
