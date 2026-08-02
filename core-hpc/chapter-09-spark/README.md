@@ -2,91 +2,49 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 9: Apache Spark for Distributed Computing
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## วัตถุประสงค์การเรียนรู้
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/core-spark-shape` โดยตรง
 
-1. เข้าใจ Spark Architecture
-2. ใช้ RDD และ Transformations
-3. ประยุกต์ Spark DataFrame API
-4. รัน Spark บน SLURM Cluster
+## เป้าหมาย
 
-## โครงสร้างไฟล์
+1. ตรวจแนวคิด partitioned word count
+2. บันทึกผลแบบ Spark-shaped workflow
+3. เตรียมหลักฐานก่อนขยายสู่ Spark module จริง
 
-```
-chapter-09-spark/
-├── README.md
-├── spark_basics.py          # PySpark fundamentals
-├── spark_dataframe.py       # DataFrame operations
-├── spark_wordcount.py       # Classic word count
-├── spark_ml_pipeline.py     # Machine learning pipeline
-└── sbatch/
-    └── spark_cluster.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# On LANTA: first verify whether Spark is available for your account
-module spider Spark
+mkdir -p "$HOME/hpc-ignite-standalone/core-spark-shape"
+cd "$HOME/hpc-ignite-standalone/core-spark-shape"
+mkdir -p configs input jobs logs notes results src
 
-# If Spark is not visible, treat this chapter as optional and use the Dask
-# chapter for the live distributed-data exercise.
-python spark_basics.py
-
-# Submit to SLURM
-sbatch sbatch/spark_cluster.sbatch
-```
-
-## Spark Architecture
-
-```
-┌─────────────────────────────────────────────────┐
-│                 Driver Program                  │
-│              (SparkContext/Session)             │
-└───────────────────────┬─────────────────────────┘
-                        │
-         ┌──────────────┼──────────────┐
-         ▼              ▼              ▼
-    ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │ Worker  │   │ Worker  │   │ Worker  │
-    │  Node   │   │  Node   │   │  Node   │
-    │ (Tasks) │   │ (Tasks) │   │ (Tasks) │
-    └─────────┘   └─────────┘   └─────────┘
-```
-
-## Key Concepts
-
-### Lazy Evaluation
-```python
-# These operations are lazy (not computed yet)
-rdd = sc.textFile("data.txt")
-filtered = rdd.filter(lambda x: "error" in x)
-counts = filtered.map(lambda x: (x, 1))
-
-# Action triggers computation
-result = counts.collect()
-```
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-09-spark/spark_basics.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/spark_shape.py <<'PYCODE'
+from pathlib import Path
+from collections import Counter
+import json
+Path("input").mkdir(exist_ok=True); Path("results").mkdir(exist_ok=True)
+text = "lanta spark hpc data lanta hpc ignite spark data data"
+Path("input/words.txt").write_text(text + "\n", encoding="utf-8")
+counts = Counter(text.split())
+out = Path("results/spark_shaped_wordcount.json"); out.write_text(json.dumps(dict(sorted(counts.items())), indent=2), encoding="utf-8"); print(out.read_text(encoding="utf-8"))
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/spark-shape.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=spark-shape
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -96,23 +54,36 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/spark_shape.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/spark-shape.sbatch)
+echo "$job_id	spark-shape	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/spark-shape_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=core-hpc/chapter-09-spark/spark_basics.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/core-spark-shape"
+cat results/spark_shaped_wordcount.json
+tail -50 logs/spark-shape_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

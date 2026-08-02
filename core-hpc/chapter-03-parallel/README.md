@@ -2,104 +2,79 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 3: Parallel Programming with MPI and Multiprocessing
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/core-mpi-rank` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel core-hpc/chapter-03-parallel/jobs/mpi_rank_smoke.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น log ที่มี 4 MPI ranks จากคำสั่ง `srun -n 4` ก่อนขยายไป Python `mpi4py`
+1. compile โปรแกรม MPI ขนาดเล็ก
+2. รัน 4 ranks ด้วย srun
+3. ตรวจจำนวน rank จาก log
 
-## วัตถุประสงค์การเรียนรู้
-
-1. เข้าใจหลักการ Shared Memory vs Distributed Memory
-2. เขียนโปรแกรม MPI พื้นฐานด้วย mpi4py
-3. ใช้ Python multiprocessing สำหรับงาน CPU-bound
-4. ประยุกต์ใช้ Domain Decomposition
-
-## โครงสร้างไฟล์
-
-```
-chapter-03-parallel/
-├── README.md
-├── mpi/
-│   ├── hello_mpi.py           # MPI Hello World
-│   ├── parallel_sum.py        # Parallel summation
-│   ├── monte_carlo_pi.py      # Monte Carlo π estimation
-│   ├── domain_decomposition.py # Domain decomposition example
-│   └── collective_ops.py      # MPI collective operations
-├── multiprocessing/
-│   ├── pool_example.py        # Process pool
-│   └── shared_memory.py       # Shared memory example
-└── sbatch/
-    ├── mpi_single_node.sbatch
-    └── mpi_multi_node.sbatch
-```
-
-## การใช้งาน
-
-### MPI Examples
+## Copy-Paste บน LANTA
 
 ```bash
-# Load modules
-source ../../slurm/module-loads/mpi.sh
+mkdir -p "$HOME/hpc-ignite-standalone/core-mpi-rank"
+cd "$HOME/hpc-ignite-standalone/core-mpi-rank"
+mkdir -p jobs logs notes results src
 
-# Create environment
-mamba env create -f ../../environments/mpi.yaml
-mamba activate hpc-ignite-mpi
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then export LANTA_CPU_PARTITION="compute-devel"; fi
+if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
+SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
 
-# Run locally (4 processes)
-mpirun -np 4 python mpi/hello_mpi.py
+cat > src/mpi_hello.c <<'C_CODE'
+#include <mpi.h>
+#include <stdio.h>
+int main(int argc, char **argv) {
+    MPI_Init(&argc, &argv);
+    int rank, size; char name[MPI_MAX_PROCESSOR_NAME]; int len = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank); MPI_Comm_size(MPI_COMM_WORLD, &size); MPI_Get_processor_name(name, &len);
+    printf("rank %d of %d on %s\n", rank, size, name);
+    MPI_Finalize(); return 0;
+}
+C_CODE
 
-# Submit to LANTA
-sbatch sbatch/mpi_single_node.sbatch
+cat > jobs/mpi_rank.sbatch <<'SLURM'
+#!/bin/bash
+#SBATCH --job-name=mpi-rank
+#SBATCH --nodes=1
+#SBATCH --ntasks=4
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1G
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+set -euo pipefail
+module purge
+module load cpeCray/25.03 2>/dev/null || module load cray-mpich 2>/dev/null || true
+cd "$SLURM_SUBMIT_DIR"
+mkdir -p "results/${SLURM_JOB_ID}"
+cc src/mpi_hello.c -o "results/${SLURM_JOB_ID}/mpi_hello"
+srun -n "$SLURM_NTASKS" "results/${SLURM_JOB_ID}/mpi_hello" | sort | tee "results/${SLURM_JOB_ID}/ranks.txt"
+SLURM
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/mpi_rank.sbatch)
+echo "$job_id	mpi_rank	$(date -Is)" >> notes/job-history.tsv
+echo "Submitted job: $job_id"
+echo "Read: tail -50 logs/mpi-rank_${job_id}.out"
 ```
 
-### Multiprocessing Examples
+## Check
 
 ```bash
-# No special modules needed
-python multiprocessing/pool_example.py
+cd "$HOME/hpc-ignite-standalone/core-mpi-rank"
+find results -maxdepth 2 -type f | sort
+tail -50 logs/mpi-rank_*.out
 ```
 
-## แนวคิดหลัก
+## การตรวจผล
 
-### Shared Memory vs Distributed Memory
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
 
-| Feature | Shared Memory | Distributed Memory |
-|---------|--------------|-------------------|
-| Memory | Single shared space | Separate memory per process |
-| Communication | Direct memory access | Message passing (MPI) |
-| Scalability | Limited to single node | Scales across nodes |
-| Programming | Easier (OpenMP, threading) | More complex (MPI) |
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
 
-### MPI Basic Operations
+## ใช้ Repo เป็น Reference
 
-```python
-from mpi4py import MPI
-
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()  # Process ID
-size = comm.Get_size()  # Total processes
-
-# Point-to-point
-comm.send(data, dest=1)
-data = comm.recv(source=0)
-
-# Collective
-total = comm.reduce(local_sum, op=MPI.SUM, root=0)
-data = comm.bcast(data, root=0)
-```
-
-## เอกสารอ้างอิง
-
-- [Curriculum Book - Chapter 3](https://github.com/wdiazcarballo/hpc-curriculum/blob/main/docs/curriculum-book/chapters/chapter-03-parallel-programming.md)
-- [mpi4py Documentation](https://mpi4py.readthedocs.io/)
-
-## Copy-paste only บน LANTA
-
-บทนี้เป็นแนวคิดหรือ configuration เป็นหลัก ให้เริ่มจาก template ใน `docs/LAB_AUTHORING_GUIDE_TH.md` เพื่อสร้าง `src/*.py` และ `jobs/*.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

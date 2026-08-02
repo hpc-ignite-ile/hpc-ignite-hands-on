@@ -4,6 +4,8 @@
 
 คำสั่งและ syntax ใน lab ชุดนี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `cd`, `mkdir -p`, heredoc, `export`, `sbatch`, `squeue`, `sacct`, `srun`, `tail` และตัวแปร `SLURM_*`
 
+เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน setup block ด้านล่างเพื่อเตรียม workspace กลางของกิจกรรม
+
 ## Event Flow
 
 | ช่วงใน booklet | Lab ใน repo | ผลลัพธ์ที่ควรมี |

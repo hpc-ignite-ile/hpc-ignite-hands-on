@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -106,6 +107,37 @@ class LantaFoundationTests(unittest.TestCase):
             text = doc.read_text(encoding="utf-8")
             for marker in forbidden:
                 self.assertNotIn(marker, text, f"{marker} found in {doc}")
+
+    def test_learner_markdown_submits_standalone_jobs(self) -> None:
+        learner_roots = [
+            REPO_ROOT / "foundation",
+            REPO_ROOT / "core-hpc",
+            REPO_ROOT / "ai-applications",
+            REPO_ROOT / "domain-science",
+            REPO_ROOT / "lanta-experience",
+            REPO_ROOT / "mini-innovation",
+        ]
+        forbidden_patterns = {
+            r"source\s+(?:['\"])?(?:\./|\.\./)*slurm/module-loads/": "sources repo module wrapper",
+            r"sbatch[^\n]*(?:foundation|core-hpc|ai-applications|domain-science|mini-innovation|lanta-experience)/": "submits repo-relative job path",
+            r"cd\s+['\"]?\$HOME/hpc-ignite-hands-on": "requires cloned repo directory",
+        }
+        for root in learner_roots:
+            for path in root.rglob("*.md"):
+                text = path.read_text(encoding="utf-8")
+                for pattern, reason in forbidden_patterns.items():
+                    self.assertIsNone(re.search(pattern, text), f"{path} {reason}")
+                if re.search(r"^\s*(?:job_id=\$\(sbatch|sbatch\s)", text, flags=re.MULTILINE):
+                    self.assertRegex(
+                        text,
+                        r"cat\s+>\s+jobs/[^`\n]+\.sbatch\s+<<",
+                        f"{path} should create a local jobs/*.sbatch file in the page",
+                    )
+                    self.assertRegex(
+                        text,
+                        r"sbatch[^\n]*jobs/[^`\n]+\.sbatch",
+                        f"{path} should submit the local jobs/*.sbatch file",
+                    )
 
     def test_lanta_module_wrappers_exist(self) -> None:
         module_dir = REPO_ROOT / "slurm" / "module-loads"

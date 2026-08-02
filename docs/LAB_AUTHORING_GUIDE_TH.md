@@ -79,5 +79,5 @@ echo "Output : tail -n +1 logs/hpcig-<lab-id>_${job_id}.out"
 - ใช้ placeholder หรือ fake token สำหรับตัวอย่างด้าน secret/security
 - มีคำสั่งดูคิวและดูผลลัพธ์หลัง submit
 - ถ้า lab ต้องใช้ package เฉพาะ ให้บอก environment ที่ต้อง activate อย่างชัดเจน
-- ถ้าเป็น domain science lab ต้องมี real module-backed smoke workflow อย่างน้อย 1 งาน เช่น `jobs/*.sbatch` ที่ source `slurm/module-loads/qe.sh`, `gromacs.sh`, `geodata.sh`, `bio.sh`, `netcdf-python.sh`, หรือ `apptainer.sh`
+- ถ้าเป็น domain science lab ต้องมี real module-backed smoke workflow อย่างน้อย 1 งาน โดย `jobs/*.sbatch` ใน hand-on page โหลด module จริงโดยตรง เช่น `module load QuantumESPRESSO`, `module load GROMACS`, `module load GDAL`, `module load BLAST+`, `module load Apptainer`, หรือ NetCDF/Python stack; wrapper ใน `slurm/module-loads/` เป็น reference สำหรับผู้สอน
 - หัวข้อใหญ่ที่หนักหรือมี license เช่น WRF full run, VASP, Gaussian, Amber, LLM finetuning ให้แยกเป็น instructor demo หรือ optional preflight สำหรับช่วงสาธิต

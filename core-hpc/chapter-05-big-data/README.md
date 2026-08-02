@@ -2,99 +2,100 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 5: Big Data Processing
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## วัตถุประสงค์การเรียนรู้
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/core-big-data` โดยตรง
 
-1. เข้าใจ 5V ของ Big Data
-2. ใช้ Pandas สำหรับข้อมูลขนาดกลาง
-3. ประยุกต์ Chunk Processing สำหรับข้อมูลใหญ่
-4. ใช้ Out-of-Core Computing
+## เป้าหมาย
 
-## โครงสร้างไฟล์
+1. สร้างข้อมูลจำลอง 50,000 แถว
+2. ประมวลผลแบบ chunk
+3. ตรวจ summary แยกตาม group
 
-```
-chapter-05-big-data/
-├── README.md
-├── pandas_basics.py         # Pandas fundamentals
-├── chunk_processing.py      # Processing large files in chunks
-├── memory_efficient.py      # Memory-efficient techniques
-├── generate_large_data.py   # Generate test data
-└── sbatch/
-    └── big_data_job.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba env create -f ../../environments/base.yaml
-mamba activate hpc-ignite
+mkdir -p "$HOME/hpc-ignite-standalone/core-big-data"
+cd "$HOME/hpc-ignite-standalone/core-big-data"
+mkdir -p configs input jobs logs notes results src
 
-# Generate sample data
-python generate_large_data.py --size 1000000
-
-# Run examples
-python pandas_basics.py
-python chunk_processing.py
-
-# On SLURM
-sbatch sbatch/big_data_job.sbatch
-```
-
-## แนวคิดหลัก: 5V ของ Big Data
-
-1. **Volume** - ปริมาณข้อมูล
-2. **Velocity** - ความเร็วในการสร้างข้อมูล
-3. **Variety** - ความหลากหลายของข้อมูล
-4. **Veracity** - ความถูกต้องของข้อมูล
-5. **Value** - มูลค่าของข้อมูล
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-05-big-data/chunk_processing.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/chunk_summary.py <<'PYCODE'
+from pathlib import Path
+import csv
+import random
+Path("input").mkdir(exist_ok=True)
+Path("results").mkdir(exist_ok=True)
+random.seed(42)
+source = Path("input/events.csv")
+with source.open("w", newline="", encoding="utf-8") as handle:
+    writer = csv.writer(handle); writer.writerow(["event_id", "group", "value"])
+    for i in range(50000): writer.writerow([i, f"G{i % 8}", f"{random.random() * 100:.4f}"])
+sums, counts = {}, {}
+with source.open(encoding="utf-8") as handle:
+    reader = csv.DictReader(handle)
+    for row in reader:
+        group = row["group"]; sums[group] = sums.get(group, 0.0) + float(row["value"]); counts[group] = counts.get(group, 0) + 1
+out = Path("results/chunk_summary.csv")
+with out.open("w", newline="", encoding="utf-8") as handle:
+    writer = csv.writer(handle); writer.writerow(["group", "count", "mean"])
+    for group in sorted(sums): writer.writerow([group, counts[group], f"{sums[group] / counts[group]:.4f}"])
+print("input_rows=50000"); print(f"result={out}")
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/bigdata-chunk.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=bigdata-chunk
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
+#SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/chunk_summary.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/bigdata-chunk.sbatch)
+echo "$job_id	bigdata-chunk	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/bigdata-chunk_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=core-hpc/chapter-05-big-data/chunk_processing.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/core-big-data"
+cat results/chunk_summary.csv
+tail -50 logs/bigdata-chunk_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

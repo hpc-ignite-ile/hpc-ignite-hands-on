@@ -1,173 +1,85 @@
-# บทที่ 4: การเรียนรู้เชิงลึกบนระบบ HPC
+# บทที่ 4: Deep Learning บน HPC
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 4: Deep Learning with PyTorch on HPC
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/gpu-pytorch` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p gpu-devel core-hpc/chapter-04-deep-learning/jobs/gpu_smoke.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น `nvidia-smi`, ผลจาก `gpu_check.py`, และ tensor benchmark สั้น ๆ จาก shared environment `pytorch-2.2.2`
+1. ขอ GPU หนึ่งใบผ่าน Slurm
+2. ตรวจ nvidia-smi และ torch CUDA
+3. บันทึกผลคำนวณ tensor ขนาดเล็ก
 
-## วัตถุประสงค์การเรียนรู้
-
-1. ใช้งาน PyTorch บน GPU (NVIDIA A100)
-2. เขียนโปรแกรม training loop พื้นฐาน
-3. ใช้ Distributed Data Parallel (DDP) สำหรับ Multi-GPU
-4. Optimize performance ด้วย Mixed Precision
-
-## โครงสร้างไฟล์
-
-```
-chapter-04-deep-learning/
-├── README.md
-├── pytorch_basics.py          # PyTorch tensor operations
-├── gpu_check.py               # Check GPU availability
-├── mnist_training.py          # MNIST classification
-├── multi_gpu_ddp.py           # Distributed Data Parallel
-└── sbatch/
-    ├── single_gpu.sbatch
-    └── multi_gpu.sbatch
-```
-
-## การใช้งาน
-
-### On LANTA
+## Copy-Paste บน LANTA
 
 ```bash
-# Load PyTorch module
-source ../../slurm/module-loads/pytorch.sh
+mkdir -p "$HOME/hpc-ignite-standalone/gpu-pytorch"
+cd "$HOME/hpc-ignite-standalone/gpu-pytorch"
+mkdir -p jobs logs notes results src
 
-# Run GPU check
-python gpu_check.py
+if [ -z "${LANTA_GPU_PARTITION:-}" ]; then export LANTA_GPU_PARTITION="gpu-devel"; fi
+if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
+SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
 
-# Submit training job
-sbatch sbatch/single_gpu.sbatch
-```
-
-### On Local Machine (CPU)
-
-```bash
-# Create environment
-mamba env create -f ../../environments/ml-gpu.yaml
-mamba activate hpc-ignite-ml
-
-# Run with CPU
-python pytorch_basics.py
-python mnist_training.py --device cpu
-```
-
-## แนวคิดหลัก
-
-### GPU Memory Hierarchy
-
-```
-┌─────────────────────────────────────┐
-│           Global Memory (40GB)       │  ← Large, slower
-├─────────────────────────────────────┤
-│        Shared Memory (per SM)        │  ← Fast, limited
-├─────────────────────────────────────┤
-│         Registers (per thread)       │  ← Fastest
-└─────────────────────────────────────┘
-```
-
-### PyTorch to GPU
-
-```python
+cat > src/gpu_torch_smoke.py <<'PYCODE'
+from pathlib import Path
+import json
 import torch
+Path("results").mkdir(exist_ok=True)
+summary = {"torch": torch.__version__, "cuda_version": torch.version.cuda, "cuda_available": torch.cuda.is_available(), "gpu_count": torch.cuda.device_count()}
+if torch.cuda.is_available():
+    x = torch.randn(1024, 1024, device="cuda"); y = x @ x; torch.cuda.synchronize()
+    summary["gpu_name"] = torch.cuda.get_device_name(0); summary["matrix_sum"] = float(y.sum().cpu())
+Path("results/gpu_torch_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+print(json.dumps(summary, indent=2))
+PYCODE
 
-# Check GPU
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-# Move tensor to GPU
-x = torch.randn(1000, 1000).to(device)
-
-# Move model to GPU
-model = MyModel().to(device)
-```
-
-### Mixed Precision Training
-
-```python
-from torch.cuda.amp import autocast, GradScaler
-
-scaler = GradScaler()
-
-with autocast():
-    output = model(input)
-    loss = criterion(output, target)
-
-scaler.scale(loss).backward()
-scaler.step(optimizer)
-scaler.update()
-```
-
-## NVIDIA A100 Specifications (LANTA)
-
-| Feature | Value |
-|---------|-------|
-| Memory | 40 GB HBM2e |
-| FP32 Performance | 19.5 TFLOPS |
-| FP16 Performance | 312 TFLOPS |
-| Tensor Core | 3rd Gen |
-
-## เอกสารอ้างอิง
-
-- [Curriculum Book - Chapter 4](https://github.com/wdiazcarballo/hpc-curriculum/blob/main/docs/curriculum-book/chapters/chapter-04-deep-learning.md)
-- [PyTorch Documentation](https://pytorch.org/docs/)
-- [PyTorch DDP Tutorial](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
-if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
-    export LANTA_ACCOUNT
-fi
-export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-04-deep-learning/gpu_check.py}"
-
-mkdir -p jobs logs results/python-labs
-
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/gpu_torch.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=gpu-torch
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=8G
-#SBATCH --time=00:05:00
+#SBATCH --time=00:10:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-
 set -euo pipefail
+module purge
+module load Mamba/23.11.0-0 2>/dev/null || module load Mamba 2>/dev/null || true
+conda activate pytorch-2.2.2 2>/dev/null || true
+export PATH="/lustrefs/disk/modules/easybuild/software/Mamba/23.11.0-0/envs/pytorch-2.2.2/bin:${PATH}"
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/pytorch-shared.sh" ]; then
-    source slurm/module-loads/pytorch-shared.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+nvidia-smi | tee "results/${SLURM_JOB_ID}/nvidia-smi.txt"
+python src/gpu_torch_smoke.py | tee "results/${SLURM_JOB_ID}/torch.txt"
+cp results/gpu_torch_summary.json "results/${SLURM_JOB_ID}/gpu_torch_summary.json"
 SLURM
-
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --parsable jobs/gpu_torch.sbatch)
+echo "$job_id	gpu_torch	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
-echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/gpu-torch_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=core-hpc/chapter-04-deep-learning/gpu_check.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/gpu-pytorch"
+find results -maxdepth 2 -type f | sort
+tail -80 logs/gpu-torch_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

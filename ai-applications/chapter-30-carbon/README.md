@@ -2,62 +2,47 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 30: Carbon Verification with HPC
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## วัตถุประสงค์การเรียนรู้
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/ai-carbon` โดยตรง
 
-1. คำนวณ Carbon Footprint ของ HPC Jobs
-2. เข้าใจ Green Computing
-3. ใช้ Blockchain สำหรับ Carbon Verification
-4. Optimize for Energy Efficiency
+## เป้าหมาย
 
-## โครงสร้างไฟล์
+1. รัน workload CPU สั้น
+2. บันทึก proxy metric ของงาน
+3. ใช้ sacct ต่อกับ elapsed และ CPU allocation
 
-```
-chapter-30-carbon/
-├── README.md
-├── carbon_calculator.py    # Carbon footprint calculator
-├── energy_efficiency.py    # Energy optimization
-├── green_scheduling.py     # Green job scheduling
-└── sbatch/
-    └── carbon_tracked.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Calculate carbon footprint
-python carbon_calculator.py --job-id 12345
+mkdir -p "$HOME/hpc-ignite-standalone/ai-carbon"
+cd "$HOME/hpc-ignite-standalone/ai-carbon"
+mkdir -p configs input jobs logs notes results src
 
-# Optimize for energy
-python energy_efficiency.py --gpu-hours 100
-```
-
-## LANTA Energy Facts
-
-- Power Usage Effectiveness (PUE): ~1.3
-- Cooling: Liquid cooling for GPU nodes
-- Location: Thailand (grid carbon intensity varies)
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-ai-applications/chapter-30-carbon/carbon_calculator.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/carbon_proxy.py <<'PYCODE'
+from pathlib import Path
+import json, math, os
+Path("results").mkdir(exist_ok=True)
+total = sum(math.sqrt(i) for i in range(1, 200000))
+summary = {"job_id": os.environ.get("SLURM_JOB_ID", "manual"), "cpu_count": os.environ.get("SLURM_CPUS_PER_TASK", "1"), "work_units": 199999, "checksum": round(total, 4), "resource_note": "combine this file with sacct elapsed and AllocCPUS"}
+out = Path("results/carbon_proxy.json"); out.write_text(json.dumps(summary, indent=2), encoding="utf-8"); print(json.dumps(summary, indent=2))
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/carbon-proxy.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=carbon-proxy
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -67,23 +52,37 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/carbon_proxy.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/carbon-proxy.sbatch)
+echo "$job_id	carbon-proxy	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/carbon-proxy_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=ai-applications/chapter-30-carbon/carbon_calculator.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/ai-carbon"
+cat results/carbon_proxy.json
+JOB_IDS=$(cut -f1 notes/job-history.tsv | paste -sd, -)
+sacct -j "$JOB_IDS" --format=JobID,JobName,State,Elapsed,AllocCPUS,MaxRSS,ExitCode
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

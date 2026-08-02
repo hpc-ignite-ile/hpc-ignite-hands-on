@@ -2,102 +2,79 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 25: Bioinformatics
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/bio-blast` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel domain-science/chapter-25-bioinformatics/jobs/blast_cli_smoke.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น FASTA จิ๋ว, log จาก `makeblastdb`, version ของ BLAST+ และผล `blastn` แบบ TSV
+1. สร้าง FASTA reference และ query
+2. สร้าง BLAST database ขนาดเล็ก
+3. ตรวจ hit table และ BLAST version
 
-## วัตถุประสงค์การเรียนรู้
-
-1. เข้าใจ DNA/Protein Sequences
-2. ทำ Sequence Alignment
-3. วิเคราะห์ Genomic Data
-4. ใช้ BioPython
-
-## โครงสร้างไฟล์
-
-```
-chapter-25-bioinformatics/
-├── README.md
-├── sequence_basics.py      # DNA/RNA/Protein basics
-├── alignment.py            # Sequence alignment
-├── blast_analysis.py       # BLAST search
-├── phylogenetics.py        # Phylogenetic trees
-└── sbatch/
-    └── bioinfo_job.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba create -n hpc-bioinfo python=3.9 biopython numpy matplotlib
-mamba activate hpc-bioinfo
+mkdir -p "$HOME/hpc-ignite-standalone/bio-blast"
+cd "$HOME/hpc-ignite-standalone/bio-blast"
+mkdir -p jobs logs notes results
 
-# Run examples
-python sequence_basics.py
-python alignment.py
-```
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then export LANTA_CPU_PARTITION="compute-devel"; fi
+if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
+SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
 
-## Key Concepts
-
-- **DNA**: A, T, G, C nucleotides
-- **RNA**: A, U, G, C (transcription)
-- **Protein**: 20 amino acids (translation)
-- **BLAST**: Basic Local Alignment Search Tool
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
-if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
-    export LANTA_ACCOUNT
-fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-domain-science/chapter-25-bioinformatics/sequence_basics.py}"
-
-mkdir -p jobs logs results/python-labs
-
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/blast_smoke.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=blast-smoke
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-
 set -euo pipefail
+module purge
+module load BLAST+/2.14.0-cpeGNU-23.03 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+OUT="results/${SLURM_JOB_ID}"; mkdir -p "$OUT"
+cat > "$OUT/reference.fasta" <<'EOF'
+>ref_alpha
+ACGTACGTACGTACGTACGT
+>ref_beta
+TTTTACGTGGGGACGTCCCC
+EOF
+cat > "$OUT/query.fasta" <<'EOF'
+>query_1
+ACGTACGT
+EOF
+makeblastdb -in "$OUT/reference.fasta" -dbtype nucl -out "$OUT/refdb" | tee "$OUT/makeblastdb.txt"
+blastn -query "$OUT/query.fasta" -db "$OUT/refdb" -outfmt "6 qseqid sseqid pident length evalue bitscore" -out "$OUT/blast_hits.tsv"
+blastn -version | tee "$OUT/blast_version.txt"
+cat "$OUT/blast_hits.tsv"
 SLURM
-
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/blast_smoke.sbatch)
+echo "$job_id	blast_smoke	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
-echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/blast-smoke_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=domain-science/chapter-25-bioinformatics/sequence_basics.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/bio-blast"
+find results -maxdepth 2 -type f | sort
+cat results/*/blast_hits.tsv
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

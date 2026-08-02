@@ -7,20 +7,27 @@
 
 คำสั่ง Bash, Slurm และ syntax ที่ใช้ใน repo นี้อธิบายรวมไว้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `sed`, `ssh`, `module`, `sbatch`, heredoc, `#SBATCH`, pipe, redirection และตัวแปรของ shell
 
-## เริ่มบน LANTA
+## เริ่มแบบ Standalone บน LANTA
 
 ```bash
-cd "$HOME"
-git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
-cd hpc-ignite-hands-on
+ssh <username>@lanta.nstda.or.th
+mkdir -p "$HOME/hpc-ignite-standalone"
+cd "$HOME/hpc-ignite-standalone"
+pwd
+```
 
+ทุก hand-on page ในชุดนี้มี block ที่ผู้ใช้ copy-paste ได้โดยตรงจากหน้าเอกสาร เมื่อแปะบน LANTA แล้ว block จะสร้าง workspace ของบทนั้นเอง เช่น `jobs/`, `src/`, `configs/`, `logs/`, `results/` และส่งงานด้วย `sbatch` จากไฟล์ที่เพิ่งสร้างใน workspace นั้น
+
+เริ่มจาก [lanta-experience/01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) ผู้ใช้จะสร้าง `src/hello_lanta.py`, สร้าง `jobs/hello_lanta.sbatch`, ส่งงานด้วย `sbatch`, แล้วอ่านหลักฐานใน `logs/` กับ `results/`
+
+สำหรับผู้สอนที่มีสำเนา repo เพื่ออ่าน offline หรือปรับเอกสาร ใช้คำสั่งนี้จาก root ของ repo:
+
+```bash
 # เปิดเส้นทาง lab หลัก
 sed -n '1,120p' lanta-experience/README.md
 ```
 
 ตัวอย่าง `sed -n '1,120p' ...` ใช้เปิดดูบรรทัดที่ 1 ถึง 120 ของไฟล์ ดูคำอธิบายเต็มที่ [docs/BASH_COMMAND_REFERENCE_TH.md#sed](docs/BASH_COMMAND_REFERENCE_TH.md#sed)
-
-จากนั้นให้ผู้ใช้เปิด [lanta-experience/01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) แล้วแปะ block บน LANTA เพื่อสร้าง `src/hello_lanta.py`, สร้าง `jobs/hello_lanta.sbatch`, ส่งงานด้วย `sbatch`, และอ่านผลลัพธ์ใน `logs/` กับ `results/`
 
 ## โฟลเดอร์ใน Repo
 
@@ -64,29 +71,29 @@ hpc-ignite-hands-on/
 
 ถ้าต้องการดูเหตุผลของการปรับตัวอย่างให้เป็น workflow จิ๋วที่ใช้ module จริงบน LANTA ให้เปิด [docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md](docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md)
 
-## งานจิ๋วที่ใช้ Module จริง
+## แผนที่ Lab Standalone ที่ใช้ Module จริง
 
-หลัง clone repo แล้ว ผู้ใช้สามารถเริ่มจาก job สั้น ๆ เหล่านี้ได้:
+ผู้ใช้เลือกหน้าเดียวตามหัวข้อที่สนใจ แล้วแปะ block ในหน้านั้นบน LANTA ได้ทันที:
 
-| Area | Starter job |
+| Area | Standalone page |
 |---|---|
-| Environment audit | `core-hpc/chapter-02-environment/jobs/environment_audit.sbatch` |
-| MPI/CPE | `core-hpc/chapter-03-parallel/jobs/mpi_rank_smoke.sbatch` |
-| PyTorch GPU | `core-hpc/chapter-04-deep-learning/jobs/gpu_smoke.sbatch` |
-| Containers | `ai-applications/chapter-11-containers/jobs/apptainer_smoke.sbatch` |
-| Epidemic ABS | `mini-innovation/jobs/epi_smoke.sbatch` |
-| GROMACS MD | `domain-science/chapter-21-molecular-dynamics/jobs/gromacs_gpu_smoke.sbatch` |
-| WRF/NetCDF data | `domain-science/chapter-22-climate-modeling/jobs/netcdf_wrf_summary.sbatch` |
-| Quantum ESPRESSO | `domain-science/chapter-23-materials-science/jobs/qe_scf_smoke.sbatch` |
-| GDAL/geodata | `domain-science/chapter-24-ai-forest/jobs/gdal_forest_smoke.sbatch` |
-| BLAST bioinformatics | `domain-science/chapter-25-bioinformatics/jobs/blast_cli_smoke.sbatch` |
+| Environment audit | [core-hpc/chapter-02-environment/README.md](core-hpc/chapter-02-environment/README.md) |
+| MPI/CPE | [core-hpc/chapter-03-parallel/README.md](core-hpc/chapter-03-parallel/README.md) |
+| PyTorch GPU | [core-hpc/chapter-04-deep-learning/README.md](core-hpc/chapter-04-deep-learning/README.md) |
+| Containers | [ai-applications/chapter-11-containers/README.md](ai-applications/chapter-11-containers/README.md) |
+| Epidemic ABS | [mini-innovation/README.md](mini-innovation/README.md) |
+| GROMACS MD | [domain-science/chapter-21-molecular-dynamics/README.md](domain-science/chapter-21-molecular-dynamics/README.md) |
+| WRF/NetCDF data | [domain-science/chapter-22-climate-modeling/README.md](domain-science/chapter-22-climate-modeling/README.md) |
+| Quantum ESPRESSO | [domain-science/chapter-23-materials-science/README.md](domain-science/chapter-23-materials-science/README.md) |
+| GDAL/geodata | [domain-science/chapter-24-ai-forest/README.md](domain-science/chapter-24-ai-forest/README.md) |
+| BLAST bioinformatics | [domain-science/chapter-25-bioinformatics/README.md](domain-science/chapter-25-bioinformatics/README.md) |
 
-ก่อนส่ง job จาก repo ให้สร้างโฟลเดอร์ log และ result ก่อน:
+ไฟล์ใน `jobs/`, `slurm/`, `requirements/` และ `environments/` เป็น reference สำหรับผู้สอนและผู้ใช้ที่ต้องการดูตัวอย่างสำเร็จรูป ส่วน hand-on page จะสร้าง source และ job script ของตัวเองใน workspace ของผู้ใช้
 
 ```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel core-hpc/chapter-02-environment/jobs/environment_audit.sbatch
+# ตัวอย่าง workspace ที่ page แต่ละบทจะสร้าง
+cd "$HOME/hpc-ignite-standalone"
+find . -maxdepth 2 -type d | sort | head
 ```
 
 ## รูปแบบ Copy-Paste

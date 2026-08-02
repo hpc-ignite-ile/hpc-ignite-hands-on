@@ -2,7 +2,7 @@
 
 คู่มือเริ่มต้นสำหรับใช้ repo นี้บน LANTA ตาม booklet ของงาน LANTA HPC Experience Day: On the Move.
 
-คำสั่งและ syntax ในหน้านี้อธิบายรวมไว้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `scp`, `rsync`, `git clone`, `module`, `sbatch`, `squeue`, `sacct`, heredoc และ `#SBATCH`
+คำสั่งและ syntax ในหน้านี้อธิบายรวมไว้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `scp`, `rsync`, `module`, `sbatch`, `squeue`, `sacct`, heredoc และ `#SBATCH`
 
 ## 1. SSH To LANTA
 
@@ -19,19 +19,28 @@ rsync -rvz ./local-folder/ <username>@transfer.lanta.nstda.or.th:/project/<proje
 
 หลัง login แล้ว prompt ที่เห็นคือ shell บน LANTA. ใช้ login node สำหรับแก้ไฟล์ ตรวจระบบ และส่งงานเท่านั้น.
 
-## 2. Clone Repository
+## 2. Create A Standalone Training Root
+
+```bash
+mkdir -p "$HOME/hpc-ignite-standalone"
+cd "$HOME/hpc-ignite-standalone"
+pwd
+```
+
+ผู้ใช้เปิด hand-on page จากเอกสารหรือหน้า GitHub แล้วแปะ block ของบทนั้นบน LANTA ได้ทันที แต่ละบทจะสร้าง folder และไฟล์งานของตัวเองใต้ `$HOME/hpc-ignite-standalone/<lab-id>`
+
+Clone repo เป็นทางเลือกสำหรับผู้สอนที่ต้องการอ่านเอกสาร offline หรือปรับไฟล์ reference:
 
 ```bash
 cd "$HOME"
 git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
-cd hpc-ignite-hands-on
 ```
 
 ## 3. Create The Event Workspace
 
 ```bash
-mkdir -p "$HOME/lanta-experience"
-cd "$HOME/lanta-experience"
+mkdir -p "$HOME/hpc-ignite-standalone/lanta-experience"
+cd "$HOME/hpc-ignite-standalone/lanta-experience"
 mkdir -p configs input jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
@@ -43,14 +52,14 @@ export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
 ```
 
-Then follow [lanta-experience/README.md](lanta-experience/README.md).
+จากนั้นเลือก hand-on page ใน [lanta-experience/](lanta-experience/) และแปะ block ของบทนั้นใน terminal
 
 ## 4. First Job Pattern
 
 Teaching pattern นี้ให้ผู้ใช้เห็นไฟล์ที่สร้างจริงด้วย heredoc และเห็น `.sbatch` ที่ส่งด้วย `sbatch` โดยตรง:
 
 ```bash
-cd "$HOME/lanta-experience"
+cd "$HOME/hpc-ignite-standalone/lanta-experience"
 mkdir -p jobs logs results src
 
 cat > src/main.py <<'PY'
@@ -137,7 +146,7 @@ module spider BLAST+
 module list
 ```
 
-Load modules inside the Slurm script so the job is reproducible. For this repo, prefer the wrappers in `slurm/module-loads/`: `base.sh`, `netcdf-python.sh`, `pytorch-shared.sh`, `cpe-mpi.sh`, `qe.sh`, `gromacs.sh`, `geodata.sh`, `bio.sh`, and `apptainer.sh`.
+Load modules inside the Slurm script so the job is reproducible. ใน standalone lab ให้เขียน `module load ...` ไว้ใน `jobs/*.sbatch` ของบทนั้นโดยตรง ส่วน wrapper ใน `slurm/module-loads/` เช่น `base.sh`, `netcdf-python.sh`, `pytorch-shared.sh`, `cpe-mpi.sh`, `qe.sh`, `gromacs.sh`, `geodata.sh`, `bio.sh`, และ `apptainer.sh` เป็น reference สำหรับผู้สอนที่ต้องการรวม pattern ซ้ำ
 
 ## Monitoring
 
@@ -152,10 +161,11 @@ scancel <job-id>
 
 ## Next
 
-Use the booklet-aligned labs:
+Use the booklet-aligned labs. เมื่อผู้สอน clone repo ไว้บน LANTA แล้ว สามารถเปิดสารบัญด้วย:
 
 ```bash
-sed -n '1,160p' "$HOME/hpc-ignite-hands-on/lanta-experience/README.md"
+# จาก root ของ repo ที่ clone ไว้
+sed -n '1,160p' lanta-experience/README.md
 ```
 
 อ่านคำอธิบาย `sed -n '1,160p' ...` ได้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md#sed](docs/BASH_COMMAND_REFERENCE_TH.md#sed)

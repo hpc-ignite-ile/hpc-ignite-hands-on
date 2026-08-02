@@ -2,100 +2,96 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 23: Materials Science
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/materials-qe` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel domain-science/chapter-23-materials-science/jobs/qe_scf_smoke.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น input Si SCF ขนาดเล็ก, output จาก `pw.x`, และไฟล์สรุป energy/convergence หาก pseudopotential shared พร้อม
+1. ตรวจ Quantum ESPRESSO module
+2. สร้าง input Si SCF ขนาดเล็กเมื่อ pseudopotential พร้อม
+3. บันทึก energy หรือ preflight summary
 
-## วัตถุประสงค์การเรียนรู้
-
-1. เข้าใจหลักการ DFT Calculations
-2. วิเคราะห์ Crystal Structures
-3. คำนวณ Electronic Properties
-4. ศึกษา Material Databases
-
-## โครงสร้างไฟล์
-
-```
-chapter-23-materials-science/
-├── README.md
-├── crystal_structures.py   # Crystal structure analysis
-├── band_structure.py       # Band structure concepts
-├── material_properties.py  # Calculate properties
-└── sbatch/
-    └── dft_job.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba create -n hpc-materials python=3.9 ase pymatgen numpy matplotlib
-mamba activate hpc-materials
+mkdir -p "$HOME/hpc-ignite-standalone/materials-qe"
+cd "$HOME/hpc-ignite-standalone/materials-qe"
+mkdir -p jobs logs notes results
 
-# Run examples
-python crystal_structures.py
-python material_properties.py
-```
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then export LANTA_CPU_PARTITION="compute-devel"; fi
+if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
+SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
 
-## Key Concepts
-
-- **DFT**: Density Functional Theory
-- **Band Gap**: Energy gap between valence and conduction bands
-- **Crystal Systems**: Cubic, hexagonal, tetragonal, etc.
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
-if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
-    export LANTA_ACCOUNT
-fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-domain-science/chapter-23-materials-science/crystal_structures.py}"
-
-mkdir -p jobs logs results/python-labs
-
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/qe_si_preflight.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=qe-si-preflight
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --ntasks=4
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
-#SBATCH --time=00:05:00
+#SBATCH --mem=4G
+#SBATCH --time=00:15:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-
 set -euo pipefail
+module purge
+module load QuantumESPRESSO/7.3.1-libxc-6.2.2-cpu 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+OUT="results/${SLURM_JOB_ID}"; mkdir -p "$OUT"
+command -v pw.x | tee "$OUT/pw_path.txt"
+PSEUDO_FILE="$(find /project/common/QuantumEspresso -iname 'Si*.UPF' -print -quit 2>/dev/null || true)"
+if [ -z "$PSEUDO_FILE" ]; then pw.x -h > "$OUT/pw_help.txt" 2>&1 || true; echo "pseudo_status=shared_si_pseudo_pending" | tee "$OUT/summary.txt"; exit 0; fi
+PSEUDO_DIR="$(dirname "$PSEUDO_FILE")"; PSEUDO_NAME="$(basename "$PSEUDO_FILE")"; export ESPRESSO_TMPDIR="${ESPRESSO_TMPDIR:-${SCRATCH:-/tmp}/qe_${SLURM_JOB_ID}}"; mkdir -p "$ESPRESSO_TMPDIR"
+cat > "$OUT/si_scf.in" <<EOF
+&CONTROL
+  calculation = 'scf',
+  prefix = 'si_smoke',
+  pseudo_dir = '$PSEUDO_DIR',
+  outdir = '$ESPRESSO_TMPDIR'
+/
+&SYSTEM
+  ibrav = 2,
+  celldm(1) = 10.20,
+  nat = 2,
+  ntyp = 1,
+  ecutwfc = 18.0
+/
+&ELECTRONS
+  conv_thr = 1.0d-6
+/
+ATOMIC_SPECIES
+Si 28.0855 $PSEUDO_NAME
+ATOMIC_POSITIONS alat
+Si 0.00 0.00 0.00
+Si 0.25 0.25 0.25
+K_POINTS automatic
+2 2 2 0 0 0
+EOF
+srun -n "$SLURM_NTASKS" pw.x -inp "$OUT/si_scf.in" | tee "$OUT/si_scf.out"
+grep -E "total energy|convergence has been achieved" "$OUT/si_scf.out" > "$OUT/qe_summary.txt" || true
 SLURM
-
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/qe_si_preflight.sbatch)
+echo "$job_id	qe_si_preflight	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
-echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -100 logs/qe-si-preflight_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=domain-science/chapter-23-materials-science/crystal_structures.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/materials-qe"
+find results -maxdepth 2 -type f | sort
+tail -120 logs/qe-si-preflight_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

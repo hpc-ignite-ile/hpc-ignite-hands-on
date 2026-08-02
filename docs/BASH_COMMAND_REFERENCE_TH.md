@@ -35,14 +35,14 @@ sed -n '1,120p' lanta-experience/README.md
 | `ssh` | เปิด shell บนเครื่องระยะไกล | `ssh <username>@lanta.nstda.or.th` | prompt เปลี่ยนเป็นเครื่อง LANTA |
 | `scp` | copy ไฟล์หนึ่งชุดผ่าน SSH | `scp local-file <username>@transfer.lanta.nstda.or.th:/project/<project-id>/` | ไฟล์ปลายทางมีขนาดตรงกับต้นทาง |
 | `rsync -rvz` | sync folder ผ่าน SSH พร้อมรายงานรายการไฟล์ | `rsync -rvz ./local-folder/ ...` | output แสดงไฟล์ที่ส่ง และปลายทางเปิดอ่านได้ |
-| `git clone` | download repo ครั้งแรก | `git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git` | มี folder `hpc-ignite-hands-on/` |
+| `git clone` | download repo ครั้งแรกสำหรับสำเนา reference ของผู้สอน | `git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git` | มี folder `hpc-ignite-hands-on/` |
 | `git pull --ff-only` | update repo เมื่อมี remote commit แบบ fast-forward | `git pull --ff-only || true` | repo อยู่บน commit ล่าสุด หรือใช้สำเนาเดิมต่อได้ |
 
 ## การเดินทางใน Filesystem
 
 | คำสั่ง | ความหมาย | แนวใช้ที่ดี |
 |---|---|---|
-| `cd` | เปลี่ยน working directory | ใช้ `cd "$HOME/hpc-ignite-hands-on"` ก่อนส่ง job จาก repo |
+| `cd` | เปลี่ยน working directory | ใช้ `cd "$HOME/hpc-ignite-standalone/<lab-id>"` ก่อนสร้างไฟล์และส่ง job ของบทนั้น |
 | `pwd` | พิมพ์ path ปัจจุบัน | ใช้ยืนยันว่าอยู่ใน workspace ที่ถูกต้อง |
 | `ls` | แสดงรายชื่อไฟล์แบบสั้น | ใช้ดูว่า repo หรือ folder ถูกสร้างแล้ว |
 | `find` | ค้นหาไฟล์หรือ folder ตามเงื่อนไข | `find results -maxdepth 1 -type f` ใช้ตรวจผลลัพธ์ |
@@ -83,7 +83,7 @@ sed -n '1,120p' lanta-experience/README.md
 | `if [ -z "${VAR:-}" ]; then ... fi` | ตรวจว่าตัวแปรว่าง | ใช้ถามค่าเฉพาะครั้งแรก |
 | `if [ -n "${VAR:-}" ]; then ... fi` | ตรวจว่าตัวแปรมีค่า | ใช้เพิ่ม option เช่น `-A "$LANTA_ACCOUNT"` |
 | `[ -f file ]` | ตรวจว่า path เป็นไฟล์ | ใช้ก่อนอ่าน config, log หรือ result |
-| `[ -d dir ]` | ตรวจว่า path เป็น folder | ใช้ก่อน clone repo หรือเตรียม workspace |
+| `[ -d dir ]` | ตรวจว่า path เป็น folder | ใช้ก่อนเตรียม workspace หรืออ่านผลลัพธ์ |
 | `for file in pattern; do ... done` | loop ผ่านไฟล์หลายไฟล์ | ใช้สรุป CSV หลายชุดหรือ log หลาย task |
 | `continue` | ข้ามรอบ loop ปัจจุบัน | ใช้เมื่อ pattern ยังว่างจากไฟล์ที่ตรงเงื่อนไข |
 | `exit 1` | จบ script พร้อมรหัส error | ใช้หยุดเมื่อ prerequisite สำคัญขาด |
@@ -91,7 +91,7 @@ sed -n '1,120p' lanta-experience/README.md
 | `printf "format" ...` | พิมพ์ข้อความตาม format | ใช้ใน C examples และ shell ที่ต้องควบคุมรูปแบบ output |
 | `SBATCH_ACCOUNT=()` | Bash array ว่าง | ใช้ประกอบ option ของ `sbatch` อย่างปลอดภัย |
 | `"${SBATCH_ACCOUNT[@]}"` | ขยาย array เป็น argument หลายชิ้น | รักษา quoting ของ account option |
-| `source file.sh` | รัน script ใน shell ปัจจุบัน | ใช้โหลด module wrapper หรือ session env |
+| `source file.sh` | รัน script ใน shell ปัจจุบัน | ใช้กับ helper script ของผู้สอนหรือ session env; standalone lab เขียน `module load` ใน `jobs/*.sbatch` โดยตรง |
 | `chmod -R g+rwX path` | ให้ group อ่าน/เขียน และเข้า folder ได้ | ใช้กับ project environment ที่หลายคนใช้ร่วมกัน |
 | `2>/dev/null` | ส่ง stderr ทิ้ง | ใช้ลดเสียงรบกวนเมื่อ probe module fallback |
 | `2>&1` | รวม stderr เข้ากับ stdout | ใช้เก็บ error และ output ลง log เดียวกัน |

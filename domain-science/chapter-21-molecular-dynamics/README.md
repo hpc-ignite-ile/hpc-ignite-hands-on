@@ -2,107 +2,69 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 21: Molecular Dynamics Simulations
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/md-gromacs` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p gpu-devel domain-science/chapter-21-molecular-dynamics/jobs/gromacs_gpu_smoke.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น version ของ GROMACS, path ของ shared `benchPEP.tpr` ถ้ามี และ performance summary จาก `gmx mdrun`
+1. ตรวจ GROMACS module และ GPU allocation
+2. ใช้ shared benchPEP เมื่อมีใน /project/common
+3. บันทึก version, input และ performance summary
 
-## วัตถุประสงค์การเรียนรู้
-
-1. เข้าใจหลักการ MD Simulation
-2. ใช้ OpenMM สำหรับ MD บน GPU
-3. วิเคราะห์ Trajectory Data
-4. คำนวณ Properties จาก Simulation
-
-## โครงสร้างไฟล์
-
-```
-chapter-21-molecular-dynamics/
-├── README.md
-├── md_basics.py            # MD fundamentals
-├── lennard_jones.py        # Simple LJ simulation
-├── water_simulation.py     # Water box simulation
-├── trajectory_analysis.py  # Analyze MD trajectories
-└── sbatch/
-    └── md_gpu.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# On LANTA, start with the real GROMACS GPU smoke job
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p gpu-devel domain-science/chapter-21-molecular-dynamics/jobs/gromacs_gpu_smoke.sbatch
+mkdir -p "$HOME/hpc-ignite-standalone/md-gromacs"
+cd "$HOME/hpc-ignite-standalone/md-gromacs"
+mkdir -p jobs logs notes results
 
-# Concept scripts can still run as lightweight Python examples
-python md_basics.py
-python lennard_jones.py
-```
+if [ -z "${LANTA_GPU_PARTITION:-}" ]; then export LANTA_GPU_PARTITION="gpu-devel"; fi
+if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
+SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
 
-## MD Simulation Loop
-
-```
-1. Initialize positions and velocities
-2. Calculate forces: F = -∇U(r)
-3. Integrate equations of motion
-4. Update positions and velocities
-5. Apply constraints/thermostats
-6. Repeat for desired time
-```
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
-if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
-    export LANTA_ACCOUNT
-fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-domain-science/chapter-21-molecular-dynamics/lennard_jones.py}"
-
-mkdir -p jobs logs results/python-labs
-
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/gromacs_preflight.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=gromacs-preflight
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
-#SBATCH --time=00:05:00
+#SBATCH --cpus-per-task=8
+#SBATCH --gpus-per-node=1
+#SBATCH --mem=8G
+#SBATCH --time=00:10:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-
 set -euo pipefail
+module purge
+module load GROMACS/2024.6-cpeGNU-25.03-CUDA-12.6 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+OUT="results/${SLURM_JOB_ID}"; mkdir -p "$OUT"
+gmx --version | tee "$OUT/gmx_version.txt"
+TPR="$(find /project/common/GROMACS -name 'benchPEP.tpr' -print -quit 2>/dev/null || true)"
+if [ -n "$TPR" ]; then echo "input_tpr=$TPR" | tee "$OUT/summary.txt"; gmx mdrun -s "$TPR" -deffnm "$OUT/benchPEP" -nsteps 100 -ntomp "${SLURM_CPUS_PER_TASK:-1}" | tee "$OUT/mdrun_stdout.txt"; grep -E "Performance|Finished mdrun|Writing final coordinates" "$OUT/benchPEP.log" > "$OUT/performance_summary.txt" || true; else echo "tpr_status=shared_benchpep_pending" | tee "$OUT/summary.txt"; fi
 SLURM
-
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --parsable jobs/gromacs_preflight.sbatch)
+echo "$job_id	gromacs_preflight	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
-echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -100 logs/gromacs-preflight_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=domain-science/chapter-21-molecular-dynamics/lennard_jones.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/md-gromacs"
+find results -maxdepth 2 -type f | sort
+tail -100 logs/gromacs-preflight_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

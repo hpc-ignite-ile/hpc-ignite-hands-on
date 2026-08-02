@@ -2,76 +2,46 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 12: AI Development on HPC
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/ai-pytorch-train` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p gpu-devel ai-applications/chapter-12-ai-development/jobs/pytorch_gpu_smoke.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น shared PyTorch GPU environment และผล training หนึ่ง epoch บน synthetic data ก่อนค่อยขยายไป DDP
+1. ขอ GPU หนึ่งใบ
+2. รัน tiny training loop ด้วย PyTorch
+3. ตรวจ loss, CUDA และ GPU name
 
-## วัตถุประสงค์การเรียนรู้
-
-1. ตั้งค่า AI Environment บน LANTA
-2. ใช้ PyTorch/TensorFlow บน GPU
-3. Distributed Training
-4. Model Optimization
-
-## โครงสร้างไฟล์
-
-```
-chapter-12-ai-development/
-├── README.md
-├── setup_environment.sh    # Environment setup
-├── pytorch_distributed.py  # Multi-GPU PyTorch
-├── data_loading.py         # Efficient data loading
-├── mixed_precision.py      # AMP training
-└── sbatch/
-    └── distributed_train.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# On LANTA: use the shared training smoke environment first
-source ../../slurm/module-loads/pytorch-shared.sh
+mkdir -p "$HOME/hpc-ignite-standalone/ai-pytorch-train"
+cd "$HOME/hpc-ignite-standalone/ai-pytorch-train"
+mkdir -p jobs logs notes results src
 
-# Run one-GPU smoke training
-python pytorch_distributed.py --epochs 1 --batch-size 64
+if [ -z "${LANTA_GPU_PARTITION:-}" ]; then export LANTA_GPU_PARTITION="gpu-devel"; fi
+if [ -z "${LANTA_ACCOUNT:-}" ]; then read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT; export LANTA_ACCOUNT; fi
+SBATCH_ACCOUNT=(); if [ -n "${LANTA_ACCOUNT:-}" ]; then SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT"); fi
 
-# DDP is an instructor demo after the one-GPU smoke test is correct.
-```
+cat > src/tiny_train.py <<'PYCODE'
+from pathlib import Path
+import json
+import torch
+Path("results").mkdir(exist_ok=True)
+summary = {"torch": torch.__version__, "cuda_version": torch.version.cuda, "cuda_available": torch.cuda.is_available(), "gpu_count": torch.cuda.device_count()}
+if torch.cuda.is_available():
+    model = torch.nn.Linear(4, 2).to("cuda"); opt = torch.optim.SGD(model.parameters(), lr=0.1)
+    x = torch.randn(64, 4, device="cuda"); target = torch.randint(0, 2, (64,), device="cuda"); loss_fn = torch.nn.CrossEntropyLoss()
+    for _ in range(5):
+        opt.zero_grad(); loss = loss_fn(model(x), target); loss.backward(); opt.step()
+    torch.cuda.synchronize(); summary["gpu_name"] = torch.cuda.get_device_name(0); summary["final_loss"] = float(loss.detach().cpu())
+Path("results/tiny_train_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+print(json.dumps(summary, indent=2))
+PYCODE
 
-## LANTA AI Resources
-
-- GPUs: NVIDIA A100-SXM4-40GB
-- GPU Memory: 40 GB HBM2e
-- NVLink: 600 GB/s
-- Available partitions for smoke tests: gpu-devel, gpu
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
-if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
-    export LANTA_ACCOUNT
-fi
-export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-ai-applications/chapter-12-ai-development/pytorch_distributed.py}"
-
-mkdir -p jobs logs results/python-labs
-
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/tiny_train.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=tiny-train
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
@@ -80,25 +50,39 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #SBATCH --time=00:10:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-
 set -euo pipefail
+module purge
+module load Mamba/23.11.0-0 2>/dev/null || module load Mamba 2>/dev/null || true
+conda activate pytorch-2.2.2 2>/dev/null || true
+export PATH="/lustrefs/disk/modules/easybuild/software/Mamba/23.11.0-0/envs/pytorch-2.2.2/bin:${PATH}"
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/pytorch-shared.sh" ]; then
-    source slurm/module-loads/pytorch-shared.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+nvidia-smi | tee "results/${SLURM_JOB_ID}/nvidia-smi.txt"
+python src/tiny_train.py | tee "results/${SLURM_JOB_ID}/torch.txt"
+cp results/tiny_train_summary.json "results/${SLURM_JOB_ID}/tiny_train_summary.json"
 SLURM
-
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --parsable jobs/tiny_train.sbatch)
+echo "$job_id	tiny_train	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
-echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/tiny-train_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=ai-applications/chapter-12-ai-development/pytorch_distributed.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/ai-pytorch-train"
+cat results/tiny_train_summary.json
+tail -80 logs/tiny-train_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

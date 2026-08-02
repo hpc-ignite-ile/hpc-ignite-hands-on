@@ -2,76 +2,50 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 26: Smart Agriculture
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/agri-risk` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel domain-science/chapter-26-smart-agriculture/jobs/agri_geodata_smoke.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น rainfall/soil risk summary ขนาดจิ๋วในรูปแบบ CSV และ JSON แยกตาม job id
+1. สร้างข้อมูล plot เกษตรจำลอง
+2. คำนวณ water-stress risk
+3. บันทึก CSV สำหรับตัดสินใจเชิงข้อมูล
 
-## วัตถุประสงค์การเรียนรู้
-
-1. ใช้ IoT Data สำหรับการเกษตร
-2. วิเคราะห์ข้อมูล Crop Yield
-3. สร้าง Prediction Models
-4. ประยุกต์ Remote Sensing
-
-## โครงสร้างไฟล์
-
-```
-chapter-26-smart-agriculture/
-├── README.md
-├── crop_analysis.py        # Crop yield analysis
-├── weather_impact.py       # Weather impact on crops
-├── yield_prediction.py     # ML yield prediction
-├── irrigation_scheduler.py # Smart irrigation
-└── sbatch/
-    └── agri_job.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba create -n hpc-agri python=3.9 scikit-learn pandas numpy matplotlib
-mamba activate hpc-agri
+mkdir -p "$HOME/hpc-ignite-standalone/agri-risk"
+cd "$HOME/hpc-ignite-standalone/agri-risk"
+mkdir -p configs input jobs logs notes results src
 
-# Run examples
-python crop_analysis.py
-python yield_prediction.py
-```
-
-## Northern Thailand Crops
-
-- **ข้าว (Rice)**: Main crop, rainy season
-- **ลำไย (Longan)**: Major fruit export
-- **ลิ้นจี่ (Lychee)**: Premium fruit
-- **กาแฟ (Coffee)**: Highland crop
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-domain-science/chapter-26-smart-agriculture/crop_analysis.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/agri_risk.py <<'PYCODE'
+from pathlib import Path
+import csv
+Path("results").mkdir(exist_ok=True)
+out = Path("results/agri_risk.csv")
+with out.open("w", newline="", encoding="utf-8") as handle:
+    writer = csv.writer(handle); writer.writerow(["plot", "soil_moisture", "rain_7d", "risk"])
+    for plot, soil, rain in [("A", 0.31, 18), ("B", 0.18, 4), ("C", 0.42, 30), ("D", 0.22, 7)]:
+        risk = "water_stress" if soil < 0.25 and rain < 10 else "stable"; writer.writerow([plot, soil, rain, risk])
+print(f"result={out}")
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/agri-risk.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=agri-risk
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -81,23 +55,36 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load GDAL/3.6.4-cpeCray-23.03 2>/dev/null || module load cray-python/3.10.10 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/agri_risk.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/agri-risk.sbatch)
+echo "$job_id	agri-risk	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/agri-risk_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=domain-science/chapter-26-smart-agriculture/crop_analysis.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/agri-risk"
+cat results/agri_risk.csv
+tail -50 logs/agri-risk_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

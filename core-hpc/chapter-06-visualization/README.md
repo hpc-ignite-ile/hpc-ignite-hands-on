@@ -2,96 +2,100 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 6: Data Visualization
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## วัตถุประสงค์การเรียนรู้
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/core-visualization` โดยตรง
 
-1. เข้าใจหลักการ Data-Ink Ratio
-2. ใช้ Matplotlib สร้างกราฟพื้นฐาน
-3. สร้าง Interactive Visualization
-4. เลือกประเภทกราฟที่เหมาะสม
+## เป้าหมาย
 
-## โครงสร้างไฟล์
+1. สร้าง CSV สัญญาณจำลอง
+2. สร้าง plot ด้วย Matplotlib ใน batch job
+3. ตรวจไฟล์ PNG และ CSV
 
-```
-chapter-06-visualization/
-├── README.md
-├── matplotlib_basics.py     # Basic plotting
-├── chart_types.py           # Different chart types
-├── hpc_dashboard.py         # HPC monitoring visualization
-├── publication_quality.py   # Publication-ready figures
-└── sbatch/
-    └── viz_job.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba env create -f ../../environments/base.yaml
-mamba activate hpc-ignite
+mkdir -p "$HOME/hpc-ignite-standalone/core-visualization"
+cd "$HOME/hpc-ignite-standalone/core-visualization"
+mkdir -p configs input jobs logs notes results src
 
-# Run examples
-python matplotlib_basics.py
-python chart_types.py
-
-# Generate figures (saves to PNG)
-python hpc_dashboard.py --output dashboard.png
-```
-
-## หลักการ Data-Ink Ratio
-
-> "Above all else, show the data" - Edward Tufte
-
-Data-Ink Ratio = (ink used for data) / (total ink)
-
-เป้าหมาย: ลด "chartjunk" ให้เหลือน้อยที่สุด
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-06-visualization/matplotlib_basics.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/make_plot.py <<'PYCODE'
+from pathlib import Path
+import csv
+import math
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+Path("results").mkdir(exist_ok=True)
+csv_path = Path("results/signal.csv")
+with csv_path.open("w", newline="", encoding="utf-8") as handle:
+    writer = csv.writer(handle); writer.writerow(["x", "value"])
+    for i in range(120): writer.writerow([i, math.sin(i / 12) + 0.2 * math.cos(i / 5)])
+xs, ys = [], []
+with csv_path.open(encoding="utf-8") as handle:
+    next(handle)
+    for line in handle:
+        x, y = line.strip().split(","); xs.append(float(x)); ys.append(float(y))
+plt.figure(figsize=(7, 3)); plt.plot(xs, ys); plt.xlabel("sample"); plt.ylabel("value"); plt.title("Standalone signal plot"); plt.tight_layout()
+png = Path("results/signal.png"); plt.savefig(png, dpi=140)
+print(f"csv={csv_path}"); print(f"png={png}")
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/viz-plot.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=viz-plot
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
+#SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load Mamba/23.11.0-0 2>/dev/null || true
+conda activate netcdf-py39 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/netcdf-python.sh" ]; then
-    source slurm/module-loads/netcdf-python.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/make_plot.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/viz-plot.sbatch)
+echo "$job_id	viz-plot	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/viz-plot_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=core-hpc/chapter-06-visualization/matplotlib_basics.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/core-visualization"
+find results -maxdepth 2 -type f | sort
+ls -lh results/signal.png
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

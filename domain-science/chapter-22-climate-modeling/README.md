@@ -2,75 +2,50 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 22: Climate Modeling
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/climate-grid` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel domain-science/chapter-22-climate-modeling/jobs/netcdf_wrf_summary.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็น `summary.json` ที่สรุปไฟล์ WRF/NetCDF shared ถ้ามี หรือ NetCDF จิ๋วที่ job สร้างขึ้นเอง
+1. สร้าง grid ภูมิอากาศจำลอง
+2. คำนวณ temperature และ rain summary
+3. บันทึก CSV สำหรับ postprocess
 
-## วัตถุประสงค์การเรียนรู้
-
-1. เข้าใจหลักการ Climate Models
-2. ใช้ข้อมูล NetCDF
-3. วิเคราะห์ข้อมูล Climate
-4. สร้าง Visualizations
-
-## โครงสร้างไฟล์
-
-```
-chapter-22-climate-modeling/
-├── README.md
-├── netcdf_basics.py        # Working with NetCDF
-├── climate_analysis.py     # Climate data analysis
-├── temperature_trends.py   # Temperature trend analysis
-├── thai_rainfall.py        # Thailand rainfall analysis
-└── sbatch/
-    └── climate_job.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba create -n hpc-climate python=3.9 netcdf4 xarray cartopy matplotlib
-mamba activate hpc-climate
+mkdir -p "$HOME/hpc-ignite-standalone/climate-grid"
+cd "$HOME/hpc-ignite-standalone/climate-grid"
+mkdir -p configs input jobs logs notes results src
 
-# Run examples
-python netcdf_basics.py
-python thai_rainfall.py
-```
-
-## Climate Data Sources
-
-- ERA5: ECMWF Reanalysis
-- CMIP6: Coupled Model Intercomparison Project
-- Thai Meteorological Department
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-domain-science/chapter-22-climate-modeling/climate_analysis.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/climate_grid.py <<'PYCODE'
+from pathlib import Path
+import csv, math
+Path("results").mkdir(exist_ok=True)
+out = Path("results/climate_grid_summary.csv")
+with out.open("w", newline="", encoding="utf-8") as handle:
+    writer = csv.writer(handle); writer.writerow(["lat", "lon", "temperature_c", "rain_mm"])
+    for lat in range(16, 21):
+        for lon in range(98, 103): writer.writerow([lat, lon, f"{30 - 0.4 * (lat - 16) + math.sin(lon):.2f}", f"{4 + 0.5 * (lat - 16) + 0.1 * (lon - 98):.2f}"])
+print(f"result={out}")
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/climate-grid.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=climate-grid
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -80,23 +55,37 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load Mamba/23.11.0-0 2>/dev/null || module load cray-python/3.10.10 2>/dev/null || true
+conda activate netcdf-py39 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/climate_grid.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/climate-grid.sbatch)
+echo "$job_id	climate-grid	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/climate-grid_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=domain-science/chapter-22-climate-modeling/climate_analysis.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/climate-grid"
+head results/climate_grid_summary.csv
+tail -50 logs/climate-grid_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

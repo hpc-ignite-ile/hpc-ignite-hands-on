@@ -2,7 +2,7 @@
 
 หน้านี้เป็นหน้าอ้างอิงร่วมสำหรับทุกหน้าใน `mini-innovation/` ถ้าหน้าอื่นบอกให้ "เริ่มจากเครื่อง local" ให้กลับมาดูคำสั่งพื้นฐานจากหน้านี้ได้
 
-คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `git clone`, `git pull`, `mkdir -p`, `tee`, `read -rp`, `export` และ `source`
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `mkdir -p`, `tee`, `read -rp`, `export` และ `source`
 
 ## Copy-Paste จากเครื่อง Local
 
@@ -21,16 +21,6 @@ ssh <lanta-username>@transfer.lanta.nstda.or.th
 ## Copy-Paste บน LANTA
 
 ```bash
-mkdir -p "$HOME/hpc-ignite-hands-on"
-cd "$HOME"
-
-if [ ! -d "$HOME/hpc-ignite-hands-on/.git" ]; then
-    git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
-fi
-
-cd "$HOME/hpc-ignite-hands-on"
-git pull --ff-only || true
-
 mkdir -p "$HOME/lanta-episprint"/{configs,jobs,logs,notes,notebooks,prompts,results,src}
 cd "$HOME/lanta-episprint"
 
@@ -95,4 +85,4 @@ cat notes/connect-check.txt | head -20
 cat notes/session-env.sh
 ```
 
-เมื่อสำเร็จ ผู้ใช้ควรเห็น path ที่ลงท้ายด้วย `lanta-episprint`, เห็นข้อมูลใน `notes/connect-check.txt`, และเห็นคำสั่ง export ใน `notes/session-env.sh` หาก `myquota` หรือ `sbalance` แสดง error ให้เก็บข้อความนั้นไว้ก่อน แล้วให้ผู้ดูแลช่วยตรวจ account และ project path เมื่อ `git pull --ff-only` มี conflict ให้ใช้ repo ที่ clone ไว้เดิมสำหรับ lab สด แล้วให้ผู้ดูแล update repo หลังจบกิจกรรม
+เมื่อสำเร็จ ผู้ใช้ควรเห็น path ที่ลงท้ายด้วย `lanta-episprint`, เห็นข้อมูลใน `notes/connect-check.txt`, และเห็นคำสั่ง export ใน `notes/session-env.sh` หาก `myquota` หรือ `sbalance` แสดง error ให้เก็บข้อความนั้นไว้ก่อน แล้วให้ผู้ดูแลช่วยตรวจ account และ project path

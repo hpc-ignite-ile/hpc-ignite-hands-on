@@ -1,77 +1,49 @@
-# บทที่ 20: เคมีคอมพิวเตอร์
+# บทที่ 20: เคมีคำนวณ
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 20: Computational Chemistry
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## เริ่มรันงานจิ๋วบน LANTA
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/chemistry-preflight` โดยตรง
 
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel domain-science/chapter-20-computational-chemistry/jobs/chemistry_preflight.sbatch
-```
+## เป้าหมาย
 
-หลังส่ง job นี้ ผู้ใช้ควรเห็นรายชื่อ group/module สำหรับเครื่องมือ chemistry ที่อาจมี license และผลจาก concept script ขนาดเล็ก
+1. คำนวณ molecular mass ขนาดเล็ก
+2. บันทึก result เป็น JSON
+3. ใช้เป็น preflight ก่อน software chemistry จริง
 
-## วัตถุประสงค์การเรียนรู้
-
-1. เข้าใจ Molecular Structure และ Energy Calculations
-2. ใช้ RDKit สำหรับ Cheminformatics
-3. คำนวณ Molecular Properties
-4. วิเคราะห์ Drug-like Properties
-
-## โครงสร้างไฟล์
-
-```
-chapter-20-computational-chemistry/
-├── README.md
-├── molecular_basics.py      # Basic molecular structures
-├── property_calculation.py  # Calculate molecular properties
-├── similarity_search.py     # Molecular similarity
-├── drug_analysis.py         # Drug-likeness analysis
-└── sbatch/
-    └── chem_job.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba create -n hpc-chem python=3.9 rdkit numpy pandas matplotlib
-mamba activate hpc-chem
+mkdir -p "$HOME/hpc-ignite-standalone/chemistry-preflight"
+cd "$HOME/hpc-ignite-standalone/chemistry-preflight"
+mkdir -p configs input jobs logs notes results src
 
-# Run examples
-python molecular_basics.py
-python property_calculation.py
-```
-
-## Dependencies
-
-- RDKit: Cheminformatics
-- NumPy: Numerical computing
-- Pandas: Data handling
-- Matplotlib: Visualization
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-domain-science/chapter-20-computational-chemistry/molecular_basics.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/molecular_mass.py <<'PYCODE'
+from pathlib import Path
+import json
+Path("results").mkdir(exist_ok=True)
+weights = {"H": 1.008, "C": 12.011, "N": 14.007, "O": 15.999}
+molecules = {"water": {"H": 2, "O": 1}, "methane": {"C": 1, "H": 4}, "glycine": {"C": 2, "H": 5, "N": 1, "O": 2}}
+summary = {name: sum(weights[e] * c for e, c in formula.items()) for name, formula in molecules.items()}
+out = Path("results/molecular_mass.json"); out.write_text(json.dumps(summary, indent=2), encoding="utf-8"); print(json.dumps(summary, indent=2))
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/chem-mass.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=chem-mass
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -81,23 +53,36 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/molecular_mass.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/chem-mass.sbatch)
+echo "$job_id	chem-mass	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/chem-mass_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=domain-science/chapter-20-computational-chemistry/molecular_basics.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/chemistry-preflight"
+cat results/molecular_mass.json
+tail -50 logs/chem-mass_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

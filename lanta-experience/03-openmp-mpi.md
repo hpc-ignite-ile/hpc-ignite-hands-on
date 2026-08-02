@@ -4,6 +4,8 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `cc`, `srun`, `module load cpeCray`, `OMP_NUM_THREADS`, `#SBATCH --ntasks` และ `#SBATCH --cpus-per-task`
 
+เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน block เตรียมพื้นที่ใน [README.md](README.md) สำหรับ workspace ของกิจกรรม
+
 ## Copy-Paste OpenMP
 
 ```bash

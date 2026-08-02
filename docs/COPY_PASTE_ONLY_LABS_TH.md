@@ -192,29 +192,67 @@ head -30 "$SPENT_LOG"
 
 ✅ เมื่อสำเร็จ ผู้ใช้จะได้ไฟล์สรุปข้อมูลใน `notes/data-summary-<เวลา>.txt` และไฟล์ทรัพยากรใน `notes/resource-spent-<เวลา>.tsv`
 
-## Block D: Use A Real Mini Workflow From The Repo
+## Block D: Real Mini Workflow แบบ Standalone
 
-เมื่อผู้ใช้ clone repo แล้ว สามารถส่งงาน smoke ที่ใช้ module จริงได้ทันที:
+ตัวอย่างนี้สร้าง environment audit ขนาดเล็กจากหน้าเอกสารโดยตรง แล้วส่งเข้า `compute-devel`:
 
 ```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
+mkdir -p "$HOME/hpc-ignite-standalone/environment-audit"
+cd "$HOME/hpc-ignite-standalone/environment-audit"
+mkdir -p jobs logs notes results src
 
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
     read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
+export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 
 SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
 fi
 
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p compute-devel --parsable core-hpc/chapter-02-environment/jobs/environment_audit.sbatch)
+cat > src/environment_audit.py <<'PY'
+from pathlib import Path
+import json
+import os
+import platform
+import sys
+
+Path("results").mkdir(exist_ok=True)
+summary = {
+    "python": sys.version.split()[0],
+    "platform": platform.platform(),
+    "job_id": os.environ.get("SLURM_JOB_ID", "manual"),
+    "submit_dir": os.environ.get("SLURM_SUBMIT_DIR", ""),
+}
+out = Path("results") / f"environment_{summary['job_id']}.json"
+out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+print(json.dumps(summary, indent=2))
+PY
+
+cat > jobs/environment_audit.sbatch <<'SLURM'
+#!/bin/bash
+#SBATCH --job-name=env-audit
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1G
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+
+set -euo pipefail
+module purge
+module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
+cd "$SLURM_SUBMIT_DIR"
+python src/environment_audit.py | tee "results/output_${SLURM_JOB_ID}.txt"
+SLURM
+
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/environment_audit.sbatch)
+echo "$job_id	environment_audit	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted environment audit: $job_id"
 echo "Read: tail -80 logs/env-audit_${job_id}.out"
 ```
 
-สำหรับ GPU ให้ใช้ `gpu-devel` และ job ที่ source `slurm/module-loads/pytorch-shared.sh` เช่น `core-hpc/chapter-04-deep-learning/jobs/gpu_smoke.sbatch`.
-
-✅ เมื่อสำเร็จ ผู้ใช้ควรอ่าน log ของ job นั้นก่อน แล้วค่อยเปิดไฟล์ใน `results/<workflow>_<jobid>/`
+✅ เมื่อสำเร็จ ผู้ใช้ควรอ่าน log ของ job นั้นก่อน แล้วเปิด `results/environment_<jobid>.json`

@@ -1,120 +1,96 @@
-# บทที่ 7: Dask สำหรับการประมวลผลแบบขนาน
+# บทที่ 7: Distributed Python ด้วย Dask
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-Chapter 7: Dask for Parallel Computing
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
 
-## วัตถุประสงค์การเรียนรู้
+หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/core-dask` โดยตรง
 
-1. เข้าใจ Lazy Evaluation และ Task Graphs
-2. ใช้ Dask Arrays และ DataFrames
-3. ตั้งค่า Dask Distributed บน SLURM
-4. ประมวลผลข้อมูลขนาดใหญ่กว่า RAM
+## เป้าหมาย
 
-## โครงสร้างไฟล์
+1. สร้าง task graph ขนาดเล็ก
+2. รันด้วย Dask threads เมื่อ package พร้อม
+3. บันทึก fallback summary สำหรับตรวจ environment
 
-```
-chapter-07-dask/
-├── README.md
-├── dask_basics.py          # Dask fundamentals
-├── dask_dataframe.py       # Large CSV processing
-├── dask_array.py           # Large array operations
-├── dask_slurm_cluster.py   # SLURM cluster setup
-└── sbatch/
-    └── dask_distributed.sbatch
-```
-
-## การใช้งาน
+## Copy-Paste บน LANTA
 
 ```bash
-# Create environment
-mamba env create -f ../../environments/dask.yaml
-mamba activate hpc-ignite-dask
+mkdir -p "$HOME/hpc-ignite-standalone/core-dask"
+cd "$HOME/hpc-ignite-standalone/core-dask"
+mkdir -p configs input jobs logs notes results src
 
-# Run examples
-python dask_basics.py
-python dask_dataframe.py
-
-# On SLURM cluster
-sbatch sbatch/dask_distributed.sbatch
-```
-
-## แนวคิดหลัก
-
-### Lazy Evaluation
-
-```python
-import dask.array as da
-
-# This doesn't compute yet
-x = da.random.random((10000, 10000), chunks=(1000, 1000))
-y = x + x.T
-z = y.mean()
-
-# This triggers computation
-result = z.compute()
-```
-
-### Dask on SLURM
-
-```python
-from dask_jobqueue import SLURMCluster
-from dask.distributed import Client
-
-cluster = SLURMCluster(
-    cores=32,
-    memory="64GB",
-    walltime="01:00:00"
-)
-cluster.scale(jobs=4)  # 4 SLURM jobs
-client = Client(cluster)
-```
-
-## Copy-paste only บน LANTA
-
-แปะ block นี้ใน terminal บน LANTA เพื่อสร้าง Slurm script แบบมองเห็นได้ แล้วส่ง Python example ของบทนี้เข้า queue:
-
-```bash
-cd "$HOME/hpc-ignite-hands-on"
-
+if [ -z "${LANTA_CPU_PARTITION:-}" ]; then
+    export LANTA_CPU_PARTITION="compute-devel"
+fi
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
-    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    read -rp "Slurm project account, blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-07-dask/dask_basics.py}"
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
 
-mkdir -p jobs logs results/python-labs
+cat > src/dask_shape.py <<'PYCODE'
+from pathlib import Path
+import json
+import math
+Path("results").mkdir(exist_ok=True)
+try:
+    import dask
+    from dask import delayed, compute
+    tasks = [delayed(lambda i: sum(math.sin(j / 1000) for j in range(i * 1000, (i + 1) * 1000)))(i) for i in range(16)]
+    values = compute(*tasks, scheduler="threads")
+    summary = {"dask_available": True, "dask_version": dask.__version__, "task_count": len(values), "total": sum(values)}
+except Exception as exc:
+    values = [sum(math.sin(j / 1000) for j in range(i * 1000, (i + 1) * 1000)) for i in range(16)]
+    summary = {"dask_available": False, "fallback_reason": repr(exc), "task_count": len(values), "total": sum(values)}
+out = Path("results/dask_shape_summary.json"); out.write_text(json.dumps(summary, indent=2), encoding="utf-8"); print(json.dumps(summary, indent=2))
+PYCODE
 
-cat > jobs/run_python_lab.sbatch <<'SLURM'
+cat > jobs/dask-shape.sbatch <<'SLURM'
 #!/bin/bash
-#SBATCH --job-name=hpcig-python-lab
+#SBATCH --job-name=dask-shape
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
+#SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
+module purge
+module load Mamba/23.11.0-0 2>/dev/null || module load cray-python/3.10.10 2>/dev/null || true
+conda activate netcdf-py39 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
-fi
-mkdir -p "results/python-labs/${SLURM_JOB_ID}"
-echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+mkdir -p "results/${SLURM_JOB_ID}"
+python src/dask_shape.py | tee "results/${SLURM_JOB_ID}/output.txt"
 SLURM
 
-SBATCH_ACCOUNT=()
-if [ -n "${LANTA_ACCOUNT:-}" ]; then
-    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
-fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/dask-shape.sbatch)
+echo "$job_id	dask-shape	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
-echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"
+echo "Read: tail -80 logs/dask-shape_${job_id}.out"
 ```
 
-เปลี่ยน script ได้เล็กน้อยโดยตั้ง `LAB_SCRIPT` ก่อนแปะ block เช่น `export LAB_SCRIPT=core-hpc/chapter-07-dask/dask_basics.py`
+## Check
+
+```bash
+cd "$HOME/hpc-ignite-standalone/core-dask"
+cat results/dask_shape_summary.json
+tail -60 logs/dask-shape_*.out
+```
+
+## การตรวจผล
+
+หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
+
+1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
+2. `logs/` มี stdout/stderr ของ job id นั้น
+3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+
+## ใช้ Repo เป็น Reference
+
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

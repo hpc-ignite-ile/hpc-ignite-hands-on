@@ -4,6 +4,8 @@
 
 ดูคำอธิบายคำสั่ง Bash, Slurm และ syntax ที่ใช้ใน mini innovation ได้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md)
 
+เริ่มจาก SSH และ workspace ตาม [00-connect-to-lanta.md](00-connect-to-lanta.md) แล้วเลือกหน้าถัดไปตามลำดับกิจกรรม
+
 ## บทนำแบบ Verse
 
 ตั้งประชากรให้มีสถานะ กำหนด seed ให้ย้อนรอย<br>
@@ -52,14 +54,54 @@ LANTA EpiSprint ใช้แบบจำลอง SEIR แบบ agent-based sim
 - การออกแบบ experiment แบบ reproducible
 - AI scaffolding สำหรับตั้งคำถาม ออกแบบ scenario ตรวจ Slurm script และอธิบายผลโดยอ้างอิง code, config, log และ CSV
 
-## Smoke Job ที่อยู่ใน Repo
+## Standalone Smoke Job
 
 หลังเตรียม environment/module แล้ว ผู้ใช้ตรวจ Mesa ได้ด้วย job สั้น ๆ:
 
 ```bash
-cd "$HOME/hpc-ignite-hands-on"
-mkdir -p logs results
-sbatch -p compute-devel mini-innovation/jobs/epi_smoke.sbatch
+mkdir -p "$HOME/lanta-episprint"/{jobs,logs,results}
+cd "$HOME/lanta-episprint"
+
+if [ -z "${LANTA_ACCOUNT:-}" ]; then
+    read -rp "Slurm project account เช่น ltXXXXXX หรือ tn999996: " LANTA_ACCOUNT
+    export LANTA_ACCOUNT
+fi
+export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-/project/<project>/modules}"
+
+cat > jobs/epi_smoke.sbatch <<'SLURM'
+#!/bin/bash
+#SBATCH --job-name=epi-smoke
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1G
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+
+set -euo pipefail
+module purge
+module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
+module load hpc-mesa/2.3.4
+cd "$SLURM_SUBMIT_DIR"
+mkdir -p "results/${SLURM_JOB_ID}"
+python - <<'PY' | tee "results/${SLURM_JOB_ID}/mesa_check.txt"
+import mesa
+from mesa.space import MultiGrid
+from mesa.time import RandomActivation
+print("mesa", mesa.__version__)
+print("api", "RandomActivation MultiGrid")
+PY
+SLURM
+
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/epi_smoke.sbatch)
+echo "Submitted smoke job: $job_id"
+echo "Read: tail -50 logs/epi-smoke_${job_id}.out"
 ```
 
 ถ้า module อยู่คนละ project ให้ตั้ง `EPI_MODULE_ROOT=/project/<project>/modules` ก่อน `sbatch`.
