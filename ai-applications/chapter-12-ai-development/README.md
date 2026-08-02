@@ -2,6 +2,16 @@
 
 Chapter 12: AI Development on HPC
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p gpu-devel ai-applications/chapter-12-ai-development/jobs/pytorch_gpu_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น shared PyTorch GPU environment และผล training หนึ่ง epoch บน synthetic data ก่อนค่อยขยายไป DDP
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. ตั้งค่า AI Environment บน LANTA
@@ -25,16 +35,13 @@ chapter-12-ai-development/
 ## การใช้งาน
 
 ```bash
-# On LANTA
-module load Miniconda3
-module load CUDA/11.7.0
+# On LANTA: use the shared training smoke environment first
+source ../../slurm/module-loads/pytorch-shared.sh
 
-# Create environment
-mamba create -n hpc-ai pytorch torchvision pytorch-cuda=11.7 -c pytorch -c nvidia
-mamba activate hpc-ai
+# Run one-GPU smoke training
+python pytorch_distributed.py --epochs 1 --batch-size 64
 
-# Run distributed training
-srun -p gpu -N 2 --gpus-per-node=4 python pytorch_distributed.py
+# DDP is an instructor demo after the one-GPU smoke test is correct.
 ```
 
 ## LANTA AI Resources
@@ -42,7 +49,7 @@ srun -p gpu -N 2 --gpus-per-node=4 python pytorch_distributed.py
 - GPUs: NVIDIA A100-SXM4-40GB
 - GPU Memory: 40 GB HBM2e
 - NVLink: 600 GB/s
-- Available partitions: gpu, dgx
+- Available partitions for smoke tests: gpu-devel, gpu
 
 ## Copy-paste only บน LANTA
 
@@ -55,7 +62,7 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
     export LANTA_ACCOUNT
 fi
-export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
+export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
 export LAB_SCRIPT="${LAB_SCRIPT:-ai-applications/chapter-12-ai-development/pytorch_distributed.py}"
 
 mkdir -p jobs logs results/python-labs
@@ -65,16 +72,17 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #SBATCH --job-name=hpcig-python-lab
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
-#SBATCH --time=00:05:00
+#SBATCH --cpus-per-task=4
+#SBATCH --gpus-per-node=1
+#SBATCH --mem=8G
+#SBATCH --time=00:10:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
+if [ -f "slurm/module-loads/pytorch-shared.sh" ]; then
+    source slurm/module-loads/pytorch-shared.sh
 fi
 mkdir -p "results/python-labs/${SLURM_JOB_ID}"
 echo "script=${LAB_SCRIPT}"
@@ -85,7 +93,7 @@ SBATCH_ACCOUNT=()
 if [ -n "${LANTA_ACCOUNT:-}" ]; then
     SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
 fi
-job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_GPU_PARTITION" --export=ALL,LAB_SCRIPT="$LAB_SCRIPT" --parsable jobs/run_python_lab.sbatch)
 echo "Submitted job: $job_id"
 echo "Monitor: squeue -j $job_id"
 echo "Results: find results/python-labs/${job_id} -type f -maxdepth 2 -print"

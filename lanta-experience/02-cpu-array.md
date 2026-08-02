@@ -72,6 +72,8 @@ module purge
 module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
 export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 python src/parallel_pi.py --samples 500000 --workers "${SLURM_CPUS_PER_TASK:-1}"
 SLURM
 
@@ -82,13 +84,13 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: tail -50 logs/pi_${job_id}.out && cat results/pi_${job_id}.txt"
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-ในบทนี้ ผู้เรียนเริ่มเห็นว่า CPU ที่ขอจาก Slurm จะมีความหมายก็ต่อเมื่อโปรแกรมใช้ CPU เหล่านั้นจริง โปรแกรม `parallel_pi.py` ประมาณค่า pi ด้วย Monte Carlo และแบ่งงานให้ worker หลายตัวตามจำนวนที่อ่านจาก `SLURM_CPUS_PER_TASK` ส่วน Slurm script ขอ 4 cores เพื่อให้การทดลองเล็กนี้มีทรัพยากรที่สอดคล้องกับ code
+ในขั้นตอนนี้ ผู้ใช้จะรันโปรแกรม `parallel_pi.py` เพื่อประมาณค่า pi ด้วย Monte Carlo โปรแกรมจะแบ่งงานตามจำนวน worker ที่อ่านจาก `SLURM_CPUS_PER_TASK`
 
-การเริ่มจาก sample ขนาดเล็กคือวินัยของการทดลองเชิงสมรรถนะ เพราะผลลัพธ์จะกลับมาเร็วพอให้ตรวจ log และแก้ไขได้ทันที การตั้ง `OMP_NUM_THREADS=1` ป้องกันไม่ให้ library ภายใน Python แอบใช้ thread เกินกว่าที่ขอไว้ และการเขียนผลลัพธ์ด้วยชื่อที่มี `SLURM_JOB_ID` ทำให้แต่ละ run แยกจากกันอย่างเป็นระบบ
+Slurm script ขอ 4 CPU cores และตั้ง `OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`, และ `MKL_NUM_THREADS` เป็น 1 เพื่อไม่ให้ library ภายใน Python ใช้ thread เกินกว่าที่ขอไว้
 
-งานสำเร็จเมื่อ log มีข้อความประมาณ `pi=... workers=4` และไฟล์ `results/pi_<job-id>.txt` มีจำนวน sample จำนวน worker ค่า pi และเวลารัน ค่า pi ควรอยู่ใกล้ 3.14 แต่ไม่จำเป็นต้องตรงอย่างสมบูรณ์เพราะเป็นการสุ่ม หากงานช้าให้ลด sample หาก memory ไม่พอให้ลด worker หรือขนาดงาน หาก worker ไม่ตรงกับ CPU ที่ขอให้ตรวจทั้ง `#SBATCH --cpus-per-task` และ argument `--workers` แล้วส่งใหม่ด้วยทรัพยากรที่เล็กและชัดเจนกว่าเดิม เมื่อ code เดียวกันถูกเรียกจาก job array ชื่อไฟล์จะใช้ array job id และ task id เป็น `results/pi_<array-job-id>_<task-id>.txt` เพื่อไม่ให้งานย่อยหลายตัวเขียนทับหลักฐานของกันและกัน
+เมื่อสำเร็จ log จะมีข้อความ `pi=... workers=4` และไฟล์ `results/pi_<job-id>.txt` จะมีจำนวน sample, worker, ค่า pi และเวลารัน ค่า pi ควรอยู่ใกล้ 3.14 หากงานช้าให้ลด sample หาก worker ไม่ตรงกับ CPU ที่ขอไว้ ให้ตรวจ `#SBATCH --cpus-per-task` และ argument `--workers`
 
 ## Copy-Paste Job Array
 
@@ -140,6 +142,9 @@ set -euo pipefail
 module purge
 module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 LINE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" configs/pi-params.csv)
 python src/array_pi.py --line "$LINE"
 SLURM
@@ -151,10 +156,10 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: ls logs/pi_array_${job_id}_*.out results/pi_${job_id}_*.txt"
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-เมื่องานเดียวเริ่มนิ่งแล้ว การทดลองจึงแตกแขนงเป็นหลายพารามิเตอร์ ไฟล์ `configs/pi-params.csv` ทำหน้าที่เป็นตารางการทดลองขนาดเล็ก แต่ละบรรทัดคือเงื่อนไขหนึ่งชุด และ Slurm job array ใช้ `SLURM_ARRAY_TASK_ID` เป็นเข็มชี้ว่ task ใดควรอ่านบรรทัดใด
+หลังจากงานเดี่ยวรันได้แล้ว ให้ผู้ใช้รันงานแบบ job array ไฟล์ `configs/pi-params.csv` เป็นตารางพารามิเตอร์ โดยแต่ละบรรทัดคือหนึ่งชุดทดลอง
 
-นี่คือรูปแบบที่พบได้บ่อยในงาน HPC จริง ไม่ว่าจะเป็นหลาย seed หลาย input file หลายพื้นที่ศึกษา หรือหลายค่าพารามิเตอร์ การใช้ `--array=1-4` ทำให้ Slurm รู้ว่างานหนึ่งชุดมีงานย่อยหลายตัว และการใช้ `%A_%a` ในชื่อ log ทำให้ array job id กับ task id ปรากฏในหลักฐานอย่างชัดเจน
+Slurm ใช้ `SLURM_ARRAY_TASK_ID` เพื่อเลือกบรรทัดจากไฟล์ config และใช้ `%A_%a` ในชื่อ log เพื่อแยก array job id กับ task id ออกจากกัน วิธีนี้เหมาะกับงานหลาย seed หลาย input file หรือหลายค่าพารามิเตอร์
 
-ความสำเร็จจะเห็นจาก log หลายไฟล์ เช่น `logs/pi_array_<jobid>_1.out` จนถึง task สุดท้าย และแต่ละ task ควรมี output ของตนเอง เช่น `results/pi_<array-jobid>_1.txt` จนถึง task สุดท้าย หาก task ใดล้มเหลว ให้เปิด error log เฉพาะ task นั้นก่อน เพราะ array มักล้มบางจุดไม่ใช่ทั้งหมด หาก `sed` อ่านบรรทัดว่าง แสดงว่าช่วง `--array` ยาวกว่า config ที่มีอยู่ และหาก queue หนักเกินไป ให้ลดจำนวน task หรือกลับไปใช้พารามิเตอร์เล็กลงเพื่อรักษาวินัยของการทดลอง
+เมื่อสำเร็จ ผู้ใช้จะเห็น log หลายไฟล์ เช่น `logs/pi_array_<jobid>_1.out` และผลลัพธ์หลายไฟล์ เช่น `results/pi_<array-jobid>_1.txt` หาก task ใดล้มเหลว ให้เปิด error log ของ task นั้นก่อน หาก `sed` อ่านบรรทัดว่าง แสดงว่า `--array` ยาวกว่าไฟล์ config

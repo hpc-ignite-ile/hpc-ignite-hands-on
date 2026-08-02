@@ -15,7 +15,7 @@ try:
     CUPY_AVAILABLE = True
 except ImportError:
     CUPY_AVAILABLE = False
-    print("CuPy not installed. Install with: pip install cupy-cuda11x")
+    print("CuPy not installed. Use a prebuilt project CuPy environment for live LANTA training.")
     print("Running in demo mode (NumPy only)")
 
 

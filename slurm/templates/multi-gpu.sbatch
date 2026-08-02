@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=hpc-multigpu-job
-#SBATCH --partition=gpu
+#SBATCH --partition=gpu-devel
 #SBATCH --nodes=1
 #SBATCH --ntasks=4
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=8
 #SBATCH --gpus=4
-#SBATCH --mem=512G
-#SBATCH --time=08:00:00
-#SBATCH --output=%x_%j.out
-#SBATCH --error=%x_%j.err
+#SBATCH --mem=32G
+#SBATCH --time=00:20:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
 
 # ============================================================
 # HPC Ignite - Multi-GPU (Single Node) Template
@@ -19,7 +19,7 @@ echo "Running on node: $(hostname)"
 echo "GPUs available: $SLURM_GPUS"
 
 # Load modules
-source slurm/module-loads/pytorch.sh
+source slurm/module-loads/pytorch-shared.sh
 
 # Check GPUs
 python -c "import torch; print(f'GPUs: {torch.cuda.device_count()}')"

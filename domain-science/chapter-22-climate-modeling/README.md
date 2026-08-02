@@ -2,6 +2,16 @@
 
 Chapter 22: Climate Modeling
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel domain-science/chapter-22-climate-modeling/jobs/netcdf_wrf_summary.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น `summary.json` ที่สรุปไฟล์ WRF/NetCDF shared ถ้ามี หรือ NetCDF จิ๋วที่ job สร้างขึ้นเอง
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจหลักการ Climate Models

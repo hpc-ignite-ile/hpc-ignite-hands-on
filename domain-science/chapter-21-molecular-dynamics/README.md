@@ -2,6 +2,16 @@
 
 Chapter 21: Molecular Dynamics Simulations
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p gpu-devel domain-science/chapter-21-molecular-dynamics/jobs/gromacs_gpu_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น version ของ GROMACS, path ของ shared `benchPEP.tpr` ถ้ามี และ performance summary จาก `gmx mdrun`
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจหลักการ MD Simulation
@@ -25,17 +35,14 @@ chapter-21-molecular-dynamics/
 ## การใช้งาน
 
 ```bash
-# On LANTA
-module load CUDA/11.7.0
-mamba create -n hpc-md python=3.9 openmm mdtraj numpy matplotlib
-mamba activate hpc-md
+# On LANTA, start with the real GROMACS GPU smoke job
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p gpu-devel domain-science/chapter-21-molecular-dynamics/jobs/gromacs_gpu_smoke.sbatch
 
-# Run examples
+# Concept scripts can still run as lightweight Python examples
 python md_basics.py
 python lennard_jones.py
-
-# GPU simulation
-sbatch sbatch/md_gpu.sbatch
 ```
 
 ## MD Simulation Loop

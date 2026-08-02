@@ -1,6 +1,6 @@
 # 00 Readiness
 
-ใช้ก่อนส่งงานจริงเพื่อให้ผู้เรียนเห็น shell, filesystem, quota, account, module และ queue ตามลำดับใน booklet.
+ใช้ก่อนส่งงานจริงเพื่อให้ผู้ใช้เห็น shell, filesystem, quota, account, module และ queue ตามลำดับใน booklet.
 
 ## Copy-Paste
 
@@ -33,6 +33,9 @@ mkdir -p configs input jobs logs notes results src
     echo "== modules =="
     module list 2>&1 || true
     module avail python 2>&1 | head -80 || true
+    echo
+    echo "== live module probes for real mini workflows =="
+    module avail cray-python Mamba cpeCray WPS WRF WRFchem QuantumESPRESSO GROMACS GDAL BLAST+ Apptainer 2>&1 || true
 } | tee notes/system-check.txt
 
 cat > configs/run-small.env <<'EOF'
@@ -48,11 +51,11 @@ cat configs/run-small.env
 
 ### คำอธิบาย
 
-ก่อนส่งงานแรก ผู้เรียนควรทำความรู้จักสภาพแวดล้อมที่ตนยืนอยู่เสียก่อน Block นี้จึงทำหน้าที่เหมือนการลงทะเบียนภาคสนาม โดยบันทึก workspace วันเวลา ผู้ใช้ เครื่องที่เข้าใช้ และ home directory ลงใน `notes/readiness.txt` จากนั้นจึงเก็บภาพรวมของไฟล์ quota balance queue และ module ลงใน `notes/system-check.txt` พร้อมสร้าง `configs/run-small.env` เป็นตัวอย่างของไฟล์กำกับการทดลอง
+ก่อนส่งงานแรก ให้ผู้ใช้ตรวจว่าอยู่ที่เครื่องใด อยู่ในโฟลเดอร์ใด และมี quota/account พร้อมหรือไม่ คำสั่งนี้จะบันทึกข้อมูลพื้นฐานลงใน `notes/readiness.txt` และบันทึก quota, balance, queue, module ลงใน `notes/system-check.txt`
 
-ในงาน HPC ความผิดพลาดจำนวนมากไม่ได้เกิดจาก code เพียงอย่างเดียว แต่เกิดจากการอยู่ผิด directory พื้นที่เต็ม account ไม่พร้อม หรือ module ไม่ตรงกับงาน การเก็บหลักฐานเหล่านี้ตั้งแต่ต้นจึงเป็นวิธีวิทยาที่สำคัญ Block นี้ใช้ `tee` เพื่อให้เห็นผลทันทีและเก็บบันทึกพร้อมกัน ส่วน `|| true` ทำให้การตรวจระบบเดินต่อได้แม้คำสั่งบางตัวไม่มีใน environment นั้น
+จากนั้น block จะสร้าง `configs/run-small.env` เป็นไฟล์กำกับการทดลองตัวอย่าง ผู้ใช้จะเห็นรูปแบบ `KEY=value` ซึ่งใช้ซ้ำได้ในงานวิทยาศาสตร์จริง เช่น input, output, จำนวน worker และ mode ของการรัน
 
-ความสำเร็จของขั้นนี้เห็นได้จากไฟล์ `notes/readiness.txt`, `notes/system-check.txt`, และ `configs/run-small.env` ที่ถูกสร้างครบ พร้อมข้อความ `workspace=...` และค่าของ config ที่อ่านได้ หาก `myquota` หรือ `sbalance` ไม่ทำงาน ให้ถือข้อความ error เป็นข้อมูล ไม่ใช่ความล้มเหลวของบทเรียน แล้วตรวจต่อด้วย `df -h`, `squeue -u "$USER"` หรือสอบถามผู้สอน หากคำสั่ง `module` ไม่ตอบสนอง การ logout แล้ว login ใหม่ด้วย shell ปกติมักช่วยให้ Lmod ถูกโหลดกลับมา
+เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `notes/readiness.txt`, `notes/system-check.txt`, และ `configs/run-small.env` หาก `myquota` หรือ `sbalance` แสดง error ให้เก็บข้อความนั้นไว้ก่อน แล้วตรวจต่อด้วย `df -h` หรือ `squeue -u "$USER"` หากคำสั่ง `module` ไม่ทำงาน ให้ logout แล้ว login ใหม่ก่อนเริ่มส่ง job
 
 ## Check
 
@@ -61,10 +64,10 @@ find notes configs -maxdepth 2 -type f | sort
 tail -40 notes/system-check.txt
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-หลังจากเก็บหลักฐานแล้ว ผู้เรียนต้องอ่านหลักฐานนั้น ไม่ใช่เพียงเชื่อว่าคำสั่งที่แปะไปทำงานสำเร็จ Block ตรวจสอบนี้จึงให้ `find` แสดงรายชื่อไฟล์ใน `notes` และ `configs` อย่างมีลำดับ แล้วใช้ `tail` อ่านส่วนท้ายของรายงานระบบซึ่งมักมีข้อมูล module หรือข้อความเตือนที่สำคัญ
+หลังจากรัน block แรกแล้ว ให้ผู้ใช้ตรวจไฟล์ที่สร้างขึ้นด้วย `find` และอ่านท้ายไฟล์ `notes/system-check.txt` ด้วย `tail`
 
-แนวทางนี้สะท้อนวิธีทำงานของผู้ใช้ HPC ที่ดี กล่าวคือทุกการรันควรมีร่องรอยที่ตรวจซ้ำได้ การใช้ `sort` ทำให้ผลลัพธ์เรียงคงที่และเปรียบเทียบระหว่างรอบได้ง่าย ส่วน `tail` ช่วยหลีกเลี่ยงการเท log ยาวเกินจำเป็นลงหน้าจอ
+จุดสำคัญคือผู้ใช้ต้องอ่านหลักฐาน ไม่ใช่ดูเพียงว่าคำสั่งไม่มี error เพราะในไฟล์นี้อาจมีข้อมูล quota, account, queue หรือ module ที่จะมีผลต่อ job ถัดไป
 
-หากขั้นนี้สมบูรณ์ ผู้เรียนจะเห็น `notes/readiness.txt`, `notes/system-check.txt`, และ `configs/run-small.env` หากไฟล์ไม่ปรากฏ ให้กลับไปตรวจ `pwd` ก่อน เพราะสาเหตุที่พบบ่อยคืออยู่ผิด directory หาก `tail` แจ้งว่าไม่มีไฟล์ แปลว่า block แรกอาจไม่จบหรือถูกแปะในตำแหน่งอื่น ให้กลับไปสร้าง workspace ให้ครบก่อนเดินต่อ
+ถ้าไม่พบไฟล์ ให้ตรวจ `pwd` ก่อน เพราะสาเหตุที่พบบ่อยคือแปะคำสั่งในคนละโฟลเดอร์ หาก `tail` แจ้งว่าไม่มีไฟล์ ให้กลับไปรัน block เตรียม readiness ใหม่ให้ครบก่อนเดินต่อ

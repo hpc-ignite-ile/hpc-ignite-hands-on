@@ -381,7 +381,7 @@ echo "สร้าง source, scenario, และ prompt เรียบร้�
 
 ## Example 1: Single Slurm Job
 
-วิธีนี้เหมือนงานแรกในหนังสือ เหมาะกับ smoke test ก่อนให้ทั้งห้องรัน array
+วิธีนี้ใช้สำหรับ smoke test ก่อนให้ผู้ใช้ทั้งห้องรัน array ให้รัน single job ให้ผ่านก่อนเสมอ
 
 ```bash
 cd "$HOME/lanta-episprint"
@@ -422,7 +422,7 @@ echo "Read: tail -60 logs/epi_single_${job_id}.out"
 
 ## Example 2: Slurm Job Array
 
-วิธีนี้ใช้ตาราง scenario แล้วให้ Slurm แตกงานย่อย เหมาะกับกิจกรรมสดเพราะแต่ละทีมรัน array สั้น ๆ ของตนเองได้
+วิธีนี้ใช้ตาราง scenario แล้วให้ Slurm แตกงานย่อย ผู้ใช้แต่ละทีมสามารถรัน array สั้น ๆ ของตนเองได้
 
 ```bash
 cd "$HOME/lanta-episprint"
@@ -479,7 +479,7 @@ cat results/epi_policy_compare.csv
 
 ## Example 3: Multicore Ensemble ในหนึ่ง Node
 
-วิธีนี้ใช้ `SLURM_CPUS_PER_TASK` เพื่อให้ Python เปิดหลาย process ภายในหนึ่ง allocation เหมาะกับการสอนความต่างระหว่าง "หลาย task ใน array" กับ "หลาย worker ใน job เดียว"
+วิธีนี้ใช้ `SLURM_CPUS_PER_TASK` เพื่อให้ Python เปิดหลาย process ภายในหนึ่ง allocation ผู้ใช้จะเห็นความต่างระหว่าง job array กับหลาย worker ใน job เดียว
 
 ```bash
 cd "$HOME/lanta-episprint"
@@ -515,11 +515,11 @@ echo "Read: tail -80 logs/epi_multicore_${job_id}.out"
 
 ## คำอธิบาย
 
-แบบจำลองนี้ใช้ SEIR เป็นแกนวิทยาศาสตร์ โดยแต่ละ agent มีสถานะ `S`, `E`, `I`, หรือ `R` และมีพฤติกรรมเคลื่อนที่บน `MultiGrid` ของ Mesa นโยบายแต่ละแบบไม่ได้เป็นคำแนะนำทางสาธารณสุขจริง แต่เป็นกลไก synthetic เพื่อให้ผู้เรียนเห็นว่า parameter และ behavior เปลี่ยน curve ได้อย่างไร
+ใน lab นี้ ผู้ใช้จะรันแบบจำลอง SEIR แบบ agent-based simulation แต่ละ agent มีสถานะ `S`, `E`, `I`, หรือ `R` และเคลื่อนที่บน `MultiGrid` ของ Mesa นโยบายในตัวอย่างเป็นข้อมูล synthetic เพื่อใช้เรียนรู้เท่านั้น ไม่ใช่คำแนะนำทางสาธารณสุข
 
-Example 1 เป็น smoke test แบบ single Slurm job ถ้าขั้นนี้ล้มเหลว ไม่ควรปล่อยทั้งห้องรัน array เพราะ error เดียวกันจะถูกคูณเป็นหลายงาน Example 2 ใช้ job array ซึ่งเป็นวิธีสำคัญของ HPC สำหรับ scenario sweep หลาย seed หลายนโยบาย และหลายค่าพารามิเตอร์ Example 3 ใช้ multicore ภายในหนึ่ง node เพื่อให้เห็นอีกรูปแบบของ parallelism ที่ต่างจาก job array
+ตัวอย่างที่ 1 เป็น single Slurm job สำหรับตรวจว่า code, module, account และ partition ใช้งานได้ ตัวอย่างที่ 2 ใช้ job array เพื่อรันหลาย scenario จาก CSV ตัวอย่างที่ 3 ใช้หลาย worker ภายในหนึ่ง node เพื่อให้ผู้ใช้เห็น parallelism อีกรูปแบบหนึ่ง
 
-AI scaffold อยู่ใน `prompts/ai-scaffold-th.md` หน้าที่ของ AI คือช่วยตรวจ scenario, ตรวจ Slurm และช่วยอธิบายผลจาก CSV โดยต้องย้ำข้อจำกัดของ synthetic model เสมอ หลักฐานของ simulation ยังมาจาก code, config, job log และ result file ไม่ใช่จากคำตอบของ AI
+ไฟล์ `prompts/ai-scaffold-th.md` เป็นตัวช่วยสำหรับถาม AI ให้ช่วยตรวจ scenario, ตรวจ Slurm script และช่วยอธิบาย CSV แต่หลักฐานหลักยังอยู่ที่ code, config, job log และ result file
 
 ## Check
 
@@ -530,4 +530,4 @@ cat notes/job-history.tsv 2>/dev/null || true
 cat notes/epi-policy-compare.txt 2>/dev/null || true
 ```
 
-สัญญาณที่ดีคือมีไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_summary_all.csv` และ `epi_policy_compare.csv` หากไม่มีผลลัพธ์ ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` หาก import Mesa ไม่สำเร็จ ให้ตรวจว่าโหลด module ด้วย `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4` แล้วจริงหรือไม่
+เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_summary_all.csv` และ `epi_policy_compare.csv` หากไม่มีผลลัพธ์ ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` หาก import Mesa ไม่สำเร็จ ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`

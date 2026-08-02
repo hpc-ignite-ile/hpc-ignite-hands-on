@@ -50,6 +50,9 @@ def setup_distributed():
     world_size = int(os.environ.get('SLURM_NTASKS', 1))
     local_rank = int(os.environ.get('SLURM_LOCALID', 0))
 
+    if not torch.cuda.is_available():
+        raise RuntimeError("Distributed NCCL training requires CUDA, but CUDA is not available.")
+
     # Set CUDA device
     torch.cuda.set_device(local_rank)
 
@@ -106,13 +109,15 @@ def train_epoch(model, dataloader, criterion, optimizer, device, epoch, rank):
 
 def main():
     parser = argparse.ArgumentParser(description='Distributed Training Demo')
-    parser.add_argument('--epochs', type=int, default=5)
+    parser.add_argument('--epochs', type=int, default=1)
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--lr', type=float, default=0.001)
     args = parser.parse_args()
 
-    # Check if distributed environment is available
-    if 'SLURM_PROCID' in os.environ:
+    world_size_env = int(os.environ.get('SLURM_NTASKS', 1))
+
+    # A one-task Slurm smoke job should run as normal single-process PyTorch.
+    if world_size_env > 1 and 'SLURM_PROCID' in os.environ:
         rank, world_size, local_rank = setup_distributed()
         device = torch.device(f'cuda:{local_rank}')
         distributed = True
@@ -153,7 +158,7 @@ def main():
         batch_size=args.batch_size,
         sampler=sampler,
         num_workers=2,
-        pin_memory=True
+        pin_memory=device.type == "cuda"
     )
 
     # Training loop

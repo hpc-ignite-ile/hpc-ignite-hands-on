@@ -1,84 +1,57 @@
 #!/bin/bash
-#SBATCH --job-name=wrf-chem-air-quality
-#SBATCH --partition=compute
-#SBATCH --nodes=32
-#SBATCH --ntasks-per-node=128
-#SBATCH --time=04:00:00
-#SBATCH --output=wrf_chem_%j.out
-#SBATCH --error=wrf_chem_%j.err
+#SBATCH --job-name=wrf-chem-preflight
+#SBATCH --partition=compute-devel
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1G
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
 
 # ============================================================
-# WRF-Chem Air Quality Modeling - Northern Thailand
-# Chapter 0: HPC 101 - กรณีศึกษาการวิเคราะห์คุณภาพอากาศภาคเหนือ
+# WRF/WPS/WRF-Chem Preflight - Northern Thailand Air Quality
+# Chapter 0: HPC 101 case-study scaffold
 #
-# หมายเหตุ: สคริปต์นี้ต้องการ:
-#   - WRF-Chem module บน LANTA
-#   - ข้อมูล input (boundary conditions, emissions data)
-#   - พื้นที่จัดเก็บบน $SCRATCH
-#
-# สำหรับการเรียนรู้ ให้ศึกษาโครงสร้างสคริปต์ก่อน
-# อย่ารันจริงจนกว่าจะมีข้อมูลครบถ้วน
+# This is intentionally a short preflight, not a full WRF-Chem forecast.
+# Learners can run it during training to see real LANTA weather modules,
+# shared WRF/WPS data paths, and provenance capture without occupying many
+# nodes or requiring emissions/boundary-condition datasets.
 # ============================================================
+
+set -euo pipefail
 
 echo "=========================================="
-echo "WRF-Chem Air Quality Simulation"
-echo "Region: Northern Thailand"
+echo "WRF/WPS/WRF-Chem Preflight"
 echo "Start time: $(date)"
+echo "Job ID: ${SLURM_JOB_ID:-manual}"
+echo "Node: $(hostname)"
 echo "=========================================="
 
-# Print job information
-echo "Job ID: $SLURM_JOB_ID"
-echo "Nodes: $SLURM_JOB_NODELIST"
-echo "Tasks: $SLURM_NTASKS"
-
-# Set up working directory
-WORK_DIR=$SCRATCH/wrf_chem/$SLURM_JOB_ID
-mkdir -p $WORK_DIR
-cd $WORK_DIR
-
-echo "Working directory: $WORK_DIR"
-
-# Load required modules
 module purge
-module load WRF-Chem/4.4
-module load netCDF/4.8
-module load HDF5/1.12.2
+module load WPS/4.6-DM-cpeCray-25.03 2>/dev/null || true
+module load WRF/4.7.1-DMSM-cpeCray-25.03 2>/dev/null || true
+module load WRFchem/4.7.1-DM-cpeCray-25.03 2>/dev/null || true
 
 echo "Modules loaded:"
-module list
+module list 2>&1 || true
 
-# Copy input files to scratch (faster I/O)
-echo "Copying input files to scratch..."
-# cp -r $HOME/wrf_data/namelist.input .
-# cp -r $HOME/wrf_data/wrfinput_d01 .
-# cp -r $HOME/wrf_data/wrfbdy_d01 .
+OUT="results/wrf_preflight_${SLURM_JOB_ID:-manual}"
+mkdir -p "$OUT"
 
-# Run WRF-Chem
-echo "Starting WRF-Chem simulation..."
-echo "Forecast period: 72 hours"
+{
+    echo "Executables"
+    command -v geogrid.exe || true
+    command -v ungrib.exe || true
+    command -v metgrid.exe || true
+    command -v real.exe || true
+    command -v wrf.exe || true
+    echo
+    echo "Shared paths"
+    ls -ld /project/common/WRF /project/common/WPS_Static 2>/dev/null || true
+    echo
+    echo "Candidate WRF files"
+    find /project/common/WRF -maxdepth 4 -type f | head -20 2>/dev/null || true
+} | tee "$OUT/preflight.txt"
 
-# The actual WRF-Chem execution
-# srun wrf.exe
-
-# Post-processing
-echo "Running post-processing..."
-# python $HOME/scripts/process_output.py --region northern_thailand
-
-# Copy results back to home
-echo "Copying results back to home..."
-# cp -r wrfout_* $HOME/wrf_results/
-
-# Clean up
-echo "Cleaning up scratch..."
-# rm -rf $WORK_DIR
-
-echo "=========================================="
-echo "Simulation completed at: $(date)"
-echo "=========================================="
-
-# Summary
-echo ""
-echo "Expected outputs:"
-echo "  - PM2.5 forecast for next 72 hours"
-echo "  - Air quality maps for Northern Thailand"
-echo "  - Warning alerts if AQI > 100"
+echo "Preflight complete. Full WRF-Chem runs should be instructor demos with prepared data."

@@ -59,7 +59,7 @@ def check_cuda_env():
 
     if not found:
         print("   No CUDA environment variables set")
-        print("   On LANTA, run: module load CUDA/11.7.0")
+        print("   On LANTA, source slurm/module-loads/pytorch-shared.sh for the shared GPU smoke environment")
 
 
 def check_pytorch():
@@ -104,7 +104,7 @@ def check_cupy():
 
     except ImportError:
         print("   CuPy not installed")
-        print("   Install with: pip install cupy-cuda11x")
+        print("   Use CuPy only from a prebuilt project environment for live training")
     except Exception as e:
         print(f"   CuPy error: {e}")
 
@@ -146,7 +146,7 @@ def main():
     else:
         print("   No GPU detected. Running on CPU only.")
         print("\n   On LANTA, request GPU node:")
-        print("   srun -p gpu -N 1 --gpus=1 --pty bash")
+        print("   srun -p gpu-devel -N 1 --gpus=1 --pty bash")
     print("=" * 60)
 
 

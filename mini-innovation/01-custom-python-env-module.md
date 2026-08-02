@@ -1,6 +1,6 @@
 # 01 สร้าง Custom Python Environment และ Module
 
-หน้านี้ใช้สำหรับผู้สอนหรือทีมที่ต้องเตรียม environment กลางสำหรับ mini innovation แบบ epidemic ABS โดยติดตั้ง Mesa, scientific Python และ Jupyter ลงใน project space แล้วสร้าง Lmod module เพื่อให้ผู้เรียนโหลดใช้ง่าย
+หน้านี้ใช้เมื่อทีมต้องเตรียม environment กลางสำหรับ mini innovation แบบ epidemic ABS โดยติดตั้ง Mesa, scientific Python และ Jupyter ลงใน project space แล้วสร้าง Lmod module เพื่อให้ผู้ใช้โหลดได้ง่าย
 
 ถ้ายังไม่เคยเข้า LANTA ให้ดู [00-connect-to-lanta.md](00-connect-to-lanta.md) ก่อน หน้านี้เริ่มจากเครื่อง local และใช้ transfer host เพราะมีการดาวน์โหลด package
 
@@ -112,11 +112,11 @@ cat notes/hpc-mesa-env.sh
 
 ## คำอธิบาย
 
-Environment นี้ถูกสร้างแบบ `--prefix` ใน project space เพื่อให้ใช้ร่วมกันได้ทั้งกลุ่ม ไม่ผูกกับ home directory ของคนใดคนหนึ่ง การตั้ง `CONDA_PKGS_DIRS` และ `PIP_CACHE_DIR` ไปที่ project ช่วยหลีกเลี่ยงปัญหา package cache กลางของระบบที่ผู้ใช้ทั่วไปอาจไม่มีสิทธิ์เขียน
+ในขั้นตอนนี้ ทีมจะสร้าง environment แบบ `--prefix` ใน project space เพื่อให้ใช้ร่วมกันได้ทั้งกลุ่ม ไม่ผูกกับ home directory ของคนใดคนหนึ่ง
 
-เรา pin `mesa==2.3.4` เพราะ tutorial แบบ Agent-Based Simulation เดิมใช้ API เช่น `mesa.time.RandomActivation` และ `mesa.space.MultiGrid` ซึ่งเข้ากับ Mesa 2.x ได้ตรงกว่า การเพิ่ม Jupyter ลง environment เดียวกันช่วยให้หน้า notebook ใช้ module เดียวกันกับ batch job ลดความสับสนระหว่าง Python หลายชุด
+คำสั่งนี้ตั้ง `CONDA_PKGS_DIRS` และ `PIP_CACHE_DIR` ไปที่ project เพื่อให้ cache เขียนได้ และติดตั้ง `mesa==2.3.4` เพราะ tutorial ใช้ API เช่น `mesa.time.RandomActivation` และ `mesa.space.MultiGrid`
 
-Lmod module ที่สร้างไว้ใน `$EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua` ทำหน้าที่เพิ่ม `bin` ของ environment เข้า `PATH` และตั้ง `HPC_MESA_ENV` เพื่อให้ job script เรียก `python` ได้ตรงกับ environment ที่เตรียมไว้ ผู้เรียนจึงไม่ต้องจำ path ยาวทุกครั้ง
+เมื่อสร้างเสร็จ ผู้ใช้จะได้ module file ที่ `$EPI_MODULE_ROOT/hpc-mesa/2.3.4.lua` หลังจาก `module use` และ `module load hpc-mesa/2.3.4` คำสั่ง `python` จะชี้ไปยัง environment ที่เตรียมไว้ และใช้ได้ทั้ง batch job กับ Jupyter
 
 ## Check บน Login Host
 

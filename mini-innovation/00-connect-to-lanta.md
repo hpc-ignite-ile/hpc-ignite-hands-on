@@ -73,9 +73,9 @@ cat notes/session-env.sh
 
 ## คำอธิบาย
 
-การทำงานบน LANTA แยกเครื่อง local, login host, transfer host และ compute node ออกจากกันอย่างชัดเจน เครื่อง local คือ notebook หรือ desktop ของผู้เรียน ส่วน `lanta.nstda.or.th` ใช้ login, จัดไฟล์, แก้ script, submit job และดู queue ส่วน `transfer.lanta.nstda.or.th` เหมาะกับงานที่ต้องดาวน์โหลด package หรือย้ายข้อมูล
+ก่อนเริ่ม mini innovation ให้ผู้ใช้แยกบทบาทของเครื่องให้ชัดเจน เครื่อง local คือ notebook หรือ desktop ของผู้ใช้ ส่วน `lanta.nstda.or.th` ใช้ login, แก้ไฟล์, submit job และดู queue ส่วน `transfer.lanta.nstda.or.th` ใช้เมื่อต้องดาวน์โหลด package หรือย้ายข้อมูล
 
-Block นี้สร้าง workspace ชื่อ `$HOME/lanta-episprint` และบันทึกหลักฐานไว้ใน `notes/connect-check.txt` เพื่อให้ตรวจย้อนกลับได้ว่าใช้ user ใด เครื่องใด quota เป็นอย่างไร และมี job ใดค้างอยู่ การเก็บ `LANTA_ACCOUNT`, `LANTA_PROJECT`, `LANTA_CPU_PARTITION`, และ `EPI_MODULE_ROOT` ลง `notes/session-env.sh` ช่วยให้หน้าอื่นนำค่ากลับมาใช้ซ้ำได้
+คำสั่งนี้สร้าง workspace ชื่อ `$HOME/lanta-episprint` และบันทึกผลตรวจระบบไว้ใน `notes/connect-check.txt` จากนั้นบันทึกค่า `LANTA_ACCOUNT`, `LANTA_PROJECT`, `LANTA_CPU_PARTITION`, และ `EPI_MODULE_ROOT` ลงใน `notes/session-env.sh` เพื่อใช้ซ้ำในหน้าถัดไป
 
 ถ้าต้องเริ่ม terminal ใหม่บน LANTA ให้กลับเข้า workspace แล้วโหลดค่าชุดเดิมด้วย
 
@@ -93,4 +93,4 @@ cat notes/connect-check.txt | head -20
 cat notes/session-env.sh
 ```
 
-ถ้าคำสั่ง `myquota` หรือ `sbalance` แสดง error ให้เก็บข้อความนั้นไว้ก่อน ไม่จำเป็นต้องหยุด lab ทันที แต่ให้ผู้สอนช่วยดู account และ project path ก่อนส่งงานใหญ่ ถ้า `git pull --ff-only` ไม่สำเร็จเพราะเครื่องไม่มี network ให้ใช้ repo ที่ clone ไว้เดิมได้
+เมื่อสำเร็จ ผู้ใช้ควรเห็น path ที่ลงท้ายด้วย `lanta-episprint`, เห็นข้อมูลใน `notes/connect-check.txt`, และเห็นคำสั่ง export ใน `notes/session-env.sh` หาก `myquota` หรือ `sbalance` แสดง error ให้เก็บข้อความนั้นไว้ก่อน แล้วให้ผู้ดูแลช่วยตรวจ account และ project path หาก `git pull --ff-only` ไม่สำเร็จ ให้ใช้ repo ที่ clone ไว้เดิมได้

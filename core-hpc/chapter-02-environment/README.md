@@ -15,10 +15,8 @@ Chapter 2: HPC Environment and LANTA System
 chapter-02-environment/
 ├── README.md
 ├── check_environment.py    # ตรวจสอบสภาพแวดล้อม
-├── slurm_basics.py         # SLURM job information
-├── filesystem_demo.py      # File system operations
-└── sbatch/
-    └── environment_check.sbatch
+└── jobs/
+    └── environment_audit.sbatch
 ```
 
 ## การใช้งานบน LANTA
@@ -26,18 +24,20 @@ chapter-02-environment/
 ```bash
 # 1. ตรวจสอบ modules ที่มี
 module avail
-module spider PyTorch
+module spider Mamba
+module spider QuantumESPRESSO
 
 # 2. โหลด module
-module load Miniconda3
-module load PyTorch/2.0.1-CUDA-11.7.0
+module load cray-python/3.10.10
+module load Mamba/23.11.0-0
 
 # 3. สร้าง environment
 mamba create -n myenv python=3.10
 mamba activate myenv
 
 # 4. ส่งงาน
-sbatch sbatch/environment_check.sbatch
+mkdir -p logs results
+sbatch -p compute-devel jobs/environment_audit.sbatch
 squeue -u $USER
 ```
 

@@ -6,6 +6,8 @@ Chapter 2: HPC Environment
 ตรวจสอบ: Python, modules, environment variables, filesystem
 """
 
+import argparse
+import json
 import os
 import sys
 import shutil
@@ -75,7 +77,43 @@ def check_packages():
             print(f"   ❌ {pkg}: not installed")
 
 
+def collect_summary():
+    """Collect a machine-readable environment summary."""
+    packages = {}
+    for pkg in ["numpy", "pandas", "torch", "mpi4py", "dask"]:
+        try:
+            mod = __import__(pkg)
+            packages[pkg] = getattr(mod, "__version__", "unknown")
+        except ImportError:
+            packages[pkg] = None
+
+    return {
+        "python": {
+            "version": sys.version,
+            "executable": sys.executable,
+            "prefix": sys.prefix,
+        },
+        "env": {
+            "conda_default_env": os.environ.get("CONDA_DEFAULT_ENV"),
+            "home": os.environ.get("HOME"),
+            "scratch": os.environ.get("SCRATCH"),
+            "project": os.environ.get("PROJECT"),
+            "cwd": os.getcwd(),
+        },
+        "slurm": {
+            "job_id": os.environ.get("SLURM_JOB_ID"),
+            "nodelist": os.environ.get("SLURM_NODELIST"),
+            "ntasks": os.environ.get("SLURM_NTASKS"),
+        },
+        "packages": packages,
+    }
+
+
 def main():
+    parser = argparse.ArgumentParser(description="Check LANTA environment")
+    parser.add_argument("--write-json", help="Optional path for machine-readable summary")
+    args = parser.parse_args()
+
     print("=" * 60)
     print("🔍 HPC Environment Check")
     print("   Chapter 2: HPC Environment and LANTA System")
@@ -85,6 +123,12 @@ def main():
     check_hpc_variables()
     check_filesystem()
     check_packages()
+
+    if args.write_json:
+        output = Path(args.write_json)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(collect_summary(), indent=2), encoding="utf-8")
+        print(f"\nWrote JSON summary: {output}")
 
     print("\n" + "=" * 60)
     print("✅ Environment check complete!")

@@ -127,11 +127,15 @@ Start small:
 module avail
 module spider python
 module spider Mamba
-module spider CUDA
+module spider Apptainer
+module spider QuantumESPRESSO
+module spider GROMACS
+module spider GDAL
+module spider BLAST+
 module list
 ```
 
-Load modules inside the Slurm script so the job is reproducible.
+Load modules inside the Slurm script so the job is reproducible. For this repo, prefer the wrappers in `slurm/module-loads/`: `base.sh`, `netcdf-python.sh`, `pytorch-shared.sh`, `cpe-mpi.sh`, `qe.sh`, `gromacs.sh`, `geodata.sh`, `bio.sh`, and `apptainer.sh`.
 
 ## Monitoring
 

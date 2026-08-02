@@ -2,6 +2,16 @@
 
 Chapter 23: Materials Science
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel domain-science/chapter-23-materials-science/jobs/qe_scf_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น input Si SCF ขนาดเล็ก, output จาก `pw.x`, และไฟล์สรุป energy/convergence หาก pseudopotential shared พร้อม
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจหลักการ DFT Calculations

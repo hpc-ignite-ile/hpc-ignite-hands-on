@@ -27,7 +27,7 @@ chapter-06-visualization/
 ```bash
 # Create environment
 mamba env create -f ../../environments/base.yaml
-mamba activate hpc-ignite-base
+mamba activate hpc-ignite
 
 # Run examples
 python matplotlib_basics.py
@@ -74,8 +74,8 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
+if [ -f "slurm/module-loads/netcdf-python.sh" ]; then
+    source slurm/module-loads/netcdf-python.sh
 fi
 mkdir -p "results/python-labs/${SLURM_JOB_ID}"
 echo "script=${LAB_SCRIPT}"

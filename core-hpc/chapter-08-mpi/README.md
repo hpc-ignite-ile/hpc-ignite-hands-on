@@ -2,6 +2,16 @@
 
 Chapter 8: Advanced MPI Programming
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel core-hpc/chapter-08-mpi/jobs/mpi_collective_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็นผล `size=4 rank_sum=6` จากโปรแกรม C MPI reduce ที่รันด้วย `srun -n 4`
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. ใช้ MPI Collective Operations (Scatter, Gather, Allreduce)
@@ -62,21 +72,21 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=hpcig-python-lab
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --ntasks=4
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
+#SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
+if [ -f "slurm/module-loads/cpe-mpi.sh" ]; then
+    source slurm/module-loads/cpe-mpi.sh
 fi
 mkdir -p "results/python-labs/${SLURM_JOB_ID}"
 echo "script=${LAB_SCRIPT}"
-python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
+srun -n "$SLURM_NTASKS" python "$LAB_SCRIPT" | tee "results/python-labs/${SLURM_JOB_ID}/output.txt"
 SLURM
 
 SBATCH_ACCOUNT=()

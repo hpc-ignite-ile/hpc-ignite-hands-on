@@ -2,6 +2,16 @@
 
 Chapter 25: Bioinformatics
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel domain-science/chapter-25-bioinformatics/jobs/blast_cli_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น FASTA จิ๋ว, log จาก `makeblastdb`, version ของ BLAST+ และผล `blastn` แบบ TSV
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจ DNA/Protein Sequences

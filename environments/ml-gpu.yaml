@@ -1,4 +1,6 @@
 name: hpc-ignite-ml
+# For LANTA live smoke tests, prefer slurm/module-loads/pytorch-shared.sh.
+# This file is for custom project-prefix environments prepared before class.
 channels:
   - pytorch
   - nvidia
@@ -6,10 +8,10 @@ channels:
   - defaults
 dependencies:
   - python=3.10
-  - pytorch>=2.0
+  - pytorch>=2.2
   - torchvision
   - torchaudio
-  - pytorch-cuda=11.7
+  - pytorch-cuda=12.1
   - numpy>=1.24
   - pandas>=2.0
   - matplotlib>=3.7

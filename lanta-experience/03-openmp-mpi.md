@@ -1,6 +1,6 @@
 # 03 OpenMP And MPI
 
-ใช้เมื่อต้องการให้ผู้เรียนเห็นความต่างระหว่าง thread ใน node เดียวกับหลาย process ที่สื่อสารผ่าน MPI.
+ในบทนี้ผู้ใช้จะรัน OpenMP เพื่อดู thread ใน node เดียว และรัน MPI เพื่อดูหลาย process ที่สื่อสารกันผ่าน `srun`.
 
 ## Copy-Paste OpenMP
 
@@ -47,6 +47,8 @@ cd "$SLURM_SUBMIT_DIR"
 mkdir -p results
 cc -fopenmp src/omp_hello.c -o results/omp_hello
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
 srun -c "${SLURM_CPUS_PER_TASK:-1}" results/omp_hello | sort
 SLURM
 
@@ -56,13 +58,13 @@ echo "Submitted OpenMP job: $job_id"
 echo "Read: tail -50 logs/omp_${job_id}.out"
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-OpenMP เป็นบทเรียนเรื่องความขนานภายใน node เดียว โปรแกรม C ขนาดเล็กนี้ให้แต่ละ thread แนะนำตัวเอง แล้ว Slurm script ขอ 4 CPU cores เพื่อให้จำนวน thread ที่เกิดขึ้นมีพื้นฐานจากทรัพยากรที่ระบบจัดสรร ไม่ใช่จากความบังเอิญของ shell ที่ผู้ใช้เปิดอยู่
+ในขั้นตอนนี้ ผู้ใช้จะ compile โปรแกรม C ที่ใช้ OpenMP แล้วรันบน node เดียว โปรแกรมจะพิมพ์ข้อความจากแต่ละ thread เพื่อให้เห็นจำนวน thread ที่เกิดขึ้นจริง
 
-การ compile ด้วย `cc -fopenmp` สะท้อนแนวปฏิบัติบน LANTA ที่ควรใช้ compiler ของ Cray หรือ compiler จาก module ที่ตั้งใจโหลดไว้ การตั้ง `OMP_NUM_THREADS` จาก `SLURM_CPUS_PER_TASK` ทำให้ code เคารพคำขอทรัพยากร และ `srun -c` ทำให้ Slurm เห็นการใช้ CPU ต่อ task อย่างสอดคล้องกัน
+Slurm script ขอ `--cpus-per-task=4` แล้วตั้ง `OMP_NUM_THREADS` จากค่านี้ ผู้ใช้จึงเห็นความสัมพันธ์ระหว่าง CPU ที่ขอจาก Slurm กับ thread ที่โปรแกรมใช้จริง
 
-เมื่อสำเร็จ log จะมีข้อความจาก thread หลายบรรทัด โดยจำนวนควรสัมพันธ์กับ CPU ที่ขอไว้ และ binary `results/omp_hello` จะถูกสร้าง หากเจอปัญหา `omp.h` ให้ตรวจ module compiler ด้วย `module avail gcc` หรือใช้ `cpeCray` หากได้ thread เพียงตัวเดียว ให้กลับไปอ่านค่า `OMP_NUM_THREADS` และ `#SBATCH --cpus-per-task` เพราะสองค่านี้คือสะพานระหว่าง Slurm กับโปรแกรม
+เมื่อสำเร็จ log จะมีข้อความ `hello from thread ...` หลายบรรทัด และมีไฟล์ binary `results/omp_hello` หาก compile ไม่พบ `omp.h` ให้ตรวจ compiler module หากได้ thread เพียงตัวเดียว ให้ตรวจ `OMP_NUM_THREADS` และ `#SBATCH --cpus-per-task`
 
 ## Copy-Paste MPI
 
@@ -107,14 +109,10 @@ cat > jobs/mpi_hello.sbatch <<'SLURM'
 
 set -euo pipefail
 module purge
-module load cpeCray/25.03 2>/dev/null || module load cray-mpich 2>/dev/null || module load OpenMPI 2>/dev/null || true
+module load cpeCray/25.03 2>/dev/null || module load cray-mpich 2>/dev/null || true
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p results
-if command -v mpicc >/dev/null 2>&1; then
-    mpicc src/mpi_hello.c -o results/mpi_hello
-else
-    cc src/mpi_hello.c -o results/mpi_hello
-fi
+cc src/mpi_hello.c -o results/mpi_hello
 srun -n "${SLURM_NTASKS:-4}" results/mpi_hello | sort
 SLURM
 
@@ -124,10 +122,10 @@ echo "Submitted MPI job: $job_id"
 echo "Read: tail -50 logs/mpi_${job_id}.out"
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-เมื่อ OpenMP อยู่ภายใน node เดียว MPI คือการเปิดประตูสู่หลาย process ที่อาจกระจายไปหลาย node ได้ โปรแกรมนี้ให้แต่ละ rank บอกลำดับของตน จำนวน process ทั้งหมด และชื่อเครื่องที่ตนรันอยู่ จึงเป็นหลักฐานแรกของ distributed-memory execution ที่จับต้องได้
+ในขั้นตอนนี้ ผู้ใช้จะ compile โปรแกรม MPI แล้วรันด้วย `srun -n 4` โปรแกรมจะให้แต่ละ rank พิมพ์ลำดับของตนเอง จำนวน process ทั้งหมด และชื่อเครื่องที่รันอยู่
 
-การใช้ `srun` ภายใน Slurm allocation เป็นแนวทางที่เหมาะกับ LANTA เพราะ Slurm เป็นผู้ถือข้อมูลว่าจัดสรร task ไว้ที่ใด การเริ่มจาก 1 node และ 4 tasks ทำให้ผู้เรียนตรวจจำนวน rank ได้ง่ายก่อนขยายไปหลาย node การ load compiler และ MPI module ภายใน job script ช่วยให้การ compile และ run เกิดภายใต้ environment เดียวกับที่บันทึกใน log
+ตัวอย่างนี้เริ่มจาก 1 node และ 4 tasks เพื่อให้ตรวจง่ายก่อนขยายไปหลาย node การใช้ `srun` ทำให้ Slurm เป็นผู้จัดการ rank และทรัพยากรของงานโดยตรง
 
-งานสำเร็จเมื่อ log มี 4 บรรทัดจาก `rank 0 of 4` ถึง rank สุดท้าย และจำนวนบรรทัดตรงกับ `SLURM_NTASKS` หาก compile ไม่พบ `mpi.h` ให้ตรวจ module MPI หรือ Cray Programming Environment หากจำนวน rank ไม่ตรงกับที่ขอ ให้ย้อนดู `#SBATCH --ntasks` และคำสั่ง `srun -n` หากข้าม node แล้วประสิทธิภาพไม่ดี ให้กลับมาวัด baseline บน node เดียวก่อน เพื่อแยกปัญหา computation ออกจาก communication
+เมื่อสำเร็จ log จะมี 4 บรรทัดจาก `rank 0 of 4` ถึง rank สุดท้าย หาก compile ไม่พบ `mpi.h` ให้ตรวจ `cpeCray` หรือ MPI module หากจำนวน rank ไม่ตรงกับที่ขอ ให้ตรวจ `#SBATCH --ntasks` และคำสั่ง `srun -n`

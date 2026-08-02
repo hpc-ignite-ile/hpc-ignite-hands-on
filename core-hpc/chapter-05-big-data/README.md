@@ -27,7 +27,7 @@ chapter-05-big-data/
 ```bash
 # Create environment
 mamba env create -f ../../environments/base.yaml
-mamba activate hpc-ignite-base
+mamba activate hpc-ignite
 
 # Generate sample data
 python generate_large_data.py --size 1000000

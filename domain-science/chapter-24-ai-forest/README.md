@@ -2,6 +2,16 @@
 
 Chapter 24: AI for Forest Protection
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel domain-science/chapter-24-ai-forest/jobs/gdal_forest_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น metadata shapefile ไทยจาก shared WPS static data ถ้ามี และไฟล์ CSV ของ NDVI grid จิ๋ว
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. ใช้ Computer Vision สำหรับ Remote Sensing

@@ -2,6 +2,16 @@
 
 Chapter 3: Parallel Programming with MPI and Multiprocessing
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel core-hpc/chapter-03-parallel/jobs/mpi_rank_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น log ที่มี 4 MPI ranks จากคำสั่ง `srun -n 4` ก่อนขยายไป Python `mpi4py`
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจหลักการ Shared Memory vs Distributed Memory

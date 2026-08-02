@@ -3,22 +3,22 @@
 [![LANTA Compatible](https://img.shields.io/badge/LANTA-Compatible-blue.svg)](https://docs.lanta.nstda.or.th)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Runnable copy-paste labs for Thailand's LANTA supercomputer. The main path now follows the event booklet `LANTA HPC Handbook` for **LANTA HPC Experience Day: On the Move**.
+คู่มือฝึกปฏิบัติบน LANTA Supercomputer แบบ copy-paste ได้ทันที ผู้ใช้จะสร้างไฟล์จริงด้วย heredoc, ส่งงานด้วย `sbatch`, แล้วตรวจ log และผลลัพธ์ด้วยตนเอง
 
-## Quick Start On LANTA
+## เริ่มบน LANTA
 
 ```bash
 cd "$HOME"
 git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git
 cd hpc-ignite-hands-on
 
-# Start with the booklet-aligned event flow.
+# เปิดเส้นทาง lab หลัก
 sed -n '1,120p' lanta-experience/README.md
 ```
 
-For the first real job, open [lanta-experience/01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) and paste the block on LANTA. It creates `src/hello_lanta.py` and `jobs/hello_lanta.sbatch` with heredoc, then submits directly with `sbatch`.
+จากนั้นให้ผู้ใช้เปิด [lanta-experience/01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) แล้วแปะ block บน LANTA เพื่อสร้าง `src/hello_lanta.py`, สร้าง `jobs/hello_lanta.sbatch`, ส่งงานด้วย `sbatch`, และอ่านผลลัพธ์ใน `logs/` กับ `results/`
 
-## Booklet-Aligned Structure
+## โฟลเดอร์ใน Repo
 
 ```text
 hpc-ignite-hands-on/
@@ -41,7 +41,7 @@ hpc-ignite-hands-on/
 └── tests/                   # Local validation
 ```
 
-## Event Flow
+## ลำดับ Lab หลัก
 
 | Booklet section | Repo guide | Main activity |
 |---|---|---|
@@ -52,17 +52,42 @@ hpc-ignite-hands-on/
 | Science/data | [04-science-data.md](lanta-experience/04-science-data.md) | Run diffusion/data examples and capture evidence |
 | AI/GPU | [05-ai-gpu.md](lanta-experience/05-ai-gpu.md) | Request one GPU and verify CUDA/PyTorch |
 
-## Mini Innovation Path
+## Mini Innovation
 
-For a short live training activity with a scientific model, agent-based simulation, and AI scaffolding, use [mini-innovation/README.md](mini-innovation/README.md). The first mini innovation is **LANTA EpiSprint**, a Thai tutorial for epidemic ABS with Mesa, custom Python environments, Jupyter on Slurm, single jobs, job arrays, and multicore ensembles.
+ถ้าต้องการกิจกรรม live training แบบมี scientific model, agent-based simulation และ AI scaffold ให้เปิด [mini-innovation/README.md](mini-innovation/README.md) ผู้ใช้จะได้ทำ **LANTA EpiSprint** ด้วย Mesa, custom Python environment, Jupyter on Slurm, single job, job array และ multicore ensemble
 
-## Real Mini Workflow Audit
+## Audit สำหรับปรับ Repo
 
-For a repo-wide evaluation of how to make the examples more LANTA-native, module-backed, and closer to real miniature scientific/developer workflows, see [docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md](docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md).
+ถ้าต้องการดูเหตุผลของการปรับตัวอย่างให้เป็น workflow จิ๋วที่ใช้ module จริงบน LANTA ให้เปิด [docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md](docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md)
 
-## Copy-Paste Style
+## งานจิ๋วที่ใช้ Module จริง
 
-Learner-facing labs should avoid hidden submit helpers. A good activity is still mostly copy-paste, but the pasted block should create simple visible files:
+หลัง clone repo แล้ว ผู้ใช้สามารถเริ่มจาก job สั้น ๆ เหล่านี้ได้:
+
+| Area | Starter job |
+|---|---|
+| Environment audit | `core-hpc/chapter-02-environment/jobs/environment_audit.sbatch` |
+| MPI/CPE | `core-hpc/chapter-03-parallel/jobs/mpi_rank_smoke.sbatch` |
+| PyTorch GPU | `core-hpc/chapter-04-deep-learning/jobs/gpu_smoke.sbatch` |
+| Containers | `ai-applications/chapter-11-containers/jobs/apptainer_smoke.sbatch` |
+| Epidemic ABS | `mini-innovation/jobs/epi_smoke.sbatch` |
+| GROMACS MD | `domain-science/chapter-21-molecular-dynamics/jobs/gromacs_gpu_smoke.sbatch` |
+| WRF/NetCDF data | `domain-science/chapter-22-climate-modeling/jobs/netcdf_wrf_summary.sbatch` |
+| Quantum ESPRESSO | `domain-science/chapter-23-materials-science/jobs/qe_scf_smoke.sbatch` |
+| GDAL/geodata | `domain-science/chapter-24-ai-forest/jobs/gdal_forest_smoke.sbatch` |
+| BLAST bioinformatics | `domain-science/chapter-25-bioinformatics/jobs/blast_cli_smoke.sbatch` |
+
+ก่อนส่ง job จาก repo ให้สร้างโฟลเดอร์ log และ result ก่อน:
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel core-hpc/chapter-02-environment/jobs/environment_audit.sbatch
+```
+
+## รูปแบบ Copy-Paste
+
+ทุก lab ควรให้ผู้ใช้เห็นไฟล์ที่สร้างจริง ไม่ซ่อนงานไว้ใน helper script ตัวอย่างขั้นต่ำคือ:
 
 ```bash
 mkdir -p jobs logs results src
@@ -91,7 +116,9 @@ SLURM
 sbatch -p compute-devel jobs/main.sbatch
 ```
 
-See [docs/LAB_AUTHORING_GUIDE_TH.md](docs/LAB_AUTHORING_GUIDE_TH.md) for the authoring checklist.
+✅ เมื่อสำเร็จ ผู้ใช้จะเห็น job id จาก `sbatch` และอ่าน log ได้จาก `logs/`
+
+ดู checklist สำหรับการเขียน lab เพิ่มเติมได้ที่ [docs/LAB_AUTHORING_GUIDE_TH.md](docs/LAB_AUTHORING_GUIDE_TH.md)
 
 ## LANTA Notes
 
@@ -101,9 +128,9 @@ See [docs/LAB_AUTHORING_GUIDE_TH.md](docs/LAB_AUTHORING_GUIDE_TH.md) for the aut
 - Start with `compute-devel` or `gpu-devel` smoke tests when available, then scale after the result is correct.
 - Set `LANTA_ACCOUNT` only if your project requires explicit `sbatch -A`.
 
-## Optional Reference Chapters
+## เลือกบทต่อไปตามงานของผู้ใช้
 
-The older chapter directories remain useful as source examples and extension material after the event path:
+หลังทำ lab หลักผ่านแล้ว ผู้ใช้สามารถเลือกบทอ้างอิงตามงานที่สนใจ:
 
 | Track | Topics |
 |---|---|

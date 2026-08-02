@@ -2,6 +2,16 @@
 
 Chapter 20: Computational Chemistry
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel domain-science/chapter-20-computational-chemistry/jobs/chemistry_preflight.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็นรายชื่อ group/module สำหรับเครื่องมือ chemistry ที่อาจมี license และผลจาก concept script ขนาดเล็ก
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจ Molecular Structure และ Energy Calculations

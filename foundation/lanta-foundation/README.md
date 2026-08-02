@@ -1,8 +1,8 @@
 # LANTA Foundation Lab: งานแรกที่รันได้จริง
 
-บทนี้เป็นฐานสำหรับผู้เรียน HPC Ignite ที่ต้องการเริ่มจากศูนย์บน LANTA โดยเน้นลำดับเดียวกับ booklet: login, files, modules, job script, monitoring, results และ next experiment.
+บทนี้เป็นฐานสำหรับผู้ใช้ HPC Ignite ที่ต้องการเริ่มจากศูนย์บน LANTA โดยเน้นลำดับเดียวกับ booklet: login, files, modules, job script, monitoring, results และ next experiment.
 
-แนวทางใหม่คือ copy-paste เป็นหลัก แต่ไม่ใช้ helper ที่ซ่อนรายละเอียดงาน. ผู้เรียนจะสร้างไฟล์ `.py` และ `.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
+แนวทางใหม่คือ copy-paste เป็นหลัก แต่ไม่ใช้ helper ที่ซ่อนรายละเอียดงาน. ผู้ใช้จะสร้างไฟล์ `.py` และ `.sbatch` ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
 
 ## สิ่งที่จะได้ฝึก
 
@@ -153,7 +153,7 @@ sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" foundation/lanta-foundat
 
 ## Flow การสอน
 
-1. ให้ผู้เรียนแปะ heredoc block และดูว่าเกิด `src/` กับ `jobs/`
+1. ให้ผู้ใช้แปะ heredoc block และดูว่าเกิด `src/` กับ `jobs/`
 2. เปิด `jobs/foundation_smoke.sbatch` แล้วชี้ `#SBATCH` แต่ละบรรทัด
 3. ส่งงานด้วย `sbatch` โดยตรง
 4. ใช้ `squeue -j <job-id>` ระหว่างรอ

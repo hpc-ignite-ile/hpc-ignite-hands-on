@@ -2,6 +2,16 @@
 
 Chapter 10: GPU Programming with CUDA
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p gpu-devel core-hpc/chapter-10-gpu/jobs/gpu_smoke.sbatch
+```
+
+ใช้ PyTorch GPU smoke เป็น default ก่อน ส่วน CuPy/CUDA kernel ให้ใช้เมื่อมี project environment หรือ compiler module ที่เตรียมไว้แล้ว.
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจ GPU Architecture และ CUDA Model
@@ -27,16 +37,14 @@ chapter-10-gpu/
 
 ```bash
 # On LANTA
-module load CUDA/11.7.0
-module load Miniconda3
-mamba activate hpc-ignite-ml
+source ../../slurm/module-loads/pytorch-shared.sh
 
 # Check GPU
 python gpu_info.py
 
 # Run examples
-python cupy_basics.py
-python matrix_multiply.py
+python gpu_info.py
+# CuPy examples require a prebuilt project environment; do not pip install CuPy live.
 
 # Submit job
 sbatch sbatch/gpu_job.sbatch
@@ -70,7 +78,7 @@ if [ -z "${LANTA_ACCOUNT:-}" ]; then
     export LANTA_ACCOUNT
 fi
 export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
-export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-10-gpu/cupy_basics.py}"
+export LAB_SCRIPT="${LAB_SCRIPT:-core-hpc/chapter-10-gpu/gpu_info.py}"
 
 mkdir -p jobs logs results/python-labs
 
@@ -88,8 +96,8 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
+if [ -f "slurm/module-loads/pytorch-shared.sh" ]; then
+    source slurm/module-loads/pytorch-shared.sh
 fi
 mkdir -p "results/python-labs/${SLURM_JOB_ID}"
 echo "script=${LAB_SCRIPT}"

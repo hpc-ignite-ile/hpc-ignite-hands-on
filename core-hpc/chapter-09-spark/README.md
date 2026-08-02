@@ -25,10 +25,11 @@ chapter-09-spark/
 ## การใช้งาน
 
 ```bash
-# On LANTA
-module load Spark/3.3.0
+# On LANTA: first verify whether Spark is available for your account
+module spider Spark
 
-# Run locally
+# If Spark is not visible, treat this chapter as optional and use the Dask
+# chapter for the live distributed-data exercise.
 python spark_basics.py
 
 # Submit to SLURM

@@ -1,11 +1,21 @@
 # บทที่ 11: Containers สำหรับ HPC
 
-Chapter 11: Containers (Singularity/Apptainer)
+Chapter 11: Containers (Apptainer)
+
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel ai-applications/chapter-11-containers/jobs/apptainer_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น version ของ `Apptainer/1.1.6` และผลจาก Python demo สั้น ๆ โดยไม่ต้อง pull image ระหว่าง workshop
 
 ## วัตถุประสงค์การเรียนรู้
 
 1. เข้าใจ Container Technology
-2. ใช้ Singularity/Apptainer บน HPC
+2. ใช้ Apptainer บน HPC
 3. Build Custom Containers
 4. จัดการ GPU Containers
 
@@ -14,7 +24,7 @@ Chapter 11: Containers (Singularity/Apptainer)
 ```
 chapter-11-containers/
 ├── README.md
-├── singularity_basics.sh   # Basic commands
+├── apptainer_basics.sh     # Basic commands
 ├── container_demo.py       # Python in container
 ├── pytorch.def             # PyTorch container definition
 ├── build_container.sh      # Build script
@@ -26,16 +36,16 @@ chapter-11-containers/
 
 ```bash
 # On LANTA
-module load Singularity/3.8.3
+source ../../slurm/module-loads/apptainer.sh
 
 # Pull container
-singularity pull pytorch.sif docker://pytorch/pytorch:latest
+apptainer pull pytorch.sif docker://pytorch/pytorch:latest
 
 # Run container
-singularity exec pytorch.sif python script.py
+apptainer exec pytorch.sif python script.py
 
 # Run with GPU
-singularity exec --nv pytorch.sif python gpu_script.py
+apptainer exec --nv pytorch.sif python gpu_script.py
 ```
 
 ## Why Containers on HPC?

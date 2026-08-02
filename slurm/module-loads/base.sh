@@ -4,6 +4,8 @@
 #
 # Keep this file light: foundation labs should run with the system Python
 # available on LANTA and should not require downloading packages.
+# Use netcdf-python.sh for Matplotlib/xarray/NetCDF work and pytorch-shared.sh
+# for GPU/PyTorch smoke tests.
 
 if ! command -v module >/dev/null 2>&1; then
     echo "Lmod 'module' command not found; using current shell environment."

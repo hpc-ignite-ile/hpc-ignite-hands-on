@@ -2,6 +2,16 @@
 
 Chapter 4: Deep Learning with PyTorch on HPC
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p gpu-devel core-hpc/chapter-04-deep-learning/jobs/gpu_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น `nvidia-smi`, ผลจาก `gpu_check.py`, และ tensor benchmark สั้น ๆ จาก shared environment `pytorch-2.2.2`
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. ใช้งาน PyTorch บน GPU (NVIDIA A100)
@@ -140,8 +150,8 @@ cat > jobs/run_python_lab.sbatch <<'SLURM'
 
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
-if [ -f "slurm/module-loads/base.sh" ]; then
-    source slurm/module-loads/base.sh
+if [ -f "slurm/module-loads/pytorch-shared.sh" ]; then
+    source slurm/module-loads/pytorch-shared.sh
 fi
 mkdir -p "results/python-labs/${SLURM_JOB_ID}"
 echo "script=${LAB_SCRIPT}"

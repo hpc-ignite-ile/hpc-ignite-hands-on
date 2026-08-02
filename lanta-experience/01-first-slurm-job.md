@@ -63,13 +63,13 @@ echo "  tail -50 logs/hello_${job_id}.out"
 echo "  cat results/hello_${job_id}.txt"
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-งานแรกบน LANTA เริ่มจากบทสนทนาระหว่างไฟล์สองชนิด ไฟล์ `src/hello_lanta.py` เป็นสิ่งที่ต้องการให้เครื่องคำนวณทำ ส่วน `jobs/hello_lanta.sbatch` เป็นคำขอต่อ Slurm ว่างานนี้ต้องใช้ทรัพยากรเท่าใดและควรบันทึกผลไว้ที่ไหน เมื่อส่งด้วย `sbatch` ผู้เรียนจะเห็นว่า code ไม่ได้รันหนักบน login node แต่ถูกฝากให้ระบบจัดคิวพาไปยัง compute node ตามทรัพยากรที่ร้องขอ
+ในขั้นตอนนี้ ผู้ใช้จะสร้างไฟล์สองไฟล์ คือ `src/hello_lanta.py` สำหรับงาน Python และ `jobs/hello_lanta.sbatch` สำหรับบอก Slurm ว่าต้องใช้ทรัพยากรเท่าใด
 
-รูปแบบ heredoc แบบ quoted ทำให้ข้อความใน Python และ Slurm ถูกเขียนลงไฟล์ตามที่เห็น ไม่ถูก shell ขยายตัวแปรก่อนเวลา `module purge` ทำให้ job เริ่มจากสภาพแวดล้อมที่สะอาด และชื่อ log ที่มี `%j` ทำให้แต่ละ job id มีร่องรอยของตนเอง นี่เป็นหลักปฏิบัติพื้นฐานของ reproducibility ในงาน batch
+เมื่อส่งด้วย `sbatch` งานจะไม่รันบน login node แต่เข้า queue เพื่อให้ Slurm จัดไปยัง compute node ไฟล์ log จะถูกเก็บใน `logs/` และผลลัพธ์ของ Python จะถูกเก็บใน `results/`
 
-เมื่อทุกอย่างถูกต้อง `sbatch` จะคืน job id, `squeue -j <job-id>` จะเห็นสถานะของงาน และหลังจบ `sacct` ควรแสดง `COMPLETED` ไฟล์ `logs/hello_<job-id>.out` จะบอก path ของผลลัพธ์ ส่วน `results/hello_<job-id>.txt` จะบันทึก job id, host, user, submit directory และเวลา หาก submit ไม่ผ่านเพราะ account ให้ตรวจ `LANTA_ACCOUNT`; หาก pending นานให้ดู reason ใน `squeue`; หาก log แจ้งว่าไม่มี Python ให้สำรวจ `module avail python`; และหากเผลอรัน `.sbatch` ด้วย `bash` ให้หยุดทันที เพราะการส่งงานที่ถูกต้องต้องผ่าน `sbatch`
+เมื่อสำเร็จ `sbatch` จะคืน job id ให้ผู้ใช้ จากนั้นใช้ `squeue -j <job-id>` เพื่อตรวจสถานะ และใช้ `sacct` หลังงานจบเพื่อตรวจว่าเป็น `COMPLETED` หาก submit ไม่ผ่านให้ตรวจ `LANTA_ACCOUNT` หาก job ค้างให้ดู reason ใน `squeue` หาก log แจ้งว่าไม่มี Python ให้ตรวจ `module avail python` และอย่ารัน `.sbatch` ด้วย `bash` เพราะงาน Slurm ต้องส่งผ่าน `sbatch`
 
 ## Modify
 

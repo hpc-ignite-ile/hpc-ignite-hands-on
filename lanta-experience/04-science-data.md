@@ -94,13 +94,13 @@ echo "  head results/diffusion_${job_id}.csv"
 echo "  cat results/diffusion_${job_id}/README.txt"
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-งาน diffusion นี้เปลี่ยนบทเรียนจากการทักทายเครื่องไปสู่รูปแบบของงานวิทยาศาสตร์จริง มีไฟล์พารามิเตอร์ มีแบบจำลอง มี Slurm script มีผลลัพธ์ และมี README ของ run นั้น Block จึงไม่ได้เพียงสร้าง CSV แต่สร้างสายโซ่ของหลักฐานว่าคำตอบเกิดจาก code ใด ค่าใด และ job ใด
+ในขั้นตอนนี้ ผู้ใช้จะรันแบบจำลอง diffusion ขนาดเล็ก โดยแยกไฟล์พารามิเตอร์ไว้ที่ `configs/diffusion-small.env`, แยก code ไว้ที่ `src/diffusion_1d.py`, และแยก job script ไว้ที่ `jobs/diffusion.sbatch`
 
-การแยก `configs/diffusion-small.env` ออกจาก Python ทำให้การทดลองเปลี่ยนค่า `N`, `STEPS`, และ `ALPHA` ได้โดยไม่แก้ตรรกะของโมเดล การ copy config และ job script เข้า `results/<run>/` เป็นวิธีเก็บ provenance ที่เรียบง่ายแต่มีคุณค่าทางวิชาการ และการใส่ `SLURM_JOB_ID` ในชื่อผลลัพธ์ป้องกันการเขียนทับเมื่อรันซ้ำ
+เมื่อ job ทำงาน ระบบจะเขียนผลลัพธ์เป็น `results/diffusion_<job-id>.csv` และคัดลอก config กับ job script ไปไว้ใน `results/diffusion_<job-id>/` เพื่อให้ผู้ใช้ย้อนดูได้ว่ารอบนั้นใช้ค่าใด
 
-ผลที่สมบูรณ์ควรมีไฟล์ `results/diffusion_<job-id>.csv` พร้อม header `i,value` และ README ที่บอกคำถาม workspace วันเวลา job และตำแหน่งผลลัพธ์ หาก `source` ไฟล์ config ไม่ผ่าน ให้ตรวจว่าไม่มีช่องว่างรอบเครื่องหมาย `=` หากจำนวนบรรทัดใน CSV ไม่สอดคล้องกับ `N` ให้ย้อนดู parameter หากงานหมดเวลา ให้ลด `STEPS` ก่อนเพิ่มเวลา เพราะการลดขนาดปัญหาเป็นวิธี debug ที่ประหยัดกว่าการขอทรัพยากรเพิ่มทันที
+เมื่อสำเร็จ ไฟล์ CSV ต้องมี header `i,value` และจำนวนบรรทัดควรสัมพันธ์กับค่า `N` หาก `source configs/diffusion-small.env` ไม่ผ่าน ให้ตรวจว่าไม่มีช่องว่างรอบเครื่องหมาย `=` หากงานหมดเวลา ให้ลด `STEPS` ก่อนเพิ่มเวลาใน Slurm
 
 ## Copy-Paste Small Data Summary
 
@@ -157,10 +157,10 @@ head results/sensor_summary.csv
 sha256sum input/sensor.csv results/sensor_summary.csv > notes/sensor-checksums.txt
 ```
 
-### คำอธิบายเชิงเรื่องเล่า
+### คำอธิบาย
 
-ก่อนข้อมูลจริงจะใหญ่พอให้ต้องพึ่ง queue ผู้เรียนควรเห็นชีวิตของข้อมูลขนาดเล็กตั้งแต่เกิดจนถูกสรุป Block นี้เตรียม Python ให้พร้อมบน login node สร้าง `input/sensor.csv` เป็นข้อมูล PM2.5 จำลอง แล้วให้ `summarize_sensor.py` อ่านข้อมูลนั้นเพื่อสร้างตารางผลลัพธ์รายสถานี พร้อม checksum ที่ทำหน้าที่เหมือนลายนิ้วมือของไฟล์
+ในขั้นตอนนี้ ผู้ใช้จะสร้างข้อมูล PM2.5 จำลองใน `input/sensor.csv` แล้วรัน `summarize_sensor.py` เพื่อสรุปค่าเฉลี่ยและค่าสูงสุดรายสถานี
 
-การรันบน login node ในที่นี้ยอมรับได้เพราะงานเล็กมากและใช้เพื่อเรียนรู้ format เท่านั้น แต่ยังต้องโหลด Python module ให้ชัดเจน เพราะ LANTA account บางตัวไม่มีคำสั่ง `python` ใน environment ตั้งต้น ในงานจริง หากข้อมูลใหญ่ขึ้นหรือใช้เวลานานเกินไม่กี่นาที ควรย้ายขั้นตอนสรุปผลเข้า Slurm job ทันที การตั้ง random seed และเขียน CSV พร้อม header ทำให้ผลลัพธ์ตรวจซ้ำได้ ส่วน checksum ช่วยบอกว่า input หรือ result ถูกแก้ไขหลังจาก run หรือไม่
+ตัวอย่างนี้รันบน login node ได้เพราะข้อมูลมีขนาดเล็กมาก ใช้เพื่อฝึก format เท่านั้น หากข้อมูลใหญ่ขึ้นหรือใช้เวลานาน ให้ย้ายขั้นตอนนี้เข้า Slurm job ทันที
 
-เมื่อสำเร็จ `command -v python` จะชี้ไปยัง Python ที่ใช้งานได้ และ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` พร้อมข้อมูลของสถานี เช่น `S0` หากยังพบ `python: command not found` ให้ตรวจ `module avail python` หรือโหลด `cray-python` รุ่นที่ระบบมี หากพบ `FileNotFoundError` แปลว่าข้อมูล input ยังไม่ถูกสร้างหรืออยู่ผิด directory ให้รัน script สร้างข้อมูลก่อน หากนำ workflow นี้ไปใช้กับข้อมูลจริง ให้เพิ่ม `.sbatch` และบันทึก log/result แยกตาม job id เพื่อไม่ให้ภาระตกบน login node
+เมื่อสำเร็จ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` และมีไฟล์ checksum ใน `notes/sensor-checksums.txt` หากพบ `python: command not found` ให้โหลด `cray-python` หากพบ `FileNotFoundError` ให้ตรวจว่าอยู่ใน `$HOME/lanta-experience` และรัน script สร้างข้อมูลก่อน

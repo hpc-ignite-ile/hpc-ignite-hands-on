@@ -1,6 +1,6 @@
 # ML/Deep Learning requirements
-# Note: Install PyTorch via LANTA module for GPU support
-# module load PyTorch/2.0.1-CUDA-11.7.0
+# Note: for LANTA live smoke tests, use slurm/module-loads/pytorch-shared.sh
+# and the shared pytorch-2.2.2 environment instead of pip-installing torch.
 
 torch>=2.0
 torchvision

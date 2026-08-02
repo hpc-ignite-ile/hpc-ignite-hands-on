@@ -1,11 +1,11 @@
 # Copy-Paste Only Labs สำหรับ LANTA
 
-เอกสารนี้ใช้กับผู้เรียนที่ยังไม่ถนัด Linux CLI: ให้ copy-paste เป็นหลัก แต่ไม่ซ่อนงานไว้ใน helper script. Block ที่แปะควรสร้างไฟล์จริงด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
+เอกสารนี้ใช้กับผู้ใช้ที่ยังไม่ถนัด Linux CLI: ให้ copy-paste เป็นหลัก แต่ไม่ซ่อนงานไว้ใน helper script. Block ที่แปะควรสร้างไฟล์จริงด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง
 
 ## กติกาของ lab แบบ copy-paste only
 
 - หนึ่งกิจกรรมควรมี block หลักที่แปะได้ทันที
-- ใช้ `cat > file <<'EOF'` เพื่อสร้างไฟล์ที่ผู้เรียนเปิดอ่านต่อได้
+- ใช้ `cat > file <<'EOF'` เพื่อสร้างไฟล์ที่ผู้ใช้เปิดอ่านต่อได้
 - สร้าง `src/`, `jobs/`, `configs/`, `logs/`, `results/`, `notes/` ให้เห็นชัด
 - ส่งงานด้วย `sbatch` โดยตรง ไม่เรียก helper ที่ซ่อนรายละเอียดงาน
 - ถ้าต้องใช้ project account ให้ถามผ่าน `read -rp` แล้วส่งด้วย `sbatch -A "$LANTA_ACCOUNT"`
@@ -78,6 +78,8 @@ echo "  tail -50 logs/hello_${job_id}.out"
 echo "  cat results/hello_${job_id}.txt"
 ```
 
+✅ เมื่อสำเร็จ ผู้ใช้จะได้ job id จาก `sbatch`, log ใน `logs/hello_<jobid>.out`, และผลลัพธ์ใน `results/hello_<jobid>.txt`
+
 ## Block B: GPU Check
 
 ```bash
@@ -134,6 +136,8 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: tail -80 logs/gpu_${job_id}.out"
 ```
 
+✅ เมื่อสำเร็จ log ต้องมีผลจาก `nvidia-smi`, ค่า `cuda_available True`, และข้อความ `status ok`
+
 ## Block C: Data Summary And Resource Logs
 
 รันหลัง job จบ เพื่อรวมหลักฐานข้อมูลและทรัพยากรไว้ใน `notes/`.
@@ -183,3 +187,32 @@ echo "Data summary: $DATA_LOG"
 echo "Resource spent: $SPENT_LOG"
 head -30 "$SPENT_LOG"
 ```
+
+✅ เมื่อสำเร็จ ผู้ใช้จะได้ไฟล์สรุปข้อมูลใน `notes/data-summary-<เวลา>.txt` และไฟล์ทรัพยากรใน `notes/resource-spent-<เวลา>.tsv`
+
+## Block D: Use A Real Mini Workflow From The Repo
+
+เมื่อผู้ใช้ clone repo แล้ว สามารถส่งงาน smoke ที่ใช้ module จริงได้ทันที:
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+
+if [ -z "${LANTA_ACCOUNT:-}" ]; then
+    read -rp "Slurm project account, leave blank for site default: " LANTA_ACCOUNT
+    export LANTA_ACCOUNT
+fi
+
+SBATCH_ACCOUNT=()
+if [ -n "${LANTA_ACCOUNT:-}" ]; then
+    SBATCH_ACCOUNT=(-A "$LANTA_ACCOUNT")
+fi
+
+job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p compute-devel --parsable core-hpc/chapter-02-environment/jobs/environment_audit.sbatch)
+echo "Submitted environment audit: $job_id"
+echo "Read: tail -80 logs/env-audit_${job_id}.out"
+```
+
+สำหรับ GPU ให้ใช้ `gpu-devel` และ job ที่ source `slurm/module-loads/pytorch-shared.sh` เช่น `core-hpc/chapter-04-deep-learning/jobs/gpu_smoke.sbatch`.
+
+✅ เมื่อสำเร็จ ผู้ใช้ควรอ่าน log ของ job นั้นก่อน แล้วค่อยเปิดไฟล์ใน `results/<workflow>_<jobid>/`

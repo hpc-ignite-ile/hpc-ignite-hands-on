@@ -2,6 +2,16 @@
 
 Chapter 27: Disaster Prevention
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel domain-science/chapter-27-disaster-prevention/jobs/hazard_grid_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น `hazard_grid.csv` จาก rainfall/slope assumptions เพื่อใช้คุยเรื่อง scenario และ policy ต่อ
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. วิเคราะห์ข้อมูลภัยพิบัติ

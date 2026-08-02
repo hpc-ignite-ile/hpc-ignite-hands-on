@@ -1,15 +1,16 @@
 # แนวทางเขียน Lab แบบ Heredoc-First
 
-ทุก lab ใหม่ควรมีหัวข้อ `Copy-paste only` เพื่อให้ผู้เรียนเริ่มได้โดยไม่ต้องเปิด editor แต่ยังเห็นไฟล์ที่ตนเองสร้างจริง ไม่ใช้ helper script ที่ซ่อนรายละเอียดงาน
+ทุก lab ใหม่ควรมีหัวข้อ `Copy-paste only` เพื่อให้ผู้ใช้เริ่มได้โดยไม่ต้องเปิด editor แต่ยังเห็นไฟล์ที่ตนเองสร้างจริง ไม่ใช้ helper script ที่ซ่อนรายละเอียดงาน
 
 ## โครงสร้างที่แนะนำ
 
-1. บอกเป้าหมายของ lab ใน 2-3 บรรทัด
+1. เปิดด้วยเป้าหมายสั้น ๆ ว่าผู้ใช้จะทำอะไร
 2. ให้ copy-paste block ก่อนคำอธิบายละเอียด
 3. ใน block ให้สร้างไฟล์ด้วย heredoc
 4. ส่งงานด้วย `sbatch` โดยตรง
 5. พิมพ์คำสั่งดูคิวและดูผลลัพธ์
-6. หลัง block ค่อยอธิบายว่าแต่ละไฟล์ทำอะไร
+6. หลัง block ให้บอก checkpoint ว่าควรเห็นไฟล์หรือข้อความใด
+7. ถ้ามี error ให้บอกคำสั่งแรกที่ควรตรวจ เช่น `tail`, `squeue`, `sacct`, หรือ `module avail`
 
 ## Template
 
@@ -58,6 +59,12 @@ echo "Monitor: squeue -j $job_id"
 echo "Output : tail -n +1 logs/hpcig-<lab-id>_${job_id}.out"
 ```
 
+หลัง code block ให้เขียน checkpoint แบบสั้น:
+
+- ✅ เมื่อสำเร็จ ผู้ใช้จะเห็น job id จาก `sbatch`
+- ✅ เมื่อ job จบ ผู้ใช้จะเห็นไฟล์ `results/output_<jobid>.txt`
+- ⚠️ หาก submit ไม่ผ่าน ให้ตรวจ `LANTA_ACCOUNT` และ partition ด้วย `sinfo`
+
 ## Checklist ก่อน merge lab ใหม่
 
 - มีหัวข้อ `Copy-paste only`
@@ -70,3 +77,5 @@ echo "Output : tail -n +1 logs/hpcig-<lab-id>_${job_id}.out"
 - ไม่ hard-code token, password, SSH key หรือ secret
 - มีคำสั่งดูคิวและดูผลลัพธ์หลัง submit
 - ถ้า lab ต้องใช้ package เฉพาะ ให้บอก environment ที่ต้อง activate อย่างชัดเจน
+- ถ้าเป็น domain science lab ต้องมี real module-backed smoke workflow อย่างน้อย 1 งาน เช่น `jobs/*.sbatch` ที่ source `slurm/module-loads/qe.sh`, `gromacs.sh`, `geodata.sh`, `bio.sh`, `netcdf-python.sh`, หรือ `apptainer.sh`
+- หัวข้อใหญ่ที่หนักหรือมี license เช่น WRF full run, VASP, Gaussian, Amber, LLM finetuning ให้แยกเป็น instructor demo หรือ optional preflight ไม่ใช่ default live exercise

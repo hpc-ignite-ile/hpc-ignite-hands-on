@@ -2,6 +2,16 @@
 
 Chapter 26: Smart Agriculture
 
+## เริ่มรันงานจิ๋วบน LANTA
+
+```bash
+cd "$HOME/hpc-ignite-hands-on"
+mkdir -p logs results
+sbatch -p compute-devel domain-science/chapter-26-smart-agriculture/jobs/agri_geodata_smoke.sbatch
+```
+
+หลังส่ง job นี้ ผู้ใช้ควรเห็น rainfall/soil risk summary ขนาดจิ๋วในรูปแบบ CSV และ JSON แยกตาม job id
+
 ## วัตถุประสงค์การเรียนรู้
 
 1. ใช้ IoT Data สำหรับการเกษตร

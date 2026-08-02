@@ -69,7 +69,8 @@ def check_gpu():
     else:
         print("\n⚠️ CUDA not available. Running on CPU only.")
         print("   For GPU support on LANTA:")
-        print("   module load PyTorch/2.0.1-CUDA-11.7.0")
+        print("   module load Mamba/23.11.0-0")
+        print("   conda activate pytorch-2.2.2")
 
     # Check for MPS (Apple Silicon)
     if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
