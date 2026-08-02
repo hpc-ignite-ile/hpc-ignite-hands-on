@@ -2,6 +2,8 @@
 
 หน้านี้เปิด JupyterLab บน compute node ของ LANTA ผ่าน Slurm allocation แล้วส่ง port กลับมาเปิดใน browser บนเครื่อง local ด้วย SSH tunnel ใช้ environment และ module จาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
 
+บทนี้ใช้ `hpc-mesa` เป็น path หลัก เพราะ server และ kernel อยู่ใน environment เดียวกัน จึงลดความคลาดเคลื่อนของ package ระหว่างผู้เรียน ถ้า LANTA มี site/default JupyterLab ในรอบอบรม ให้ใช้เป็น fallback ได้ โดยเลือก kernel `Python (hpc-mesa)` ในหน้า JupyterLab เพื่อให้ notebook ใช้ Mesa, pandas และ matplotlib จาก environment ของกิจกรรม
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `sbatch`, `squeue`, `tail`, `scancel`, `python - <<'PY'`, `jupyter lab`, `chmod`, SSH tunnel `-L` และ option `-o`
 
 ## ภาพรวม
@@ -15,6 +17,15 @@
 Jupyter kernel ใช้ CPU และ memory ต่อเนื่องระหว่างอ่านข้อมูล สร้างกราฟ หรือทดลอง model จึงให้ Slurm จัดสรรทรัพยากรบน compute node แล้วเก็บหลักฐานใน queue, log และ job history
 
 บทนี้เหมาะกับการสำรวจ `results/epi_summary_*.csv`, ตรวจ output ของ epidemic ABS, สร้างกราฟ policy comparison และดูข้อมูล resource ที่ notebook ใช้จริง
+
+## เลือกวิธีเปิด JupyterLab
+
+| วิธี | JupyterLab server | Python kernel | เหมาะกับสถานการณ์ |
+|---|---|---|---|
+| Training path | `hpc-mesa/2.3.4` | `Python (hpc-mesa)` | ใช้ package ชุดเดียวกันทั้ง server และ kernel |
+| Site fallback | site/default JupyterLab | `Python (hpc-mesa)` | ใช้เมื่อ LANTA session มี JupyterLab จาก module หรือ PATH กลาง |
+
+ก่อนใช้ site fallback ให้รันหน้า [01-custom-python-env-module.md](01-custom-python-env-module.md) ถึงขั้น `python -m ipykernel install --user --name hpc-mesa ...` เพื่อให้ server กลางเห็น kernel ของกิจกรรม
 
 ## Copy-Paste จากเครื่อง Local
 
@@ -72,7 +83,7 @@ export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 ```
 
-### ขั้นที่ 4: ตรวจ Module และ Jupyter
+### ขั้นที่ 4: ตรวจ Module และ JupyterLab จาก `hpc-mesa`
 
 block นี้ยืนยันว่า Python, JupyterLab, pandas และ matplotlib มาจาก environment ที่เตรียมไว้
 
@@ -91,7 +102,31 @@ print("matplotlib", matplotlib.__version__)
 PY
 ```
 
-### ขั้นที่ 5: สร้าง Notebook ตัวอย่าง
+### ขั้นที่ 5: ตรวจ Site JupyterLab Fallback
+
+block นี้ตรวจว่า session ปัจจุบันมี JupyterLab กลางจาก PATH หรือ module ของ LANTA หรือใช้ `hpc-mesa` เป็น server หลักต่อไป
+
+```bash
+module purge
+command -v jupyter || true
+jupyter lab --version 2>/dev/null || true
+module -t avail 2>&1 | grep -Ei 'jupyter|notebook|lab' | head -20 || true
+```
+
+ผลที่ใช้ site fallback ได้คือมี path ของ `jupyter` และ `jupyter lab --version` แสดงเลข version หรือผู้ดูแลแจ้งชื่อ module ที่เปิด JupyterLab ให้ เช่นตั้งค่า `LANTA_JUPYTER_MODULE`
+
+### ขั้นที่ 6: กลับไปใช้ `hpc-mesa`
+
+block นี้โหลด environment หลักอีกครั้งก่อนสร้าง notebook และ Slurm script
+
+```bash
+module purge
+module use "$EPI_MODULE_ROOT"
+module load hpc-mesa/2.3.4
+jupyter kernelspec list
+```
+
+### ขั้นที่ 7: สร้าง Notebook ตัวอย่าง
 
 block นี้สร้าง notebook สำหรับอ่านผล epidemic ABS, สร้าง policy summary, วาดกราฟ และตรวจ resource จาก Slurm environment
 
@@ -143,7 +178,7 @@ print("notebooks/episprint_explore.ipynb")
 PY
 ```
 
-### ขั้นที่ 6: ตรวจ Notebook JSON
+### ขั้นที่ 8: ตรวจ Notebook JSON
 
 block นี้ตรวจว่าไฟล์ `.ipynb` เป็น JSON ที่ Jupyter อ่านได้
 
@@ -152,9 +187,9 @@ python -m json.tool notebooks/episprint_explore.ipynb >/dev/null
 ls -lh notebooks/episprint_explore.ipynb
 ```
 
-### ขั้นที่ 7: สร้าง Slurm Script สำหรับ JupyterLab
+### ขั้นที่ 9: สร้าง Slurm Script สำหรับ JupyterLab
 
-block นี้สร้าง job script ที่ขอ CPU และ memory, โหลด module, เลือก port, พิมพ์ tunnel command, จำกัด thread ของ numerical libraries และเริ่ม JupyterLab
+block นี้สร้าง job script ที่ขอ CPU และ memory, เลือก server source, เลือก port, พิมพ์ tunnel command, จำกัด thread ของ numerical libraries และเริ่ม JupyterLab
 
 ```bash
 cat > jobs/jupyter_episprint.sbatch <<'SLURM'
@@ -170,9 +205,17 @@ cat > jobs/jupyter_episprint.sbatch <<'SLURM'
 
 set -euo pipefail
 module purge
-module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+if [ "${JUPYTER_SERVER_SOURCE:-hpc-mesa}" = "site" ]; then
+    if [ -n "${LANTA_JUPYTER_MODULE:-}" ]; then
+        module load "$LANTA_JUPYTER_MODULE"
+    fi
+else
+    module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
+    module load hpc-mesa/2.3.4
+fi
 cd "$SLURM_SUBMIT_DIR"
+command -v jupyter
+jupyter kernelspec list | sed -n '1,80p'
 
 port=$(python - <<'PY'
 import random
@@ -201,16 +244,16 @@ jupyter lab --no-browser --ip="${node}" --port="${port}" --ServerApp.port_retrie
 SLURM
 ```
 
-### ขั้นที่ 8: ตรวจ Slurm Script
+### ขั้นที่ 10: ตรวจ Slurm Script
 
 block นี้ตรวจสิทธิ์และเปิดดูส่วนต้นของ job script ก่อน submit
 
 ```bash
 chmod u+x jobs/jupyter_episprint.sbatch
-sed -n '1,120p' jobs/jupyter_episprint.sbatch
+sed -n '1,140p' jobs/jupyter_episprint.sbatch
 ```
 
-### ขั้นที่ 9: ส่ง Jupyter Job
+### ขั้นที่ 11: ส่ง Jupyter Job ด้วย `hpc-mesa`
 
 block นี้ส่ง job เข้า Slurm และบันทึก job id ลง `notes/job-history.tsv`
 
@@ -222,7 +265,18 @@ echo "Monitor: squeue -j $job_id"
 echo "Read log: tail -80 logs/jupyter_${job_id}.out"
 ```
 
-### ขั้นที่ 10: อ่าน Log เพื่อหา Node, Port และ URL
+### ขั้นที่ 12: ส่ง Jupyter Job ด้วย Site Fallback
+
+ใช้ขั้นนี้เมื่อขั้นตรวจ fallback พบ JupyterLab จาก module หรือ PATH กลางของ LANTA โดยให้ `LANTA_JUPYTER_MODULE` เป็นค่าว่างเมื่อ `jupyter` อยู่ใน PATH อยู่แล้ว
+
+```bash
+export LANTA_JUPYTER_MODULE="${LANTA_JUPYTER_MODULE:-}"
+job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,JUPYTER_SERVER_SOURCE=site,LANTA_JUPYTER_MODULE="$LANTA_JUPYTER_MODULE" --parsable jobs/jupyter_episprint.sbatch)
+printf "%s\t%s\t%s\n" "$job_id" "jupyter_episprint_site" "$(date -Is)" >> notes/job-history.tsv
+echo "Submitted site Jupyter job: $job_id"
+```
+
+### ขั้นที่ 13: อ่าน Log เพื่อหา Node, Port และ URL
 
 block นี้ใช้เมื่อ job เริ่มเป็น `R` แล้ว เพื่ออ่าน tunnel command และ URL ที่มี token
 
@@ -300,6 +354,7 @@ sacct -j <jobid> --format=JobID,JobName,Partition,State,Elapsed,AllocCPUS,ReqMem
 | Tunnel ใช้ค่าคนละ session | `tail -80 logs/jupyter_<jobid>.out` | node และ port ตรงกับ tunnel |
 | Token ขาด | `grep -E 'token=' logs/jupyter_<jobid>.out` | URL มี `?token=` ครบ |
 | Module หา JupyterLab ขาด | `module use "$EPI_MODULE_ROOT"; module load hpc-mesa/2.3.4; which jupyter` | path ชี้เข้า custom environment |
+| Site fallback หา kernel ขาด | `jupyter kernelspec list` | มี `hpc-mesa` หรือ `Python (hpc-mesa)` |
 | Job pending นาน | `squeue -j <jobid> -o "%.18i %.9P %.20j %.8u %.2t %.10M %.6D %R"` | reason อธิบาย queue, account หรือ partition |
 | Kernel เปิดขัดข้อง | `tail -100 logs/jupyter_<jobid>.err` | error ชี้ runtime, package หรือ quota |
 

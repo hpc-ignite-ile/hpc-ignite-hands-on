@@ -250,9 +250,18 @@ class LantaFoundationTests(unittest.TestCase):
     def test_mini_innovation_jupyter_env_is_declared(self) -> None:
         setup = (REPO_ROOT / "mini-innovation" / "01-custom-python-env-module.md").read_text(encoding="utf-8")
         notebook = (REPO_ROOT / "mini-innovation" / "02-jupyter-notebook.md").read_text(encoding="utf-8")
-        for marker in ['"jupyterlab>=4,<5"', '"notebook>=7,<8"', "ipykernel", "jupyter lab --version"]:
+        for marker in [
+            '"jupyterlab>=4,<5"',
+            '"notebook>=7,<8"',
+            "ipykernel",
+            "jupyter lab --version",
+            "python -m ipykernel install --user --name hpc-mesa",
+            "jupyter kernelspec list",
+        ]:
             self.assertIn(marker, setup)
         self.assertIn("jupyter lab --no-browser", notebook)
+        self.assertIn('JUPYTER_SERVER_SOURCE:-hpc-mesa', notebook)
+        self.assertIn("LANTA_JUPYTER_MODULE", notebook)
 
     def test_epidemic_tutorial_uses_model_rng_and_small_training_load(self) -> None:
         text = (REPO_ROOT / "mini-innovation" / "03-epidemic-abs-examples.md").read_text(encoding="utf-8")

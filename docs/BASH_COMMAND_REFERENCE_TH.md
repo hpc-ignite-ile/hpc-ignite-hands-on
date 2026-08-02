@@ -148,7 +148,9 @@ sed -n '1,120p' lanta-experience/README.md
 | `python - <<'PY' ... PY` | ส่ง Python program ผ่าน heredoc | ใช้สร้าง smoke test ที่อ่านง่ายใน `.sbatch` |
 | `python -m json.tool file` | ตรวจและ format JSON ด้วย standard library | ใช้ตรวจว่าไฟล์ `.ipynb` เป็น JSON ที่อ่านได้ |
 | `python -m pip install ...` | ใช้ pip ผ่าน interpreter ที่เลือกไว้ | package เข้า environment เดียวกับ `python` |
+| `python -m ipykernel install --user --name NAME --display-name "..."` | ลงทะเบียน Python interpreter เป็น Jupyter kernel ของผู้ใช้ | JupyterLab เห็น kernel ชื่อที่ตั้งไว้ |
 | `jupyter lab` | เปิด Jupyter server | log แสดง URL พร้อม token และ node ที่รัน |
+| `jupyter kernelspec list` | แสดงรายการ kernel ที่ JupyterLab เปิดใช้ได้ | มี kernel เช่น `hpc-mesa` |
 | `which command` | แสดง executable ที่ shell จะเรียกใช้ | ใช้ยืนยันว่า `python` หรือ `jupyter` มาจาก environment ที่ต้องการ |
 
 สำหรับ training สด ให้ทดสอบ import package สำคัญทันที เช่น `import mesa`, `import torch`, หรือ `import netCDF4` แล้วบันทึก version ลง log

@@ -1,6 +1,8 @@
 # 01 สร้าง Custom Python Environment และ Module
 
-หน้านี้ใช้เตรียม environment กลางสำหรับ mini innovation แบบ epidemic ABS บน LANTA โดยติดตั้ง Mesa, scientific Python และ JupyterLab ลงใน project space แล้วสร้าง Lmod module ให้ผู้ใช้โหลดซ้ำได้ทั้งบน login node, compute node และ Slurm job
+หน้านี้ใช้เตรียม environment กลางสำหรับ mini innovation แบบ epidemic ABS บน LANTA โดยติดตั้ง Mesa, scientific Python, ipykernel และ JupyterLab ลงใน project space แล้วสร้าง Lmod module ให้ผู้ใช้โหลดซ้ำได้ทั้งบน login node, compute node และ Slurm job
+
+บทเรียนนี้แยกบทบาทเป็นสองส่วน `hpc-mesa` คือ Python kernel ที่มี Mesa และ scientific packages ตาม version ของกิจกรรม ส่วน JupyterLab คือ server ที่เปิดหน้าเว็บ ถ้า LANTA มี site/default JupyterLab ให้ใช้งานใน session ของผู้ใช้ สามารถใช้ site JupyterLab เป็น server fallback ได้ โดยยังเลือก kernel `Python (hpc-mesa)` เพื่อให้ code simulation ใช้ package ชุดเดียวกัน
 
 สำหรับการเริ่มจากเครื่อง local ให้ดู [00-connect-to-lanta.md](00-connect-to-lanta.md) ก่อน หน้านี้ใช้ transfer host เพราะมีการดาวน์โหลด package
 
@@ -85,9 +87,9 @@ else
 fi
 ```
 
-### ขั้นที่ 6: เติม Package ที่ Tutorial ใช้จริง
+### ขั้นที่ 6: เติม Package สำหรับ Kernel และ Server สำรอง
 
-block นี้ติดตั้งหรือปรับให้มี package ที่ mini innovation ใช้จริง แม้ environment จะถูกสร้างไว้ก่อนหน้าแล้ว ขั้นนี้จึงทำให้ Mesa และ JupyterLab พร้อมกันใน env เดียว
+block นี้ติดตั้งหรือปรับให้มี package ที่ mini innovation ใช้จริง แม้ environment จะถูกสร้างไว้ก่อนหน้าแล้ว ขั้นนี้ทำให้ `hpc-mesa` เป็น kernel ที่ครบถ้วน และเป็น JupyterLab server สำรองเมื่อ site/default JupyterLab ยังขาดใน session นั้น
 
 ```bash
 conda run -p "$EPI_ENV_PREFIX" python -m pip install --no-cache-dir \
@@ -185,7 +187,16 @@ print("mesa_api", RandomActivation.__name__, MultiGrid.__name__)
 PY
 ```
 
-### ขั้นที่ 12: บันทึกค่า Environment สำหรับบทถัดไป
+### ขั้นที่ 12: ลงทะเบียน Kernel สำหรับ JupyterLab
+
+block นี้สร้าง kernelspec ชื่อ `hpc-mesa` ในพื้นที่ผู้ใช้ เพื่อให้ JupyterLab จาก env นี้หรือ site/default JupyterLab แสดง kernel `Python (hpc-mesa)`
+
+```bash
+python -m ipykernel install --user --name hpc-mesa --display-name "Python (hpc-mesa)"
+jupyter kernelspec list
+```
+
+### ขั้นที่ 13: บันทึกค่า Environment สำหรับบทถัดไป
 
 block นี้เขียนไฟล์ `notes/hpc-mesa-env.sh` เพื่อให้ผู้ใช้ source ค่าเดิมในหน้า Jupyter และหน้า epidemic ABS
 
@@ -200,7 +211,7 @@ module load "hpc-mesa/$EPI_MODULE_VERSION"
 EOF
 ```
 
-### ขั้นที่ 13: อ่านไฟล์ Environment ที่บันทึกไว้
+### ขั้นที่ 14: อ่านไฟล์ Environment ที่บันทึกไว้
 
 block นี้เปิดดูไฟล์ที่บทถัดไปจะใช้ เพื่อยืนยันว่า path ตรงกับ project space
 
@@ -246,6 +257,7 @@ module use "$EPI_MODULE_ROOT"
 module load hpc-mesa/2.3.4
 which python
 jupyter lab --version
+jupyter kernelspec list
 python -c "import mesa; from mesa.time import RandomActivation; print('mesa', mesa.__version__, 'ok')"
 ```
 
@@ -253,4 +265,6 @@ python -c "import mesa; from mesa.time import RandomActivation; print('mesa', me
 
 ทีมสร้าง environment แบบ `--prefix` ใน project space เพื่อให้ใช้ร่วมกันได้ทั้งกลุ่มและอ้างอิง path กลางของ project การแยกขั้นสร้าง environment ออกจากขั้นเติม package ช่วยให้ env เดิมที่มีอยู่แล้วได้รับ `jupyterlab`, `notebook`, `ipykernel` และ `mesa` ตาม version ที่บทเรียนใช้จริง
 
-หลักฐานที่ใช้ตัดสินความพร้อมมีสามส่วน: `which python` และ `which jupyter` ต้องชี้เข้า `$LANTA_PROJECT/envs/hpc-mesa`, `jupyter lab --version` ต้องแสดงเลข version, และ Python import ต้องรายงาน `mesa 2.3.4` พร้อม API `RandomActivation` กับ `MultiGrid` เมื่อครบสามส่วนนี้ บท Jupyter และบท epidemic ABS จะใช้ runtime เดียวกันทั้งแบบ interactive และ batch job
+หลักฐานที่ใช้ตัดสินความพร้อมมีสี่ส่วน: `which python` ต้องชี้เข้า `$LANTA_PROJECT/envs/hpc-mesa`, `jupyter lab --version` ต้องแสดงเลข version เมื่อใช้ env นี้เป็น server, `jupyter kernelspec list` ต้องมี `hpc-mesa`, และ Python import ต้องรายงาน `mesa 2.3.4` พร้อม API `RandomActivation` กับ `MultiGrid` เมื่อครบสี่ส่วนนี้ บท Jupyter และบท epidemic ABS จะใช้ runtime เดียวกันทั้งแบบ interactive และ batch job
+
+ผลตรวจด้วยบัญชี `tn642` เมื่อ 2026-08-02 พบว่า `jupyter lab` พร้อมใช้งานใน `hpc-mesa` หลังเติม package ตามขั้นที่ 6 ส่วน PATH เริ่มต้น, `cray-python/3.10.10`, และ `Mamba/23.11.0-0` ยังไร้ executable `jupyter lab` ใน session ที่ตรวจ ดังนั้น training path หลักใช้ `hpc-mesa` เป็น server และ kernel ส่วน site/default JupyterLab เป็น fallback เมื่อผู้ดูแลเปิดให้ผ่าน module หรือ PATH ของรอบอบรมนั้น
