@@ -99,6 +99,7 @@ sed -n '1,120p' lanta-experience/README.md
 | `printf "format" ...` | พิมพ์ข้อความตาม format | ใช้ใน C examples และ shell ที่ต้องควบคุมรูปแบบ output |
 | `SBATCH_ACCOUNT=()` | Bash array ว่าง | ใช้ประกอบ option ของ `sbatch` อย่างปลอดภัย |
 | `"${SBATCH_ACCOUNT[@]}"` | ขยาย array เป็น argument หลายชิ้น | รักษา quoting ของ account option |
+| `COMMAND=(cmd arg)` | Bash array สำหรับ command พร้อม argument | ใช้เก็บ runner เช่น `gnuplot` หรือ `apptainer exec image.sif gnuplot` |
 | `source file.sh` | รัน script ใน shell ปัจจุบัน | ใช้กับ helper script ของผู้สอนหรือ session env; standalone lab เขียน `module load` ใน `jobs/*.sbatch` โดยตรง |
 | `chmod -R g+rwX path` | ให้ group อ่าน/เขียน และเข้า folder ได้ | ใช้กับ project environment ที่หลายคนใช้ร่วมกัน |
 | `chmod u+x file` | เพิ่มสิทธิ์ execute ให้เจ้าของไฟล์ | ใช้กับ script ที่ต้องการเปิดอ่านหรือรันโดยตรง |
@@ -169,6 +170,11 @@ sed -n '1,120p' lanta-experience/README.md
 | `plot "file.tsv" using X:Y title "..."` | เลือก column X และ Y จากตารางเพื่อวาดกราฟ | แกนและ legend ตรงกับตัวชี้วัด |
 | `with linespoints` | วาดเส้นพร้อม marker | เหมาะกับค่าที่เรียงตาม policy หรือ timestep |
 | `with labels point` | วาดจุดพร้อม label จาก column ข้อความ | เหมาะกับ scatter ที่ต้องอ่านชื่อ policy |
+| `set multiplot layout R,C` | แบ่งหน้า gnuplot เป็นหลาย panel | ใช้ทำ dashboard รวมหลาย metric ในไฟล์เดียว |
+| `unset multiplot` | ปิดโหมดหลาย panel | ให้ gnuplot กลับไปสร้างรูปเดี่ยวถัดไป |
+| `every ::1` | ข้าม header แถวแรกของ CSV/TSV | ใช้ plot CSV ที่มีชื่อ column |
+| `strcol(N)` | อ่าน column ที่ `N` เป็นข้อความ | ใช้กรองแถวตาม label เช่น `serial_fraction` |
+| `system("command")` | ให้ gnuplot รับข้อความจาก shell command | ใช้เลือกไฟล์ผลล่าสุด เช่น `solver_roofline_*.csv` |
 | `matplotlib.use("Agg")` | ใช้ backend สำหรับสร้างรูปใน batch job | Python สร้าง PNG ได้บน compute node แบบ headless |
 | `plt.savefig("figures/name.png", dpi=160)` | เขียนรูปจาก Matplotlib ลงไฟล์ | PNG มีขนาดมากกว่าศูนย์และเปิดดูได้ |
 
@@ -235,6 +241,8 @@ sed -n '1,120p' lanta-experience/README.md
 | `gdalinfo` / `ogrinfo` | ตรวจ raster/vector geospatial data | เห็น projection, layer, หรือ metadata |
 | `blastn` / `makeblastdb` | ค้น sequence และสร้าง BLAST database | TSV hit มี `pident`, `length`, `evalue` |
 | `apptainer --version` | ตรวจ container runtime | version ถูกบันทึกใน result |
+| `apptainer pull image.sif docker://repo:tag` | แปลง OCI/Docker image เป็นไฟล์ SIF | ได้ไฟล์ container ที่รันซ้ำได้บน LANTA |
+| `apptainer exec image.sif command` | รัน command ภายใน container SIF | ใช้เครื่องมือใน image โดยอ่าน/เขียนไฟล์ใน workspace ปัจจุบัน |
 
 ## หลักฐานว่าผลลัพธ์ดีและตรวจสอบได้
 

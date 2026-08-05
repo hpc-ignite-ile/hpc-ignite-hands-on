@@ -328,6 +328,7 @@ class LantaFoundationTests(unittest.TestCase):
             "performance/solver_roofline_mpi.cpp",
             "performance/perf_workshop_report.py",
             "performance/perf_summary_plot.py",
+            "performance/plot_perf_dashboard.gp",
             "performance/python_stack_overhead.py",
         ]:
             self.assertTrue((root / rel).exists(), f"missing enhanced SEIR file: {rel}")
@@ -347,8 +348,11 @@ class LantaFoundationTests(unittest.TestCase):
             "solver_roofline_mpi.cpp",
             "python_stack_overhead.py",
             "perf_summary_plot.py",
+            "plot_perf_dashboard.gp",
             "overhead_taxonomy.csv",
             "perf_summary_display.md",
+            "perf_workshop_dashboard.png",
+            "perf_workshop_gnuplot_summary.txt",
             "figures/perf_summary_speedup.svg",
             "cat > jobs/roofline_solver.sbatch <<'SLURM'",
             "python -m cProfile",

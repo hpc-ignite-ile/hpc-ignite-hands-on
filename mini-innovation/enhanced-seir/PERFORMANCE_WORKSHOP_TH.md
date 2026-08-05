@@ -528,31 +528,127 @@ sed -n '1,20p' results/perf_summary_display.md
 ls -lh figures/perf_summary_*.svg
 ```
 
-### ขั้นที่ 19: สร้าง gnuplot script สำหรับรูปสรุป
+### ขั้นที่ 19: สร้าง gnuplot dashboard รวมทุก analysis ส่วนที่ 1
 
-block นี้สร้างรูป speedup และ efficiency ถ้า `gnuplot` อยู่ใน environment ของรอบอบรม
+block นี้สร้างส่วนตั้งค่าของ gnuplot dashboard และ panel ชุดแรกสำหรับ speedup, efficiency, overhead และ roofline signal ผู้ใช้เปิดอ่าน syntax ได้ทันที ส่วนการรันจริงเกิดในขั้นถัดไปเมื่อ environment มี `gnuplot`
 
 ```bash
-if command -v gnuplot >/dev/null 2>&1; then
-    cat > performance/plot_perf_workshop.gp <<'GP'
+cat > performance/plot_perf_dashboard.gp <<'GP'
 set datafile separator ","
-set terminal pngcairo size 1000,700
-set output "figures/perf_workshop_speedup.png"
-set title "Enhanced SEIR Workshop: MPI Solver Scaling"
+set terminal pngcairo size 1800,1200 enhanced font "Arial,12"
+set output "figures/perf_workshop_dashboard.png"
+summary_csv = "results/perf_workshop_summary.csv"
+theory_csv = "results/amdahl_gustafson.csv"
+python_csv = "results/python_stack_overhead.csv"
+solver_csv = system("ls -t results/solver_roofline_*.csv 2>/dev/null | head -1")
+if (strlen(solver_csv) == 0) solver_csv = "results/solver_roofline_latest.csv"
+set print "results/perf_workshop_gnuplot_summary.txt"
+print "dashboard=figures/perf_workshop_dashboard.png"
+print "summary_csv=".summary_csv
+print "theory_csv=".theory_csv
+print "solver_csv=".solver_csv
+print "python_csv=".python_csv
+set print
+set style line 1 lc rgb "#2563eb" lw 3 pt 7 ps 1.1
+set style line 2 lc rgb "#94a3b8" lw 2 dt 2
+set style line 3 lc rgb "#7c3aed" lw 3 pt 5 ps 1.1
+set style line 4 lc rgb "#0f766e" lw 2 pt 9 ps 1.1
+set style line 5 lc rgb "#dc2626" lw 2 pt 11 ps 1.1
+set style fill solid 0.82 border rgb "#374151"
+set boxwidth 0.65
+set grid
+set key outside right top
+set multiplot layout 2,3 title "Enhanced SEIR Performance Evaluation Dashboard"
+set title "MPI Solver Speedup"
 set xlabel "MPI ranks"
 set ylabel "speedup"
 set key left top
-plot "results/perf_workshop_summary.csv" using 1:3 with linespoints title "speedup"
-set output "figures/perf_workshop_efficiency.png"
-set ylabel "parallel efficiency"
-plot "results/perf_workshop_summary.csv" using 1:4 with linespoints title "efficiency"
+set yrange [0:*]
+plot summary_csv every ::1 using 1:3 with linespoints ls 1 title "observed", \
+     summary_csv every ::1 using 1:1 with lines ls 2 title "ideal"
+set title "Efficiency and Serial Fraction"
+set ylabel "fraction"
+set yrange [0:1.1]
+plot summary_csv every ::1 using 1:4 with linespoints ls 3 title "efficiency", \
+     summary_csv every ::1 using 1:6 with linespoints ls 5 title "Karp-Flatt serial"
+set title "Estimated Overhead"
+set ylabel "seconds"
+set style data boxes
+plot summary_csv every ::1 using 1:5 with boxes lc rgb "#0f766e" title "overhead_sec"
+set style data linespoints
+set title "Roofline Signal from Solver"
+set xlabel "observed GB/s"
+set ylabel "observed GFLOP/s"
+plot solver_csv every ::1 using 8:7 with linespoints ls 4 title "bandwidth vs flops", \
+     solver_csv every ::1 using 8:7:2 with labels offset 1,1 title "ranks"
 GP
-    gnuplot performance/plot_perf_workshop.gp
-    ls -lh figures/perf_workshop_*.png
-fi
+sed -n '1,45p' performance/plot_perf_dashboard.gp
 ```
 
-### ขั้นที่ 20: สร้าง AI scaffolding prompt จาก evidence จริง
+### ขั้นที่ 20: เติม gnuplot dashboard รวมทุก analysis ส่วนที่ 2
+
+block นี้เติม panel สำหรับ Amdahl/Gustafson, Python stack cost และรูปแยกสำหรับใช้ใน slide
+
+```bash
+cat >> performance/plot_perf_dashboard.gp <<'GP'
+set title "Amdahl and Gustafson, f=0.08"
+set xlabel "workers"
+set ylabel "speedup"
+plot theory_csv every ::1 using 1:(strcol(2) eq "0.08" ? $3 : 1/0) with linespoints ls 1 title "Amdahl", \
+     theory_csv every ::1 using 1:(strcol(2) eq "0.08" ? $4 : 1/0) with linespoints ls 4 title "Gustafson"
+set title "Python Stack Cost"
+set xlabel "case"
+set ylabel "seconds"
+set xtics rotate by -35 right
+set style data histograms
+plot python_csv every ::1 using 2:xtic(1) lc rgb "#f59e0b" title "elapsed_sec"
+unset multiplot
+set terminal pngcairo size 1100,720 enhanced font "Arial,12"
+set output "figures/perf_workshop_speedup_efficiency.png"
+set title "Enhanced SEIR Performance Summary"
+set xlabel "MPI ranks"
+set ylabel "speedup / efficiency"
+set style data linespoints
+set xtics norotate
+plot summary_csv every ::1 using 1:3 with linespoints ls 1 title "speedup", \
+     summary_csv every ::1 using 1:4 with linespoints ls 3 title "efficiency", \
+     summary_csv every ::1 using 1:1 with lines ls 2 title "ideal speedup"
+set output "figures/perf_workshop_python_stack.png"
+set title "Python Stack Cost"
+set xlabel "case"
+set ylabel "seconds"
+set xtics rotate by -35 right
+set style data histograms
+plot python_csv every ::1 using 2:xtic(1) lc rgb "#f59e0b" title "elapsed_sec"
+GP
+sed -n '46,120p' performance/plot_perf_dashboard.gp
+```
+
+### ขั้นที่ 21: รัน gnuplot dashboard ด้วย native command หรือ Apptainer
+
+block นี้สร้างรูป PNG รวมทุก analysis และไฟล์ summary ที่บอกว่า gnuplot ใช้ CSV ใด ถ้า shell พบ `gnuplot` จะใช้ command ตรง ๆ ถ้า environment ปัจจุบันมีเฉพาะ Apptainer จะดึง image `gitrust/gnuplot:latest` เป็น `containers/gnuplot.sif` แล้วรันผ่าน container
+
+```bash
+mkdir -p containers
+GNUPLOT_RUNNER=()
+if command -v gnuplot >/dev/null 2>&1; then
+    GNUPLOT_RUNNER=(gnuplot)
+    echo "gnuplot_source=native" | tee results/perf_workshop_gnuplot_runner.txt
+else
+    module load Apptainer/1.1.6 2>/dev/null || module load Apptainer 2>/dev/null || true
+    if [ ! -f containers/gnuplot.sif ]; then
+        apptainer pull containers/gnuplot.sif docker://gitrust/gnuplot:latest
+    fi
+    GNUPLOT_RUNNER=(apptainer exec containers/gnuplot.sif gnuplot)
+    echo "gnuplot_source=apptainer:gitrust/gnuplot:latest" | tee results/perf_workshop_gnuplot_runner.txt
+fi
+"${GNUPLOT_RUNNER[@]}" --version | tee notes/gnuplot_version.txt
+"${GNUPLOT_RUNNER[@]}" performance/plot_perf_dashboard.gp
+sed -n '1,20p' results/perf_workshop_gnuplot_summary.txt
+ls -lh figures/perf_workshop_dashboard.png figures/perf_workshop_speedup_efficiency.png figures/perf_workshop_python_stack.png
+```
+
+### ขั้นที่ 22: สร้าง AI scaffolding prompt จาก evidence จริง
 
 block นี้สร้าง prompt สำหรับให้ AI ช่วยจัดลำดับสมมติฐาน โดยยึดเฉพาะไฟล์ evidence ที่ผู้ใช้สร้างเอง
 
@@ -573,6 +669,12 @@ block นี้สร้าง prompt สำหรับให้ AI ช่ว�
     echo
     echo "## Display Summary"
     sed -n '1,20p' results/perf_summary_display.md
+    if [ -f results/perf_workshop_gnuplot_summary.txt ]; then
+        echo
+        echo "## Gnuplot Dashboard"
+        sed -n '1,20p' results/perf_workshop_gnuplot_runner.txt
+        sed -n '1,20p' results/perf_workshop_gnuplot_summary.txt
+    fi
 } > notes/ai_perf_review_prompt.md
 sed -n '1,80p' notes/ai_perf_review_prompt.md
 ```
@@ -588,7 +690,8 @@ sed -n '1,80p' notes/ai_perf_review_prompt.md
 5. `overhead_sec` สูงขึ้นเมื่อเพิ่ม rank ชี้ไปที่ communication, synchronization หรือ load imbalance
 6. `python_stack_overhead.csv` แยกเวลา startup/import ออกจากงานคำนวณจริงของ Python
 7. `perf_summary_display.md` และ `figures/perf_summary_*.svg` ใช้สื่อสาร speedup, efficiency, overhead และ Python stack cost
-8. `seir_perf_compare.csv` จาก training sheet ใช้เชื่อมกลับไปยัง innovation หลัก C++/MPI เทียบ PyTorch GPU/DDP
+8. `perf_workshop_dashboard.png` รวม speedup, efficiency, overhead, roofline signal, Amdahl/Gustafson และ Python stack cost ในรูปเดียว
+9. `seir_perf_compare.csv` จาก training sheet ใช้เชื่อมกลับไปยัง innovation หลัก C++/MPI เทียบ PyTorch GPU/DDP
 
 ## เกณฑ์ตัดสินว่าผลดีและถูกต้อง
 
