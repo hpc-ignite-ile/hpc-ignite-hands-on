@@ -152,6 +152,7 @@ sed -n '1,120p' lanta-experience/README.md
 | `jupyter lab` | เปิด Jupyter server | log แสดง URL พร้อม token และ node ที่รัน |
 | `jupyter kernelspec list` | แสดงรายการ kernel ที่ JupyterLab เปิดใช้ได้ | มี kernel เช่น `hpc-mesa` |
 | `VAR=value command` | ตั้ง environment variable เฉพาะ command หนึ่งครั้ง | ใช้ส่ง result directory ให้ script โดยกระทบ shell ถัดไปน้อย |
+| `torchrun --standalone --nproc_per_node=N script.py` | เปิด PyTorch distributed processes ในหนึ่ง node | rank, world size และ output ต่อ rank ครบ |
 | `which command` | แสดง executable ที่ shell จะเรียกใช้ | ใช้ยืนยันว่า `python` หรือ `jupyter` มาจาก environment ที่ต้องการ |
 
 สำหรับ training สด ให้ทดสอบ import package สำคัญทันที เช่น `import mesa`, `import torch`, หรือ `import netCDF4` แล้วบันทึก version ลง log
@@ -211,6 +212,7 @@ sed -n '1,120p' lanta-experience/README.md
 | `whoami` | แสดง user ปัจจุบัน | user ตรงกับบัญชีที่ใช้ submit |
 | `hostname` | แสดงชื่อเครื่อง/node | job log ควรเป็น compute node |
 | `date -Is` | เวลาแบบ ISO 8601 | ใช้ทำ timestamp ใน notes |
+| `/usr/bin/time -v command` | วัดเวลา wall-clock, CPU และ memory ของ command | ใช้เทียบ run baseline, MPI และ GPU |
 | `myquota` | quota ของ LANTA | พื้นที่พอสำหรับ input/result |
 | `sbalance` | balance หรือ allocation | project มี resource สำหรับส่งงาน |
 | `sbill` | สรุปการใช้ resource | ใช้หลัง training เพื่อดูค่าใช้จ่าย job |
@@ -225,6 +227,7 @@ sed -n '1,120p' lanta-experience/README.md
 | คำสั่ง | ความหมาย | หลักฐานที่ควรเห็น |
 |---|---|---|
 | `cc file.c -o program` | compiler wrapper ของ Cray CPE | ได้ binary และ compile log จบสำเร็จ |
+| `CC file.cpp -o program` | compiler wrapper สำหรับ C++ ของ Cray CPE | ได้ binary C++ ที่ link MPI ได้ |
 | `srun -n "$SLURM_NTASKS" program` | รัน MPI ranks ผ่าน Slurm | log มีจำนวน rank ตรงกับ `SLURM_NTASKS` |
 | `gmx --version` / `gmx mdrun` | GROMACS version และ MD run | log มี version, performance, และ output prefix |
 | `pw.x -inp input.in` | Quantum ESPRESSO SCF run | output มี total energy หรือ convergence |

@@ -304,6 +304,34 @@ class LantaFoundationTests(unittest.TestCase):
         ]:
             self.assertIn(marker, text)
 
+    def test_enhanced_seir_performance_models_exist(self) -> None:
+        root = REPO_ROOT / "mini-innovation" / "enhanced-seir"
+        readme = (root / "README.md").read_text(encoding="utf-8")
+        sheet = (root / "TRAINING_SHEET_TH.md").read_text(encoding="utf-8")
+        mpi_source = (root / "cpp_mpi" / "seir_mpi.cpp").read_text(encoding="utf-8")
+        torch_source = (root / "torch_ddp" / "seir_torch_ddp.py").read_text(encoding="utf-8")
+        self.assertIn("enhanced-seir/README.md", (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8"))
+        self.assertIn("TRAINING_SHEET_TH.md", (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8"))
+        for rel in [
+            "TRAINING_SHEET_TH.md",
+            "data/age_contact_4x4.csv",
+            "data/patches.csv",
+            "data/mobility.csv",
+            "data/scenarios.csv",
+            "jobs/seir_mpi_perf.sbatch",
+            "jobs/seir_torch_ddp_gpu.sbatch",
+        ]:
+            self.assertTrue((root / rel).exists(), f"missing enhanced SEIR file: {rel}")
+        self.assertIn("MPI_Gatherv", mpi_source)
+        self.assertIn("MPI_Init", mpi_source)
+        self.assertIn("torch.distributed", torch_source)
+        self.assertIn("DistributedDataParallel", torch_source)
+        self.assertIn("Prem, Cook, and Jit", readme)
+        self.assertIn("cat > cpp_mpi/seir_mpi_train.cpp <<'CPP'", sheet)
+        self.assertIn("cat > torch_ddp/seir_torch_train.py <<'PY'", sheet)
+        self.assertIn("cat > jobs/seir_mpi_train.sbatch <<'SLURM'", sheet)
+        self.assertIn("cat > jobs/seir_torch_gpu.sbatch <<'SLURM'", sheet)
+
 
 if __name__ == "__main__":
     unittest.main()

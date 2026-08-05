@@ -39,6 +39,8 @@ Twin-B MicroCosim ย่อแนวคิดจาก building digital twin ท
 | [03-epidemic-abs-examples.md](03-epidemic-abs-examples.md) | สร้างและรัน epidemic ABS 3 วิธี | lab หลักของ mini innovation |
 | [04-building-cosimulation-twinb.md](04-building-cosimulation-twinb.md) | สร้าง co-simulation แบบ Twin-B MicroCosim | แสดงการทำงานร่วมกันของ scientific model และ ABS |
 | [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) | แสดงผล EpiSprint และ Twin-B ด้วย Jupyter, Matplotlib และ gnuplot | สื่อสาร evidence จาก CSV เป็นรูปและ notebook |
+| [enhanced-seir/README.md](enhanced-seir/README.md) | แบบจำลอง SEIR ขั้นสูงด้วย C++/MPI และ PyTorch GPU/DDP | reference สำหรับ resource choice และ run evidence |
+| [enhanced-seir/TRAINING_SHEET_TH.md](enhanced-seir/TRAINING_SHEET_TH.md) | แผ่นงาน copy-paste สำหรับสร้าง enhanced SEIR บน LANTA ด้วย heredoc | performance clinic ที่ผู้ใช้รันได้จากหน้าเดียว |
 
 ทุกหน้าเริ่มจากเครื่อง local ด้วย `ssh` เข้า LANTA หรือมี link กลับไปยังหน้าเชื่อมต่อกลาง ผู้ใช้จึงเปิดหน้าใดหน้าหนึ่งแล้วเริ่มทำต่อได้ทันที
 
@@ -63,6 +65,7 @@ Twin-B MicroCosim ย่อแนวคิดจาก building digital twin ท
 - การออกแบบ experiment แบบ reproducible
 - การออกแบบ co-simulation และ data contract ระหว่าง model
 - การแสดงผลจากตารางกลางด้วย Jupyter, Matplotlib และ gnuplot
+- การเปรียบเทียบ performance ของ scenario ensemble ระหว่าง MPI CPU และ GPU/DDP
 - AI scaffolding สำหรับตั้งคำถาม ออกแบบ scenario ตรวจ Slurm script และอธิบายผลโดยอ้างอิง code, config, log และ CSV
 
 ## Standalone Smoke Job
