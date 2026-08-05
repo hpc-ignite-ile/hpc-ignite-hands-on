@@ -41,6 +41,7 @@ Twin-B MicroCosim ย่อแนวคิดจาก building digital twin ท
 | [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) | แสดงผล EpiSprint และ Twin-B ด้วย Jupyter, Matplotlib และ gnuplot | สื่อสาร evidence จาก CSV เป็นรูปและ notebook |
 | [enhanced-seir/README.md](enhanced-seir/README.md) | แบบจำลอง SEIR ขั้นสูงด้วย C++/MPI และ PyTorch GPU/DDP | reference สำหรับ resource choice และ run evidence |
 | [enhanced-seir/TRAINING_SHEET_TH.md](enhanced-seir/TRAINING_SHEET_TH.md) | แผ่นงาน copy-paste สำหรับสร้าง enhanced SEIR บน LANTA ด้วย heredoc | performance clinic ที่ผู้ใช้รันได้จากหน้าเดียว |
+| [enhanced-seir/PERFORMANCE_WORKSHOP_TH.md](enhanced-seir/PERFORMANCE_WORKSHOP_TH.md) | workshop ประเมิน performance จาก enhanced SEIR ด้วย roofline, Amdahl, Gustafson, MPI solver และ Python overhead | ใช้ฝึกอ่าน bottleneck และตัดสินใจ run ถัดไปจาก evidence จริง |
 
 ทุกหน้าเริ่มจากเครื่อง local ด้วย `ssh` เข้า LANTA หรือมี link กลับไปยังหน้าเชื่อมต่อกลาง ผู้ใช้จึงเปิดหน้าใดหน้าหนึ่งแล้วเริ่มทำต่อได้ทันที
 

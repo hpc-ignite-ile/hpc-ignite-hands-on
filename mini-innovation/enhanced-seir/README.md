@@ -6,6 +6,8 @@ folder นี้เป็น reference สำหรับต่อยอด onsi
 
 สำหรับกิจกรรมที่ผู้เรียนแปะคำสั่งบน LANTA โดยตรง ให้ใช้ [TRAINING_SHEET_TH.md](TRAINING_SHEET_TH.md) ซึ่งสร้าง source, data และ Slurm script ด้วย heredoc ครบใน workspace ของผู้เรียน
 
+สำหรับ performance evaluation workshop ให้ใช้ [PERFORMANCE_WORKSHOP_TH.md](PERFORMANCE_WORKSHOP_TH.md) หลังจากรัน training sheet หรือใช้เป็นหน้า standalone เพื่อสร้าง MPI roofline solver, Python overhead probe, report, SVG/gnuplot display และ evidence prompt ใน workspace เดียวกัน
+
 ## งานวิจัยต้นแบบที่นำแนวคิดมาใช้
 
 | งานวิจัย | แนวคิดที่ใช้ในตัวอย่าง |
@@ -76,6 +78,8 @@ folder นี้เป็น reference สำหรับต่อยอด onsi
 ใช้ folder นี้เป็น prepared source reference จาก folder root ให้ส่ง `jobs/seir_mpi_perf.sbatch` สำหรับ C++/MPI และ `jobs/seir_torch_ddp_gpu.sbatch` สำหรับ PyTorch GPU/DDP ด้วย project account ของรอบอบรม
 
 สำหรับ performance clinic ให้รัน MPI job ที่ `--ntasks=1`, `--ntasks=2` และ `--ntasks=4` แล้วเปรียบเทียบ `elapsed_sec` กับ `AllocCPUS` จากนั้นรัน PyTorch job แล้วเทียบ GPU speed กับ MPI โดยใช้ scenario และ model assumptions ชุดเดียวกัน ชุด scenario ตั้งใจให้มีขนาดเล็กเพื่อให้เห็น GPU startup และ distributed launch overhead เป็นหลักฐานการสอน
+
+สำหรับ workshop ด้านประเมินสมรรถนะ ให้รัน [PERFORMANCE_WORKSHOP_TH.md](PERFORMANCE_WORKSHOP_TH.md) เพื่อเชื่อม roofline analysis, Amdahl's law, Gustafson's law, overhead taxonomy, stencil solver pattern และ Python stack overhead เข้ากับหลักฐานจาก LANTA
 
 ## วิธีตรวจความถูกต้อง
 

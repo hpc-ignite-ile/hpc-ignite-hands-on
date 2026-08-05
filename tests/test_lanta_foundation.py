@@ -308,18 +308,27 @@ class LantaFoundationTests(unittest.TestCase):
         root = REPO_ROOT / "mini-innovation" / "enhanced-seir"
         readme = (root / "README.md").read_text(encoding="utf-8")
         sheet = (root / "TRAINING_SHEET_TH.md").read_text(encoding="utf-8")
+        workshop = (root / "PERFORMANCE_WORKSHOP_TH.md").read_text(encoding="utf-8")
         mpi_source = (root / "cpp_mpi" / "seir_mpi.cpp").read_text(encoding="utf-8")
         torch_source = (root / "torch_ddp" / "seir_torch_ddp.py").read_text(encoding="utf-8")
         self.assertIn("enhanced-seir/README.md", (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8"))
         self.assertIn("TRAINING_SHEET_TH.md", (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8"))
+        self.assertIn("PERFORMANCE_WORKSHOP_TH.md", (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8"))
         for rel in [
             "TRAINING_SHEET_TH.md",
+            "PERFORMANCE_WORKSHOP_TH.md",
             "data/age_contact_4x4.csv",
             "data/patches.csv",
             "data/mobility.csv",
             "data/scenarios.csv",
             "jobs/seir_mpi_perf.sbatch",
             "jobs/seir_torch_ddp_gpu.sbatch",
+            "jobs/seir_roofline_solver.sbatch",
+            "performance/perf_theory.py",
+            "performance/solver_roofline_mpi.cpp",
+            "performance/perf_workshop_report.py",
+            "performance/perf_summary_plot.py",
+            "performance/python_stack_overhead.py",
         ]:
             self.assertTrue((root / rel).exists(), f"missing enhanced SEIR file: {rel}")
         self.assertIn("MPI_Gatherv", mpi_source)
@@ -331,6 +340,20 @@ class LantaFoundationTests(unittest.TestCase):
         self.assertIn("cat > torch_ddp/seir_torch_train.py <<'PY'", sheet)
         self.assertIn("cat > jobs/seir_mpi_train.sbatch <<'SLURM'", sheet)
         self.assertIn("cat > jobs/seir_torch_gpu.sbatch <<'SLURM'", sheet)
+        for marker in [
+            "Roofline",
+            "Amdahl",
+            "Gustafson",
+            "solver_roofline_mpi.cpp",
+            "python_stack_overhead.py",
+            "perf_summary_plot.py",
+            "overhead_taxonomy.csv",
+            "perf_summary_display.md",
+            "figures/perf_summary_speedup.svg",
+            "cat > jobs/roofline_solver.sbatch <<'SLURM'",
+            "python -m cProfile",
+        ]:
+            self.assertIn(marker, workshop)
 
 
 if __name__ == "__main__":
