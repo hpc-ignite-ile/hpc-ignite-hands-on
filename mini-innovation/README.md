@@ -42,6 +42,9 @@ Twin-B MicroCosim ย่อแนวคิดจาก building digital twin ท
 | [enhanced-seir/README.md](enhanced-seir/README.md) | แบบจำลอง SEIR ขั้นสูงด้วย C++/MPI และ PyTorch GPU/DDP | reference สำหรับ resource choice และ run evidence |
 | [enhanced-seir/TRAINING_SHEET_TH.md](enhanced-seir/TRAINING_SHEET_TH.md) | แผ่นงาน copy-paste สำหรับสร้าง enhanced SEIR บน LANTA ด้วย heredoc | performance clinic ที่ผู้ใช้รันได้จากหน้าเดียว |
 | [enhanced-seir/PERFORMANCE_WORKSHOP_TH.md](enhanced-seir/PERFORMANCE_WORKSHOP_TH.md) | workshop ประเมิน performance จาก enhanced SEIR ด้วย roofline, Amdahl, Gustafson, MPI solver และ Python overhead | ใช้ฝึกอ่าน bottleneck และตัดสินใจ run ถัดไปจาก evidence จริง |
+| [weather-health-abs/README.md](weather-health-abs/README.md) | HPDS Weather-Health ABS ด้วย data transfer, archive, Lustre, Dask, building model, ABS และ partitioning | ใช้สอน high performance data science จาก workflow ข้อมูลจริง |
+| [weather-health-abs/TRAINING_SHEET_TH.md](weather-health-abs/TRAINING_SHEET_TH.md) | แผ่นงาน copy-paste สำหรับ HPDS Weather-Health ABS บน LANTA | ผู้ใช้สร้าง data, env, source, Slurm job, output และ evidence prompt จากหน้าเดียว |
+| [weather-health-abs/DATA_RESCUE_CADC_TH.md](weather-health-abs/DATA_RESCUE_CADC_TH.md) | แผ่นงาน data-rescue จาก CADC FITS timeout ไปสู่ manifest, checksum และ `rsync --append-verify` | ใช้สอนการรับมือ data source ใกล้หมดอายุหรือ host ที่ cluster ติดต่อแล้ว timeout |
 
 ทุกหน้าเริ่มจากเครื่อง local ด้วย `ssh` เข้า LANTA หรือมี link กลับไปยังหน้าเชื่อมต่อกลาง ผู้ใช้จึงเปิดหน้าใดหน้าหนึ่งแล้วเริ่มทำต่อได้ทันที
 

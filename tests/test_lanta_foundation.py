@@ -341,6 +341,9 @@ class LantaFoundationTests(unittest.TestCase):
         self.assertIn("cat > torch_ddp/seir_torch_train.py <<'PY'", sheet)
         self.assertIn("cat > jobs/seir_mpi_train.sbatch <<'SLURM'", sheet)
         self.assertIn("cat > jobs/seir_torch_gpu.sbatch <<'SLURM'", sheet)
+        self.assertIn("cat > data/patches.csv <<'CSV'", sheet)
+        self.assertIn("cat > data/age_contact_4x4.csv <<'CSV'", sheet)
+        self.assertIn("cat > data/mobility.csv <<'CSV'", sheet)
         for marker in [
             "Roofline",
             "Amdahl",
@@ -356,8 +359,55 @@ class LantaFoundationTests(unittest.TestCase):
             "figures/perf_summary_speedup.svg",
             "cat > jobs/roofline_solver.sbatch <<'SLURM'",
             "python -m cProfile",
+            "PerformanceEvaluationOfHPC-AI.pdf",
+            "High Performance Python",
+            "ACM_School_Barcelona_2026_Wahib.pptx",
+            "บันไดหลักฐาน",
         ]:
             self.assertIn(marker, workshop)
+
+    def test_weather_health_hpds_training_exists(self) -> None:
+        root = REPO_ROOT / "mini-innovation" / "weather-health-abs"
+        readme = (root / "README.md").read_text(encoding="utf-8")
+        sheet = (root / "TRAINING_SHEET_TH.md").read_text(encoding="utf-8")
+        rescue = (root / "DATA_RESCUE_CADC_TH.md").read_text(encoding="utf-8")
+        index = (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8")
+        self.assertIn("weather-health-abs/README.md", index)
+        self.assertIn("weather-health-abs/TRAINING_SHEET_TH.md", index)
+        self.assertIn("weather-health-abs/DATA_RESCUE_CADC_TH.md", index)
+        for rel in [
+            "README.md",
+            "TRAINING_SHEET_TH.md",
+            "DATA_RESCUE_CADC_TH.md",
+            "src/stage_weather_data.py",
+            "src/cadc_resumable_fetch.py",
+            "src/hpds_weather_abs.py",
+            "src/plot_hpds_summary.py",
+            "src/partition_mobility_graph.py",
+            "jobs/hpds_weather_abs.sbatch",
+            "plots/hpds_dashboard.gp",
+        ]:
+            self.assertTrue((root / rel).exists(), f"missing weather-health HPDS file: {rel}")
+        for marker in [
+            "High Performance Data Science",
+            "rsync",
+            "curl",
+            "wget",
+            "lftp",
+            "zip",
+            "pigz",
+            "lfs getstripe",
+            "dask==2024.8.0",
+            "LocalCluster",
+            "ParMETIS",
+            "mobility_partition_summary.csv",
+            "ai_hpds_review_prompt.md",
+            "CADC FITS",
+            "rsync --append-verify",
+            "curl -C -",
+            "sha256sum -c",
+        ]:
+            self.assertIn(marker, sheet + readme + rescue)
 
 
 if __name__ == "__main__":

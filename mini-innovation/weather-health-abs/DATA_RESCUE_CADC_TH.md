@@ -1,0 +1,266 @@
+# Data Rescue: CADC FITS และ HPDA Ingest บน LANTA
+
+คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
+
+หน้านี้เป็น hands-on แบบ standalone สำหรับเหตุการณ์ data source ใกล้หมดอายุและ LANTA เปิด connection ไปยัง host ปลายทางแล้ว timeout กรณีศึกษาคือ CADC FITS URL ขนาดประมาณ 1.59 GB
+
+URL อ้างอิงของผู้ให้บริการ: [CADC Direct Data Service](https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/doc/data/)
+
+## บทนำแบบ Verse
+
+เห็น timeout ให้แยกชั้นก่อนตัดสิน<br>
+DNS, TCP, HTTP header, range byte และ speed คือหลักฐานคนละชั้น<br>
+เมื่อ cluster ออกไปยัง host ปลายทางติดทาง ให้ staging จากเครือข่ายที่ผ่านทางได้<br>
+ให้ไฟล์ทุกชิ้นเดินทางพร้อม `.part`, checksum, manifest และ validation log<br>
+ส่งเข้า LANTA ด้วย `rsync` ที่ resume ได้ แล้วค่อยให้ Slurm ใช้ข้อมูลที่ staged แล้ว<br>
+งาน HPDS ที่ดีมีเส้นทางข้อมูลชัด มีหลักฐานขนาดไฟล์ มี fingerprint และมี sanity check ก่อน model อ่านข้อมูล
+
+## สรุปทางแก้ที่เร็วสำหรับกรณี Chaipat
+
+จากการทดสอบวันที่ 2026-08-07:
+
+| จุดทดสอบ | ผล |
+|---|---|
+| เครื่องนอก LANTA | `curl -I -L` ได้ `HTTP 200`, `content-length=1706276160` |
+| เครื่องนอก LANTA | `curl --range 0-1048575` ได้ `HTTP 206` และรับ 1 MiB สำเร็จ |
+| LANTA login/transfer endpoint | `curl` ไป CADC port 443 ได้ `curl: (28)` และ `http=000` |
+| LANTA ไป NASA POWER | `HTTP 200` |
+
+ข้อสรุปเชิงปฏิบัติ: กรณีนี้เป็นปัญหาเส้นทางจาก LANTA ไป CADC เฉพาะ host หรือเฉพาะ network path วิธีที่ใช้เวลาน้อยสุดคือ download จากเครื่อง local, lab server, หรือ cloud VM ที่ CADC เปิดทาง แล้วส่งเข้า LANTA ด้วย `rsync --partial --append-verify`
+
+## หลักตัดสินใจ
+
+| อาการ | การกระทำที่เหมาะ |
+|---|---|
+| Local ได้ `200/206`, LANTA ได้ `http=000` | stage off-cluster แล้ว push เข้า LANTA ด้วย SSH transfer |
+| ได้ `401` | ใช้ CADC login/certificate/token ตามสิทธิ์ของ dataset |
+| ได้ `403` | ตรวจสิทธิ์ dataset และขอ CADC support ช่วยดู policy หรือ whitelist |
+| ได้ `404` | ตรวจ URL, archive name, filename และวันหมดอายุ |
+| speed ตกต่อเนื่อง | ใช้ `.part`, `curl -C -`, `--speed-time`, `--speed-limit`, retry แบบสุภาพ |
+| มีไฟล์จำนวนมาก | รวมเป็น `tar`/`zip` ก่อนส่ง ลดภาระ inode และ metadata |
+
+## แนวแก้ใน source code ที่ใช้ `urllib.request`
+
+โค้ดตัวอย่างมีโครงดีอยู่แล้ว: มี manifest, checksum, FITS validation และวาง `src` ลง `sys.path` จากตำแหน่ง repo แต่ primitive สำหรับ download ควรเสริม 5 เรื่อง
+
+1. ตั้ง timeout ชัดเจนทั้งระดับ connect/read
+2. ส่ง `User-Agent` ที่มีชื่อ project และ contact
+3. เขียนลง `.part` แล้วค่อย rename เมื่อครบ
+4. resume ด้วย `Range` หรือเรียก `curl -C -` จาก Python
+5. บันทึก HTTP status, byte count, checksum และ error class ลง manifest/log
+
+สำหรับ deadline สั้น วิธีที่เสถียรสุดคือให้ Python เป็น orchestrator และให้ `curl` ทำงาน transfer:
+
+```python
+import subprocess
+from pathlib import Path
+
+USER_AGENT = "m81-group-stellar-map/0.2 (contact: chaipat_ja@cmu.ac.th)"
+
+def fetch_with_curl(url: str, outfile: Path) -> None:
+    part = outfile.with_suffix(outfile.suffix + ".part")
+    cmd = [
+        "curl", "-fL", "-C", "-",
+        "--retry", "8", "--retry-delay", "10", "--retry-all-errors",
+        "--connect-timeout", "30",
+        "--speed-time", "120", "--speed-limit", "1024",
+        "-A", USER_AGENT,
+        "-o", str(part),
+        url,
+    ]
+    subprocess.run(cmd, check=True)
+    part.replace(outfile)
+```
+
+หลัง `fetch_with_curl` จบ ให้ใช้ `check_fits(outfile)`, `sha256sum`, และ manifest เดิมของ project ต่อได้ทันที
+
+ผู้ใช้ที่ clone repo สำหรับ reference สามารถดู helper ขนาดเล็กได้ที่ `src/cadc_resumable_fetch.py` โค้ดนั้นใช้แนวเดียวกันคือ probe ก่อน, download เมื่อระบุ `--download`, แล้วเขียน manifest กับ checksum หลังไฟล์เต็มผ่าน FITS sanity check
+
+## Copy-Paste บนเครื่อง Local หรือ WSL
+
+### ขั้นที่ 1: ตั้งค่า URL และ probe จากเครือข่าย local
+
+block นี้ตรวจว่าเครื่อง local เห็น metadata และรับ range แรกได้
+
+```bash
+export CADC_URL='https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/data/pub/CFHTSG/G006.149.683%2B68.863.G.fits'
+export CADC_FILE='G006.149.683+68.863.G.fits'
+export CADC_USER_AGENT='m81-group-stellar-map/0.2 (contact: chaipat_ja@cmu.ac.th)'
+export CADC_LOCAL_ROOT="${CADC_LOCAL_ROOT:-$HOME/cadc-rescue}"
+mkdir -p "$CADC_LOCAL_ROOT"/{raw,logs,manifest}
+cd "$CADC_LOCAL_ROOT"
+curl -I -L --connect-timeout 20 --max-time 60 \
+    -A "$CADC_USER_AGENT" "$CADC_URL" | tee logs/cadc_head.txt
+curl -L --fail --range 0-1048575 --connect-timeout 20 --max-time 90 \
+    -A "$CADC_USER_AGENT" -o raw/range_probe.bin \
+    -w 'http=%{http_code} bytes=%{size_download} speed=%{speed_download} remote_ip=%{remote_ip}\n' \
+    "$CADC_URL" | tee logs/cadc_range_status.txt
+if [ -s raw/range_probe.bin ]; then
+    ls -lh raw/range_probe.bin
+else
+    echo "range_probe=empty_or_failed"
+fi
+```
+
+### ขั้นที่ 2: Download ไฟล์เต็มแบบ resume ได้
+
+block นี้ใช้ `.part` เป็น landing file และใช้ `curl -C -` เพื่อ resume ต่อจาก byte ที่มีอยู่
+
+```bash
+cd "$CADC_LOCAL_ROOT"
+curl -L --fail -C - --retry 8 --retry-delay 10 --retry-all-errors \
+    --connect-timeout 30 --max-time 0 \
+    --speed-time 120 --speed-limit 1024 \
+    -A "$CADC_USER_AGENT" \
+    -o "raw/${CADC_FILE}.part" "$CADC_URL"
+mv "raw/${CADC_FILE}.part" "raw/${CADC_FILE}"
+ls -lh "raw/${CADC_FILE}"
+```
+
+### ขั้นที่ 3: ตรวจ FITS header, checksum และ manifest
+
+block นี้ตรวจ header 2880 byte แรกของ FITS และสร้าง manifest ที่อ่านซ้ำได้บน LANTA
+
+```bash
+cd "$CADC_LOCAL_ROOT"
+PYTHON_BIN="$(command -v python3 || command -v python)"
+"$PYTHON_BIN" - <<'PY'
+from pathlib import Path
+import csv, datetime as dt, hashlib, os
+
+root = Path.cwd()
+path = root / "raw" / os.environ["CADC_FILE"]
+url = os.environ["CADC_URL"]
+head = path.read_bytes()[:2880]
+first_card = head[:80].decode("ascii", "replace").rstrip()
+if first_card[:9] not in {"SIMPLE  =", "XTENSION="}:
+    raise SystemExit("FITS_HEADER_CHECK_FAILED")
+h = hashlib.sha256()
+with path.open("rb") as f:
+    for block in iter(lambda: f.read(1024 * 1024), b""):
+        h.update(block)
+digest = h.hexdigest()
+(root / "manifest").mkdir(exist_ok=True)
+with (root / "manifest" / f"{path.name}.sha256").open("w", encoding="utf-8") as f:
+    f.write(f"{digest}  raw/{path.name}\n")
+with (root / "manifest" / "cadc_manifest.csv").open("w", newline="", encoding="utf-8") as f:
+    w = csv.writer(f)
+    w.writerow(["dataset_id","source_org","url","access_utc","path","bytes","sha256","first_card"])
+    w.writerow(["cadc_cfhtsg_g006","CADC",url,dt.datetime.now(dt.timezone.utc).isoformat(),
+                f"raw/{path.name}",path.stat().st_size,digest,first_card])
+print("bytes", path.stat().st_size)
+print("sha256", digest)
+print("first_card", first_card)
+PY
+sed -n '1,5p' manifest/cadc_manifest.csv
+```
+
+### ขั้นที่ 4: ส่ง rescue bundle เข้า LANTA ด้วย `rsync`
+
+block นี้ส่งทั้ง raw file, log และ manifest เข้า home directory บน LANTA
+
+```bash
+rsync -avP --partial --append-verify "$CADC_LOCAL_ROOT"/ \
+    <lanta-username>@lanta.nstda.or.th:~/cadc-rescue/
+```
+
+ถ้าใช้ project storage ให้เปลี่ยนปลายทางเป็น path ที่ทีมมีสิทธิ์ เช่น `/project/<project-id>/users/<username>/data/cadc-rescue/`
+
+## Copy-Paste บน LANTA
+
+### ขั้นที่ 5: Login เข้า LANTA
+
+block นี้เปิด shell บน LANTA login node
+
+```bash
+ssh <lanta-username>@lanta.nstda.or.th
+```
+
+### ขั้นที่ 6: Probe CADC จาก LANTA เพื่อเก็บหลักฐาน
+
+block นี้เก็บหลักฐานว่า LANTA เห็น DNS, ทดสอบ CADC และทดสอบ endpoint สาธารณะอีกแห่งเพื่อเปรียบเทียบ
+
+```bash
+export CADC_URL='https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/data/pub/CFHTSG/G006.149.683%2B68.863.G.fits'
+export CADC_USER_AGENT='m81-group-stellar-map/0.2 (contact: chaipat_ja@cmu.ac.th)'
+export CADC_RESCUE_ROOT="${CADC_RESCUE_ROOT:-$HOME/cadc-rescue}"
+mkdir -p "$CADC_RESCUE_ROOT"/logs
+cd "$CADC_RESCUE_ROOT"
+{
+    echo "date=$(date -Is)"
+    echo "host=$(hostname)"
+    echo "dns"
+    getent ahosts ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca
+    echo "cadc_range_probe"
+    curl -L --fail --range 0-1048575 --connect-timeout 30 --max-time 75 \
+        -A "$CADC_USER_AGENT" -o /dev/null \
+        -w 'http=%{http_code} bytes=%{size_download} remote_ip=%{remote_ip} local_ip=%{local_ip}\n' \
+        "$CADC_URL"
+    echo "nasa_https_probe"
+    curl -I -L --connect-timeout 20 --max-time 50 -o /dev/null \
+        -w 'http=%{http_code} remote_ip=%{remote_ip} local_ip=%{local_ip}\n' \
+        https://power.larc.nasa.gov
+} > logs/lanta_cadc_probe.txt 2>&1 || true
+sed -n '1,120p' logs/lanta_cadc_probe.txt
+```
+
+### ขั้นที่ 7: ตรวจไฟล์ที่ส่งเข้ามา
+
+block นี้ตรวจ checksum, FITS header และ manifest ที่มากับ bundle
+
+```bash
+export CADC_FILE='G006.149.683+68.863.G.fits'
+export CADC_RESCUE_ROOT="${CADC_RESCUE_ROOT:-$HOME/cadc-rescue}"
+cd "$CADC_RESCUE_ROOT"
+sha256sum -c "manifest/${CADC_FILE}.sha256"
+PYTHON_BIN="$(command -v python3 || command -v python)"
+"$PYTHON_BIN" - <<'PY'
+from pathlib import Path
+import os
+
+path = Path("raw") / os.environ["CADC_FILE"]
+head = path.read_bytes()[:2880]
+first_card = head[:80].decode("ascii", "replace").rstrip()
+if first_card[:9] not in {"SIMPLE  =", "XTENSION="}:
+    raise SystemExit("FITS_HEADER_CHECK_FAILED")
+print("bytes", path.stat().st_size)
+print("first_card", first_card)
+PY
+sed -n '1,5p' manifest/cadc_manifest.csv
+```
+
+### ขั้นที่ 8: Stage ไปยัง project หรือ scratch
+
+block นี้แยก raw artifact ออกจาก workspace ฝึก และเตรียม path ให้ job อ่านบน LANTA
+
+```bash
+export PROJECT_ID="${PROJECT_ID:-tn999996-north}"
+export CADC_RESCUE_ROOT="${CADC_RESCUE_ROOT:-$HOME/cadc-rescue}"
+export CADC_STAGE="${CADC_STAGE:-/project/${PROJECT_ID}/users/$USER/data/cadc_cfhtsg}"
+mkdir -p "$CADC_STAGE"/{raw,manifest,logs}
+rsync -avP --partial --append-verify "$CADC_RESCUE_ROOT/raw/" "$CADC_STAGE/raw/"
+rsync -avP --partial --append-verify "$CADC_RESCUE_ROOT/manifest/" "$CADC_STAGE/manifest/"
+rsync -avP --partial "$CADC_RESCUE_ROOT/logs/" "$CADC_STAGE/logs/"
+find "$CADC_STAGE" -maxdepth 2 -type f -print
+```
+
+## Acceptance Checklist
+
+- `logs/cadc_head.txt` หรือ `logs/lanta_cadc_probe.txt` ระบุ HTTP status หรือ error class ชัด
+- `manifest/cadc_manifest.csv` มี URL, เวลาเข้าถึง, path, bytes, sha256 และ first FITS card
+- `sha256sum -c` ผ่านบน LANTA
+- FITS first card เป็น `SIMPLE  =` หรือ `XTENSION=`
+- raw file อยู่ใน `/project/<project-id>/...` หรือ path staging ที่ทีมเลือก
+- Slurm job อ่านจาก staged path และบันทึก path นั้นลง environment/result log
+
+## แนวเสริมใน HPDS Weather-Health ABS
+
+ให้เพิ่มขั้น “data source triage” ก่อน download ทุกครั้ง:
+
+1. `HEAD` เพื่อดูขนาดและ authorization
+2. `Range` 1 MiB เพื่อดูว่า endpoint ส่ง byte จริง
+3. `curl -C -` เพื่อรองรับ network หลุด
+4. checksum/manifest ก่อนแตก archive หรือแปลง format
+5. ย้าย raw artifact ไป project storage และแปลงเป็น format วิเคราะห์บน `/scratch`
+
+แนวนี้ใช้กับ CADC FITS, ERA5/NetCDF, GeoTIFF, Parquet และ archive ขนาดใหญ่ได้เหมือนกัน

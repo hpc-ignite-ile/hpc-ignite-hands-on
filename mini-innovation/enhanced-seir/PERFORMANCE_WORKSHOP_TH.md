@@ -21,6 +21,29 @@ workshop นี้ยึดแนวคิดจาก `Booklet_LANTA-Experience
 
 เอกสาร Python performance ใน `/home/ubuntu/lanta/AI` เน้นว่า overhead เกิดได้จาก interpreter startup, import, pure Python loop, memory movement และการเรียก subprocess ดังนั้นตัวอย่างท้ายบทจึงวัด Python stack overhead ควบคู่กับ C++/MPI solver และ SEIR GPU/DDP evidence
 
+## แหล่งอ้างอิงจาก `/home/ubuntu/lanta/AI`
+
+| ไฟล์ | หลักคิดที่นำมาใช้ | จุดที่ปรากฏใน practical |
+|---|---|---|
+| `Booklet_LANTA-Experience.pdf` หน้า 15-17 | เริ่มจากคำถามวิทยาศาสตร์ เลือก resource จากลักษณะงาน และเก็บ evidence bundle | `notes/perf_workshop_evidence.txt`, `sacct`, log, CSV และคำถาม run ถัดไป |
+| `PerformanceEvaluationOfHPC-AI.pdf` | แยก profiling, tracing, event-based data, sampling และ instrumentation เป็นระดับคำถาม | timing ชั้นแรก, rank scaling, overhead taxonomy และแนวทางขยายไป IPM, Score-P, Nsight Systems, NVTX |
+| `1 Understanding Performant Python  High Performance Python 3rd Edition.pdf` | มองระบบเป็น compute, memory และ interconnect; ใช้ Amdahl อธิบาย serial fraction; ตรวจ GIL และ data movement ของ Python | `amdahl_gustafson.csv`, `solver_roofline_*.csv`, `python_stack_overhead.csv` |
+| `2 Profiling to Find Bottlenecks.pdf` | ตั้ง hypothesis, profile ด้วย representative case, ใช้ cProfile เป็นภาพรวม, ใช้ line/memory profiler เมื่อขอบเขตแคบ | ขั้น `cProfile`, report CSV และคำถามสะท้อนผล |
+| `ACM_School_Barcelona_2026_Wahib.pptx` | Scientific AI อยู่ในวงจร data, model, use in science; coupling กับ ModSim ต้องมี provenance, correctness, UQ และ throughput | AI scaffolding prompt ใช้เฉพาะ evidence จาก workspace และเชื่อมผล performance กลับสู่ SEIR mini innovation |
+
+## บันไดหลักฐานสำหรับ Performance Evaluation
+
+| ระดับ | คำถาม | หลักฐานที่เก็บใน workshop | เครื่องมือถัดไปเมื่อโจทย์ลึกขึ้น |
+|---|---|---|---|
+| Scientific question | run นี้ตอบเรื่องโรคระบาดหรือนโยบายใด | `question=...`, `seir_perf_compare.csv`, sanity check ของ policy | เพิ่มข้อมูลจริงหรือ scenario ensemble |
+| Resource choice | CPU, MPI, GPU หรือ I/O เป็นแกนทดลองหลัก | Slurm account, partition, ranks, GPU log | job array, multi-node MPI, GPU/DDP |
+| Timing profile | เวลารวมอยู่ที่ compute, startup หรือ stack | `/usr/bin/time -v`, elapsed CSV, `cProfile` | line profiler, memory profiler, Scalene |
+| Scaling profile | speedup ถูกจำกัดโดย serial fraction หรือ overhead | speedup, efficiency, Karp-Flatt, Amdahl/Gustafson | IPM สำหรับ MPI routine และ min-max spread |
+| Solver wall | stencil solver เดินชน compute หรือ memory bandwidth | GFLOP/s, GB/s, arithmetic intensity, residual | hardware counter, memory bandwidth benchmark |
+| Communication wall | rank ใดรอ collective หรือ halo exchange | rank scaling, overhead class, elapsed spread | Score-P profile, call path, targeted trace |
+| GPU/DDP wall | GPU ทำงานต่อเนื่องหรือมี data movement/NCCL gap | training log, GPU evidence, batch timing | Nsight Systems พร้อม NVTX range |
+| AI scaffold | AI ช่วยจัด hypothesis จาก evidence ได้ระดับใด | `notes/ai_perf_review_prompt.md` | เพิ่ม provenance, uncertainty และ model/data checklist |
+
 ## แผนภาพความคิด
 
 | แนวคิด | คำถามใน practical | หลักฐาน |
@@ -83,6 +106,8 @@ sed -n '1,20p' notes/perf_workshop_evidence.txt
 ### ขั้นที่ 3: สร้างตาราง Amdahl, Gustafson และ taxonomy
 
 block นี้สร้าง script สั้นจาก standard library เพื่อคำนวณ speedup เชิงทฤษฎีและรายการ overhead ที่ต้องตรวจ
+
+ถ้า `performance/perf_theory.py` มีอยู่แล้วใน workspace นี้ ให้ข้ามขั้นนี้และรัน `python performance/perf_theory.py` โดยตรง
 
 ```bash
 cat > performance/perf_theory.py <<'PY'
@@ -513,7 +538,7 @@ if Path("results/python_stack_overhead.csv").exists():
     rows=read_csv(Path("results/python_stack_overhead.csv"))
     bar_chart("figures/perf_summary_python_stack.svg","Python Stack Cost","seconds",[r["case"].replace("_"," ")[:15] for r in rows],[float(r["elapsed_sec"]) for r in rows])
     note="figures/perf_summary_python_stack.svg"
-Path("results/perf_summary_display.md").write_text("\\n".join(["# Performance Summary Display","","- figures/perf_summary_speedup.svg","- figures/perf_summary_efficiency.svg","- figures/perf_summary_overhead.svg",f"- {note}",""]) ,encoding="utf-8")
+Path("results/perf_summary_display.md").write_text("\n".join(["# Performance Summary Display","","- figures/perf_summary_speedup.svg","- figures/perf_summary_efficiency.svg","- figures/perf_summary_overhead.svg",f"- {note}",""]) ,encoding="utf-8")
 print("wrote SVG figures and results/perf_summary_display.md")
 PY
 ```

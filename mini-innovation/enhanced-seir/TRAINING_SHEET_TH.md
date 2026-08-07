@@ -41,6 +41,34 @@ pwd
 block นี้สร้าง patch, contact matrix, mobility และ scenario table ที่ทั้ง MPI และ GPU ใช้ร่วมกัน
 
 ```bash
+cat > data/patches.csv <<'CSV'
+patch_id,name,pop_0_19,pop_20_39,pop_40_64,pop_65_plus,initial_exposed,initial_infectious
+0,Campus,26000,42000,31000,9000,14,8
+1,City,54000,78000,72000,28000,8,4
+2,Rural,18000,23000,26000,17000,2,1
+CSV
+
+cat > data/age_contact_4x4.csv <<'CSV'
+age_group,0_19,20_39,40_64,65_plus
+0_19,8.2,2.6,1.4,0.6
+20_39,2.1,7.4,3.2,1.0
+40_64,1.0,3.0,6.1,1.9
+65_plus,0.4,0.9,1.8,3.2
+CSV
+
+cat > data/mobility.csv <<'CSV'
+from_patch,to_patch,weight
+0,0,0.82
+0,1,0.16
+0,2,0.02
+1,0,0.08
+1,1,0.86
+1,2,0.06
+2,0,0.03
+2,1,0.17
+2,2,0.80
+CSV
+
 cat > data/scenarios.csv <<'CSV'
 scenario_id,policy,beta_scale,mobility_scale,vaccination_rate,contact_reduction,days
 101,baseline,1.00,0.35,0.0000,1.00,80
@@ -56,6 +84,9 @@ patches=Campus,City,Rural
 age_groups=0_19,20_39,40_64,65_plus
 model=SEIR-H-D with vaccination, mobility, age contact, hospitalization, deaths
 TXT
+
+ls -lh data/*.csv
+sed -n '1,5p' data/patches.csv
 ```
 
 ### ขั้นที่ 3: สร้าง C++/MPI source ส่วนที่ 1

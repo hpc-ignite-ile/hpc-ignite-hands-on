@@ -41,6 +41,8 @@ sed -n '1,120p' lanta-experience/README.md
 | `ssh -G HOST` | แสดง config ที่ OpenSSH ใช้จริงกับ host | `ssh -G lanta | grep identityfile` | เห็น key path ที่ alias ใช้ |
 | `scp` | copy ไฟล์หนึ่งชุดผ่าน SSH | `scp local-file <username>@transfer.lanta.nstda.or.th:/project/<project-id>/` | ไฟล์ปลายทางมีขนาดตรงกับต้นทาง |
 | `rsync -rvz` | sync folder ผ่าน SSH พร้อมรายงานรายการไฟล์ | `rsync -rvz ./local-folder/ ...` | output แสดงไฟล์ที่ส่ง และปลายทางเปิดอ่านได้ |
+| `rsync -avP --partial` | sync แบบรักษา permission/time, แสดง progress และเก็บไฟล์ค้างเมื่อ network หลุด | `rsync -avP --partial data/ user@lanta:~/data/` | rerun แล้วส่งต่อจากไฟล์ค้างได้ |
+| `rsync --append-verify` | resume ไฟล์ใหญ่จากปลายทางที่มีอยู่แล้ว พร้อม verify ส่วนที่ต่อท้าย | `rsync -avP --partial --append-verify raw/ user@lanta:~/raw/` | checksum หรือขนาดไฟล์ปลายทางตรงกับต้นทาง |
 | `git clone` | download repo ครั้งแรกสำหรับสำเนา reference ของผู้สอน | `git clone https://github.com/hpc-ignite-ile/hpc-ignite-hands-on.git` | มี folder `hpc-ignite-hands-on/` |
 | `git pull --ff-only` | update repo เมื่อมี remote commit แบบ fast-forward | `git pull --ff-only || true` | repo อยู่บน commit ล่าสุด หรือใช้สำเนาเดิมต่อได้ |
 
@@ -69,6 +71,25 @@ sed -n '1,120p' lanta-experience/README.md
 | `tail -n +1 file` | พิมพ์ไฟล์ตั้งแต่บรรทัดแรก | ใช้ให้เห็นไฟล์ทั้งชุดพร้อมชื่อคำสั่งชัดเจน |
 | `tee file` | พิมพ์ออกจอและเขียนลงไฟล์พร้อมกัน | ใช้เก็บหลักฐานจาก `python`, `nvidia-smi`, `gmx` |
 | `sha256sum file` | คำนวณ fingerprint ของไฟล์ | ใช้ตรวจว่าไฟล์ input/result รุ่นเดิมยังเหมือนเดิม |
+| `sha256sum -c file.sha256` | อ่าน checksum file แล้วตรวจไฟล์จริง | ใช้ยืนยันว่าไฟล์หลัง transfer ตรงกับต้นทาง |
+| `stat -c%s file` | อ่านขนาดไฟล์เป็น byte | ใช้บันทึก manifest หรือเทียบกับ `content-length` |
+| `file path` | ตรวจชนิดไฟล์จาก header หรือ magic bytes | ใช้ดูว่า FITS, archive หรือ text ถูกอ่านเป็นชนิดที่คาด |
+
+## HTTP/FTP Data Ingest
+
+| คำสั่งหรือ option | ความหมาย | หลักฐานที่ควรเห็น |
+|---|---|---|
+| `curl -I -L URL` | ขอ HTTP header ตาม redirect | เห็น `HTTP`, `content-length`, `last-modified` หรือ authorization header |
+| `curl --range 0-1048575 URL` | ขอ byte แรก 1 MiB | ได้ `HTTP 206` และจำนวน byte ตาม range |
+| `curl -C - -o file.part URL` | resume download จากขนาดของไฟล์ปลายทาง | transfer ต่อจาก `.part` ได้เมื่อ network หลุด |
+| `curl --retry N --retry-delay S --retry-all-errors` | retry แบบมีช่วงพักเมื่อเกิด error ชั่วคราว | log มีจำนวน retry และจบด้วย status ชัด |
+| `curl --connect-timeout S --max-time S` | จำกัดเวลารอ connect และเวลารวมของคำสั่ง | command คืน error class ชัดเมื่อ host ค้าง |
+| `curl --speed-time S --speed-limit B` | จบ transfer เมื่อ speed ต่ำกว่า threshold ตามเวลาที่ตั้ง | ใช้จับ stalled transfer ของไฟล์ใหญ่ |
+| `curl -A "project/contact" URL` | ส่ง User-Agent ที่ระบุ project และช่องทางติดต่อ | ผู้ให้บริการตรวจ traffic และติดต่อผู้ใช้ได้ |
+| `curl -w 'http=%{http_code} bytes=%{size_download}'` | พิมพ์ตัวชี้วัดหลัง transfer | log มี HTTP code, byte count และ speed |
+| `wget -c -O file URL` | download แบบ resume ด้วย wget | เหมาะกับ mirror หรือ direct file download |
+| `wget --server-response --spider URL` | ตรวจ header และ availability ด้วย wget | เห็น response header โดยยังเก็บเป็น log ได้ |
+| `lftp -c 'open URL; mirror --continue remote local'` | mirror directory ผ่าน FTP/HTTP พร้อม continue | เหมาะกับ directory tree ที่มีหลายไฟล์ |
 
 ## Text Processing
 
