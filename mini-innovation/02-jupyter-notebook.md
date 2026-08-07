@@ -1,41 +1,41 @@
 # 02 ใช้ Jupyter Notebook บน LANTA ผ่าน Slurm และ SSH Tunnel
 
-หน้านี้เปิด JupyterLab บน compute node ของ LANTA ผ่าน Slurm allocation แล้วส่ง port กลับมาเปิดใน browser บนเครื่อง local ด้วย SSH tunnel ใช้ environment และ module จาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
+หน้านี้เปิด JupyterLab บนเครื่องคำนวณของ LANTA ผ่านการจัดสรรทรัพยากรของ Slurm แล้วส่งพอร์ตกลับมาเปิดในเบราว์เซอร์บนเครื่องผู้ใช้ด้วย SSH tunnel โดยใช้สภาพแวดล้อมและโมดูลจาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
 
-บทนี้ใช้ `hpc-mesa` เป็น path หลัก เพราะ server และ kernel อยู่ใน environment เดียวกัน จึงลดความคลาดเคลื่อนของ package ระหว่างผู้เรียน ถ้า LANTA มี site/default JupyterLab ในรอบอบรม ให้ใช้เป็น fallback ได้ โดยเลือก kernel `Python (hpc-mesa)` ในหน้า JupyterLab เพื่อให้ notebook ใช้ Mesa, pandas และ matplotlib จาก environment ของกิจกรรม
+บทนี้ใช้ `hpc-mesa` เป็นเส้นทางหลัก เพราะเซิร์ฟเวอร์และเคอร์เนลอยู่ในสภาพแวดล้อมเดียวกัน จึงลดความคลาดเคลื่อนของแพ็กเกจระหว่างผู้เรียน ถ้า LANTA มี JupyterLab กลางในรอบอบรม ให้ใช้เป็นทางสำรองได้ โดยเลือกเคอร์เนล `Python (hpc-mesa)` ในหน้า JupyterLab เพื่อให้สมุดบันทึกใช้ Mesa, pandas และ matplotlib จากสภาพแวดล้อมของกิจกรรม
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `sbatch`, `squeue`, `tail`, `scancel`, `python - <<'PY'`, `jupyter lab`, `chmod`, SSH tunnel `-L` และ option `-o`
 
 ## ภาพรวม
 
 ```text
-เครื่อง Local -> LANTA Login Node -> Slurm Allocation -> Compute Node
+เครื่องผู้ใช้ -> เครื่องเข้าใช้งานของ LANTA -> การจัดสรรทรัพยากรของ Slurm -> เครื่องคำนวณ
       ^                                                    |
       |---------------- SSH Tunnel ไปยัง Jupyter ----------|
 ```
 
-Jupyter kernel ใช้ CPU และ memory ต่อเนื่องระหว่างอ่านข้อมูล สร้างกราฟ หรือทดลอง model จึงให้ Slurm จัดสรรทรัพยากรบน compute node แล้วเก็บหลักฐานใน queue, log และ job history
+เคอร์เนล Jupyter ใช้ CPU และหน่วยความจำต่อเนื่องระหว่างอ่านข้อมูล สร้างกราฟ หรือทดลองแบบจำลอง จึงให้ Slurm จัดสรรทรัพยากรบนเครื่องคำนวณ แล้วเก็บหลักฐานในคิวงาน บันทึกงาน และประวัติงาน
 
-บทนี้เหมาะกับการสำรวจ `results/epi_summary_*.csv`, ตรวจ output ของ epidemic ABS, สร้างกราฟ policy comparison และดูข้อมูล resource ที่ notebook ใช้จริง
+บทนี้เหมาะกับการสำรวจ `results/epi_summary_*.csv`, ตรวจผลลัพธ์ของ ABS โรคระบาด, สร้างกราฟเปรียบเทียบนโยบาย และดูข้อมูลทรัพยากรที่สมุดบันทึกใช้จริง
 
-หลังมีผลจากทั้ง EpiSprint และ Twin-B MicroCosim แล้ว ใช้ [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อสร้าง notebook และรูปเปรียบเทียบจากตารางกลางชุดเดียวกัน
+หลังมีผลจากทั้ง EpiSprint และ Twin-B MicroCosim แล้ว ใช้ [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อสร้างสมุดบันทึกและรูปเปรียบเทียบจากตารางกลางชุดเดียวกัน
 
 ## เลือกวิธีเปิด JupyterLab
 
-| วิธี | JupyterLab server | Python kernel | เหมาะกับสถานการณ์ |
+| วิธี | เซิร์ฟเวอร์ JupyterLab | เคอร์เนล Python | เหมาะกับสถานการณ์ |
 |---|---|---|---|
-| Training path | `hpc-mesa/2.3.4` | `Python (hpc-mesa)` | ใช้ package ชุดเดียวกันทั้ง server และ kernel |
-| Site fallback | site/default JupyterLab | `Python (hpc-mesa)` | ใช้เมื่อ LANTA session มี JupyterLab จาก module หรือ PATH กลาง |
+| เส้นทางหลักของการอบรม | `hpc-mesa/2.3.4` | `Python (hpc-mesa)` | ใช้แพ็กเกจชุดเดียวกันทั้งเซิร์ฟเวอร์และเคอร์เนล |
+| ทางสำรองของระบบกลาง | site/default JupyterLab | `Python (hpc-mesa)` | ใช้เมื่อรอบใช้งานของ LANTA มี JupyterLab จากโมดูลหรือ PATH กลาง |
 
-ก่อนใช้ site fallback ให้รันหน้า [01-custom-python-env-module.md](01-custom-python-env-module.md) ถึงขั้น `python -m ipykernel install --user --name hpc-mesa ...` เพื่อให้ server กลางเห็น kernel ของกิจกรรม
+ก่อนใช้ทางสำรองของระบบกลาง ให้รันหน้า [01-custom-python-env-module.md](01-custom-python-env-module.md) ถึงขั้น `python -m ipykernel install --user --name hpc-mesa ...` เพื่อให้เซิร์ฟเวอร์กลางเห็นเคอร์เนลของกิจกรรม
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: Login เข้า LANTA
+### ขั้นที่ 1: เข้าสู่ LANTA
 
-block นี้เปิด shell บน login node เพื่อสร้างไฟล์และส่ง Slurm job
+คำสั่งชุดนี้เปิดเชลล์บนเครื่องเข้าใช้งานเพื่อสร้างไฟล์และส่งงาน Slurm
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
@@ -45,11 +45,11 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ## Copy-Paste บน LANTA
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม Workspace
+### ขั้นที่ 1: เตรียมพื้นที่ทำงาน
 
-block นี้สร้างพื้นที่ทำงานและ folder สำหรับ config, Slurm script, log, notebook และผลลัพธ์
+คำสั่งชุดนี้สร้างพื้นที่ทำงานและโฟลเดอร์สำหรับไฟล์กำหนดค่า สคริปต์ Slurm บันทึกงาน สมุดบันทึก และผลลัพธ์
 
 ```bash
 mkdir -p "$HOME/lanta-episprint"
@@ -60,7 +60,7 @@ pwd
 
 ### ขั้นที่ 2: โหลดค่า Session เดิม
 
-block นี้โหลด account, project และ module root จากหน้า 00 เมื่อเคยบันทึกไว้
+คำสั่งชุดนี้โหลดบัญชีโครงการ พื้นที่โครงการ และตำแหน่งโมดูลจากหน้า 00 เมื่อเคยบันทึกไว้
 
 ```bash
 if [ -f notes/session-env.sh ]; then
@@ -70,7 +70,7 @@ fi
 
 ### ขั้นที่ 3: ตั้งค่า Account และ Project
 
-block นี้รับค่า Slurm account และ project directory ที่ใช้หา module `hpc-mesa/2.3.4`
+คำสั่งชุดนี้รับค่าบัญชี Slurm และเส้นทางพื้นที่โครงการที่ใช้หาโมดูล `hpc-mesa/2.3.4`
 
 ```bash
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
@@ -87,7 +87,7 @@ export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 
 ### ขั้นที่ 4: ตรวจ Module และ JupyterLab จาก `hpc-mesa`
 
-block นี้ยืนยันว่า Python, JupyterLab, pandas และ matplotlib มาจาก environment ที่เตรียมไว้
+คำสั่งชุดนี้ยืนยันว่า Python, JupyterLab, pandas และ matplotlib มาจากสภาพแวดล้อมที่เตรียมไว้
 
 ```bash
 module purge
@@ -104,9 +104,9 @@ print("matplotlib", matplotlib.__version__)
 PY
 ```
 
-### ขั้นที่ 5: ตรวจ Site JupyterLab Fallback
+### ขั้นที่ 5: ตรวจทางสำรอง JupyterLab ของระบบกลาง
 
-block นี้ตรวจว่า session ปัจจุบันมี JupyterLab กลางจาก PATH หรือ module ของ LANTA หรือใช้ `hpc-mesa` เป็น server หลักต่อไป
+คำสั่งชุดนี้ตรวจว่ารอบใช้งานปัจจุบันมี JupyterLab กลางจาก PATH หรือโมดูลของ LANTA แล้วบันทึกหลักฐานก่อนกลับไปใช้ `hpc-mesa` เป็นเส้นทางหลัก
 
 ```bash
 module purge
@@ -115,11 +115,11 @@ jupyter lab --version 2>/dev/null || true
 module -t avail 2>&1 | grep -Ei 'jupyter|notebook|lab' | head -20 || true
 ```
 
-ผลที่ใช้ site fallback ได้คือมี path ของ `jupyter` และ `jupyter lab --version` แสดงเลข version หรือผู้ดูแลแจ้งชื่อ module ที่เปิด JupyterLab ให้ เช่นตั้งค่า `LANTA_JUPYTER_MODULE`
+ผลที่ใช้ทางสำรองได้คือมีเส้นทางของ `jupyter` และ `jupyter lab --version` แสดงเลขรุ่น หรือผู้ดูแลแจ้งชื่อโมดูลที่เปิด JupyterLab ให้ เช่นตั้งค่า `LANTA_JUPYTER_MODULE`
 
 ### ขั้นที่ 6: กลับไปใช้ `hpc-mesa`
 
-block นี้โหลด environment หลักอีกครั้งก่อนสร้าง notebook และ Slurm script
+คำสั่งชุดนี้โหลดสภาพแวดล้อมหลักอีกครั้งก่อนสร้างสมุดบันทึกและสคริปต์ Slurm
 
 ```bash
 module purge
@@ -130,7 +130,7 @@ jupyter kernelspec list
 
 ### ขั้นที่ 7: สร้าง Notebook ตัวอย่าง
 
-block นี้สร้าง notebook สำหรับอ่านผล epidemic ABS, สร้าง policy summary, วาดกราฟ และตรวจ resource จาก Slurm environment
+คำสั่งชุดนี้สร้างสมุดบันทึกสำหรับอ่านผล ABS โรคระบาด สรุปนโยบาย วาดกราฟ และตรวจทรัพยากรจากสภาพแวดล้อม Slurm
 
 ```bash
 python - <<'PY'
@@ -182,16 +182,16 @@ PY
 
 ### ขั้นที่ 8: ตรวจ Notebook JSON
 
-block นี้ตรวจว่าไฟล์ `.ipynb` เป็น JSON ที่ Jupyter อ่านได้
+คำสั่งชุดนี้ตรวจว่าไฟล์ `.ipynb` เป็น JSON ที่ Jupyter อ่านได้
 
 ```bash
 python -m json.tool notebooks/episprint_explore.ipynb >/dev/null
 ls -lh notebooks/episprint_explore.ipynb
 ```
 
-### ขั้นที่ 9: สร้าง Slurm Script สำหรับ JupyterLab
+### ขั้นที่ 9: สร้างสคริปต์ Slurm สำหรับ JupyterLab
 
-block นี้สร้าง job script ที่ขอ CPU และ memory, เลือก server source, เลือก port, พิมพ์ tunnel command, จำกัด thread ของ numerical libraries และเริ่ม JupyterLab
+คำสั่งชุดนี้สร้างสคริปต์งานที่ขอ CPU และหน่วยความจำ เลือกแหล่งของเซิร์ฟเวอร์ เลือกพอร์ต พิมพ์คำสั่ง tunnel จำกัดจำนวน thread ของไลบรารีเชิงตัวเลข และเริ่ม JupyterLab
 
 ```bash
 cat > jobs/jupyter_episprint.sbatch <<'SLURM'
@@ -246,18 +246,18 @@ jupyter lab --no-browser --ip="${node}" --port="${port}" --ServerApp.port_retrie
 SLURM
 ```
 
-### ขั้นที่ 10: ตรวจ Slurm Script
+### ขั้นที่ 10: ตรวจสคริปต์ Slurm
 
-block นี้ตรวจสิทธิ์และเปิดดูส่วนต้นของ job script ก่อน submit
+คำสั่งชุดนี้ตรวจสิทธิ์และเปิดดูส่วนต้นของสคริปต์งานก่อนส่งเข้าสู่คิว
 
 ```bash
 chmod u+x jobs/jupyter_episprint.sbatch
 sed -n '1,140p' jobs/jupyter_episprint.sbatch
 ```
 
-### ขั้นที่ 11: ส่ง Jupyter Job ด้วย `hpc-mesa`
+### ขั้นที่ 11: ส่งงาน Jupyter ด้วย `hpc-mesa`
 
-block นี้ส่ง job เข้า Slurm และบันทึก job id ลง `notes/job-history.tsv`
+คำสั่งชุดนี้ส่งงานเข้า Slurm และบันทึกเลขงานลง `notes/job-history.tsv`
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/jupyter_episprint.sbatch)
@@ -267,9 +267,9 @@ echo "Monitor: squeue -j $job_id"
 echo "Read log: tail -80 logs/jupyter_${job_id}.out"
 ```
 
-### ขั้นที่ 12: ส่ง Jupyter Job ด้วย Site Fallback
+### ขั้นที่ 12: ส่งงาน Jupyter ด้วยทางสำรองของระบบกลาง
 
-ใช้ขั้นนี้เมื่อขั้นตรวจ fallback พบ JupyterLab จาก module หรือ PATH กลางของ LANTA โดยให้ `LANTA_JUPYTER_MODULE` เป็นค่าว่างเมื่อ `jupyter` อยู่ใน PATH อยู่แล้ว
+ใช้ขั้นนี้เมื่อขั้นตรวจทางสำรองพบ JupyterLab จากโมดูลหรือ PATH กลางของ LANTA โดยให้ `LANTA_JUPYTER_MODULE` เป็นค่าว่างเมื่อ `jupyter` อยู่ใน PATH อยู่แล้ว
 
 ```bash
 export LANTA_JUPYTER_MODULE="${LANTA_JUPYTER_MODULE:-}"
@@ -278,9 +278,9 @@ printf "%s\t%s\t%s\n" "$job_id" "jupyter_episprint_site" "$(date -Is)" >> notes/
 echo "Submitted site Jupyter job: $job_id"
 ```
 
-### ขั้นที่ 13: อ่าน Log เพื่อหา Node, Port และ URL
+### ขั้นที่ 13: อ่านบันทึกเพื่อหา Node, Port และ URL
 
-block นี้ใช้เมื่อ job เริ่มเป็น `R` แล้ว เพื่ออ่าน tunnel command และ URL ที่มี token
+คำสั่งชุดนี้ใช้เมื่องานเริ่มเป็น `R` แล้ว เพื่ออ่านคำสั่ง tunnel และ URL ที่มี token
 
 ```bash
 squeue -j "$job_id"
@@ -288,23 +288,23 @@ tail -80 "logs/jupyter_${job_id}.out"
 grep -E 'Compute node:|Port:|127.0.0.1|token=' "logs/jupyter_${job_id}.out" || true
 ```
 
-## Copy-Paste กลับไปที่เครื่อง Local
+## Copy-Paste กลับไปที่เครื่องผู้ใช้
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
 ### ขั้นที่ 1: เปิด SSH Tunnel
 
-เปิด terminal ใหม่บนเครื่อง local แล้วใช้ command ที่ log พิมพ์ให้ โดยแทน `<port>` และ `<node>` จาก log ของ job ปัจจุบัน
+เปิดเทอร์มินัลใหม่บนเครื่องผู้ใช้ แล้วใช้คำสั่งที่บันทึกงานพิมพ์ให้ โดยแทน `<port>` และ `<node>` จากบันทึกของงานปัจจุบัน
 
 ```bash
 ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -L <port>:<node>:<port> <lanta-username>@lanta.nstda.or.th
 ```
 
-terminal ที่รัน tunnel จะค้างอยู่เป็นปกติ เพราะ `-N` ใช้ connection สำหรับ port forwarding อย่างเดียว
+เทอร์มินัลที่รัน tunnel จะค้างอยู่ตามปกติ เพราะ `-N` ใช้การเชื่อมต่อสำหรับส่งต่อพอร์ตอย่างเดียว
 
-### ขั้นที่ 2: เปิด Browser
+### ขั้นที่ 2: เปิดเบราว์เซอร์
 
-ใช้ URL จาก log โดยเปลี่ยน host เป็น `127.0.0.1` และใช้ token ให้ครบ
+ใช้ URL จากบันทึกงาน โดยเปลี่ยน host เป็น `127.0.0.1` และใส่ token ให้ครบ
 
 ```text
 http://127.0.0.1:<port>/lab?token=<token-from-log>
@@ -312,9 +312,9 @@ http://127.0.0.1:<port>/lab?token=<token-from-log>
 
 เมื่อ JupyterLab เปิดแล้ว ให้เข้า folder `notebooks/` และเปิด `episprint_explore.ipynb`
 
-### กรณี Local Port ชนกัน
+### กรณีพอร์ตบนเครื่องผู้ใช้ชนกัน
 
-ใช้ local port อื่นได้ โดยคง remote port จาก log ไว้เหมือนเดิม
+ใช้พอร์ตบนเครื่องผู้ใช้อื่นได้ โดยคงพอร์ตฝั่ง LANTA จากบันทึกงานไว้เหมือนเดิม
 
 ```bash
 ssh -N -o ExitOnForwardFailure=yes -L 8877:<node>:<remote-port-from-log> <lanta-username>@lanta.nstda.or.th
@@ -324,9 +324,9 @@ ssh -N -o ExitOnForwardFailure=yes -L 8877:<node>:<remote-port-from-log> <lanta-
 
 ## ปิดงานเมื่อใช้เสร็จ
 
-### ขั้นที่ 1: ยกเลิก Slurm Job บน LANTA
+### ขั้นที่ 1: ยกเลิกงาน Slurm บน LANTA
 
-block นี้คืนทรัพยากร compute node หลังจบ session
+คำสั่งชุดนี้คืนทรัพยากรเครื่องคำนวณหลังจบการใช้งาน
 
 ```bash
 squeue -u "$USER"
@@ -334,9 +334,9 @@ scancel <jobid>
 squeue -j <jobid>
 ```
 
-### ขั้นที่ 2: ปิด Tunnel บนเครื่อง Local
+### ขั้นที่ 2: ปิด Tunnel บนเครื่องผู้ใช้
 
-กด `Ctrl+C` ใน terminal ที่รัน `ssh -N -L ...`
+กด `Ctrl+C` ในเทอร์มินัลที่รัน `ssh -N -L ...`
 
 ## ตรวจผลและปรับทรัพยากร
 
@@ -346,24 +346,24 @@ squeue -j <jobid>
 sacct -j <jobid> --format=JobID,JobName,Partition,State,Elapsed,AllocCPUS,ReqMem,MaxRSS,ExitCode
 ```
 
-สถานะ `CANCELLED` หลังผู้ใช้สั่ง `scancel` ถือเป็นรูปแบบปกติของ interactive Jupyter session ที่ปิดด้วยตนเอง ถ้า `MaxRSS` ต่ำกว่า `ReqMem` มาก ให้ลด `#SBATCH --mem` รอบถัดไป ถ้าเห็น `OUT_OF_MEMORY` ให้เพิ่ม memory ทีละระดับ
+สถานะ `CANCELLED` หลังผู้ใช้สั่ง `scancel` ถือเป็นรูปแบบปกติของการใช้งาน Jupyter แบบโต้ตอบที่ปิดด้วยตนเอง ถ้า `MaxRSS` ต่ำกว่า `ReqMem` มาก ให้ลด `#SBATCH --mem` ในรอบถัดไป ถ้าเห็น `OUT_OF_MEMORY` ให้เพิ่มหน่วยความจำทีละระดับ
 
-## Debug Checklist
+## รายการตรวจแก้ปัญหา
 
 | อาการ | ตรวจด้วยคำสั่ง | หลักฐานที่ต้องตรงกัน |
 |---|---|---|
-| Browser เชื่อมต่อขัดข้อง | `squeue -j <jobid>` | job ยังเป็น `R` |
-| Tunnel ใช้ค่าคนละ session | `tail -80 logs/jupyter_<jobid>.out` | node และ port ตรงกับ tunnel |
+| เบราว์เซอร์เชื่อมต่อขัดข้อง | `squeue -j <jobid>` | งานยังเป็น `R` |
+| Tunnel ใช้ค่าคนละรอบงาน | `tail -80 logs/jupyter_<jobid>.out` | node และ port ตรงกับ tunnel |
 | Token ขาด | `grep -E 'token=' logs/jupyter_<jobid>.out` | URL มี `?token=` ครบ |
-| Module หา JupyterLab ขาด | `module use "$EPI_MODULE_ROOT"; module load hpc-mesa/2.3.4; which jupyter` | path ชี้เข้า custom environment |
-| Site fallback หา kernel ขาด | `jupyter kernelspec list` | มี `hpc-mesa` หรือ `Python (hpc-mesa)` |
-| Job pending นาน | `squeue -j <jobid> -o "%.18i %.9P %.20j %.8u %.2t %.10M %.6D %R"` | reason อธิบาย queue, account หรือ partition |
-| Kernel เปิดขัดข้อง | `tail -100 logs/jupyter_<jobid>.err` | error ชี้ runtime, package หรือ quota |
+| โมดูลหา JupyterLab ขาด | `module use "$EPI_MODULE_ROOT"; module load hpc-mesa/2.3.4; which jupyter` | path ชี้เข้าสภาพแวดล้อมที่สร้างไว้ |
+| ทางสำรองของระบบกลางหาเคอร์เนลขาด | `jupyter kernelspec list` | มี `hpc-mesa` หรือ `Python (hpc-mesa)` |
+| งานรอคิวนาน | `squeue -j <jobid> -o "%.18i %.9P %.20j %.8u %.2t %.10M %.6D %R"` | reason อธิบายคิว บัญชี หรือพาร์ทิชัน |
+| เคอร์เนลเปิดขัดข้อง | `tail -100 logs/jupyter_<jobid>.err` | error ชี้รันไทม์ แพ็กเกจ หรือโควตา |
 
 ## แนวปฏิบัติ
 
-- เก็บ token และ URL ไว้เฉพาะ session ของผู้ใช้
-- รัน JupyterLab ผ่าน Slurm allocation บน compute node
-- ใช้ notebook สำหรับสำรวจข้อมูล สร้างกราฟ และ debug แบบ interactive
-- ย้ายงานที่รันยาวหรือรันซ้ำหลาย scenario ไปเป็น Python script แล้วส่งด้วย `sbatch`
-- เก็บผลลัพธ์ขนาดใหญ่ใน project storage และให้ notebook อ่านจาก path หรือ symbolic link ที่ควบคุมได้
+- เก็บ token และ URL ไว้เฉพาะรอบใช้งานของผู้ใช้
+- รัน JupyterLab ผ่านการจัดสรรทรัพยากรของ Slurm บนเครื่องคำนวณ
+- ใช้สมุดบันทึกสำหรับสำรวจข้อมูล สร้างกราฟ และตรวจข้อผิดพลาดแบบโต้ตอบ
+- ย้ายงานที่รันยาวหรือรันซ้ำหลายสถานการณ์ไปเป็นสคริปต์ Python แล้วส่งด้วย `sbatch`
+- เก็บผลลัพธ์ขนาดใหญ่ในพื้นที่โครงการ และให้สมุดบันทึกอ่านจากเส้นทางหรือ symbolic link ที่ควบคุมได้

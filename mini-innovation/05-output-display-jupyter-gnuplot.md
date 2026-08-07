@@ -1,6 +1,6 @@
-# 05 แสดงผล Mini Innovation ด้วย Jupyter Notebook และ Gnuplot
+# 05 แสดงผลนวัตกรรมย่อยด้วย Jupyter Notebook และ Gnuplot
 
-หน้านี้สร้าง dashboard สำหรับผลลัพธ์ของ mini innovation ทั้งสอง track: **LANTA EpiSprint** และ **Twin-B MicroCosim** ผู้ใช้สามารถดูผลผ่าน Jupyter Notebook หรือสร้างรูปแบบ headless ด้วย Matplotlib และ gnuplot
+หน้านี้สร้างแดชบอร์ดสำหรับผลลัพธ์ของนวัตกรรมย่อยทั้งสองแนวทาง: **LANTA EpiSprint** และ **Twin-B MicroCosim** ผู้ใช้สามารถดูผลผ่าน Jupyter Notebook หรือสร้างรูปโดยตรงจากงานชุดด้วย Matplotlib และ gnuplot
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `module use`, `module load`, `python - <<'PY'`, `python -m json.tool`, `command -v`, `gnuplot`, `sbatch`, `squeue`, `tail`, และ `sacct`
 
@@ -8,19 +8,19 @@
 
 | วิธี | เครื่องมือ | ผลลัพธ์ | เหมาะกับงาน |
 |---|---|---|---|
-| Jupyter Notebook | JupyterLab + Matplotlib | notebook interactive และ PNG | อธิบายผลสดกับผู้เรียน |
-| Headless Matplotlib | Python script | PNG จาก batch job | รันบน compute node แล้วเปิดไฟล์ทีหลัง |
-| Gnuplot | `gnuplot` | PNG จาก TSV | เครื่องเบา อ่าน script plot ง่าย |
+| Jupyter Notebook | JupyterLab + Matplotlib | สมุดบันทึกแบบโต้ตอบและ PNG | อธิบายผลสดกับผู้เรียน |
+| Matplotlib แบบไร้หน้าจอ | สคริปต์ Python | PNG จากงานชุด | รันบนเครื่องคำนวณแล้วเปิดไฟล์ทีหลัง |
+| Gnuplot | `gnuplot` | PNG จาก TSV | เครื่องเบา อ่านสคริปต์วาดกราฟง่าย |
 
-ผลตรวจด้วยบัญชี `tn642` เมื่อ 2026-08-03 พบว่า `hpc-mesa/2.3.4` มี Matplotlib พร้อมใช้ ส่วน `gnuplot` ยังว่างจาก default PATH และ module list ของ session ที่ตรวจ ดังนั้นหน้านี้ใช้ Matplotlib เป็น path หลัก และให้ gnuplot เป็น optional path เมื่อผู้ดูแลเปิด executable หรือ module ให้ในรอบอบรม
+ผลตรวจด้วยบัญชี `tn642` เมื่อ 2026-08-03 พบว่า `hpc-mesa/2.3.4` มี Matplotlib พร้อมใช้ ส่วน `gnuplot` ยังว่างจาก PATH เริ่มต้นและรายการโมดูลของรอบตรวจนั้น ดังนั้นหน้านี้ใช้ Matplotlib เป็นเส้นทางหลัก และให้ gnuplot เป็นทางเลือกเมื่อผู้ดูแลเปิด executable หรือโมดูลให้ในรอบอบรม
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: Login เข้า LANTA
+### ขั้นที่ 1: เข้าสู่ LANTA
 
-block นี้เปิด shell บน login node เพื่อสร้าง notebook, script และ plot
+คำสั่งชุดนี้เปิดเชลล์บนเครื่องเข้าใช้งานเพื่อสร้างสมุดบันทึก สคริปต์ และกราฟ
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
@@ -30,11 +30,11 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ## Copy-Paste บน LANTA
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม Workspace
+### ขั้นที่ 1: เตรียมพื้นที่ทำงาน
 
-block นี้สร้าง workspace สำหรับ dashboard และ folder สำหรับ source, notebook, plot script, result table และรูป
+คำสั่งชุดนี้สร้างพื้นที่ทำงานสำหรับแดชบอร์ด และโฟลเดอร์สำหรับโค้ด สมุดบันทึก สคริปต์กราฟ ตารางผลลัพธ์ และรูปภาพ
 
 ```bash
 mkdir -p "$HOME/lanta-mini-display"
@@ -43,9 +43,9 @@ mkdir -p configs jobs logs notes notebooks plots results figures src
 pwd
 ```
 
-### ขั้นที่ 2: โหลด Environment
+### ขั้นที่ 2: โหลดสภาพแวดล้อม
 
-block นี้โหลด `hpc-mesa/2.3.4` และตรวจ package ที่ใช้วาดกราฟ
+คำสั่งชุดนี้โหลด `hpc-mesa/2.3.4` และตรวจแพ็กเกจที่ใช้วาดกราฟ
 
 ```bash
 if [ -f "$HOME/lanta-episprint/notes/session-env.sh" ]; then
@@ -61,9 +61,9 @@ module use "$EPI_MODULE_ROOT"
 module load hpc-mesa/2.3.4
 ```
 
-### ขั้นที่ 3: ตรวจ Python Plotting Stack
+### ขั้นที่ 3: ตรวจชุดเครื่องมือวาดกราฟของ Python
 
-block นี้ยืนยันว่า pandas และ Matplotlib มาจาก environment ของกิจกรรม
+คำสั่งชุดนี้ยืนยันว่า pandas และ Matplotlib มาจากสภาพแวดล้อมของกิจกรรม
 
 ```bash
 which python
@@ -74,9 +74,9 @@ print("matplotlib", matplotlib.__version__)
 PY
 ```
 
-### ขั้นที่ 4: ตั้ง Result Directory
+### ขั้นที่ 4: ตั้งไดเรกทอรีผลลัพธ์
 
-block นี้ชี้ไปยังผลลัพธ์ของ EpiSprint และ Twin-B MicroCosim ที่สร้างจากหน้าก่อนหน้า
+คำสั่งชุดนี้ชี้ไปยังผลลัพธ์ของ EpiSprint และ Twin-B MicroCosim ที่สร้างจากหน้าก่อนหน้า
 
 ```bash
 export EPI_RESULTS="${EPI_RESULTS:-$HOME/lanta-episprint/results}"
@@ -85,9 +85,9 @@ echo "EPI_RESULTS=$EPI_RESULTS"
 echo "TWINB_RESULTS=$TWINB_RESULTS"
 ```
 
-### ขั้นที่ 5: สร้าง Script เตรียมตารางสำหรับ Plot
+### ขั้นที่ 5: สร้างสคริปต์เตรียมตารางสำหรับวาดกราฟ
 
-block นี้สร้างครึ่งแรกของ `src/prepare_display_tables.py` เพื่ออ่านผล EpiSprint และสร้าง fallback table สำหรับสาธิต
+คำสั่งชุดนี้สร้างครึ่งแรกของ `src/prepare_display_tables.py` เพื่ออ่านผล EpiSprint และสร้างตารางสาธิตสำรอง
 
 ```bash
 cat > src/prepare_display_tables.py <<'PY'
@@ -126,9 +126,9 @@ def build_epi_table():
 PY
 ```
 
-### ขั้นที่ 6: เติม Script สำหรับ Twin-B และเขียน TSV
+### ขั้นที่ 6: เติมสคริปต์สำหรับ Twin-B และเขียน TSV
 
-block นี้เติมส่วนอ่านผล Twin-B MicroCosim แล้วเขียน TSV ที่ Matplotlib และ gnuplot ใช้ร่วมกัน
+คำสั่งชุดนี้เติมส่วนอ่านผล Twin-B MicroCosim แล้วเขียน TSV ที่ Matplotlib และ gnuplot ใช้ร่วมกัน
 
 ```bash
 cat >> src/prepare_display_tables.py <<'PY'
@@ -167,9 +167,9 @@ build_twinb_table()
 PY
 ```
 
-### ขั้นที่ 7: สร้างตาราง Display
+### ขั้นที่ 7: สร้างตารางสำหรับแสดงผล
 
-block นี้รัน script แล้วเปิดดูข้อมูลที่จะส่งเข้า notebook, Matplotlib และ gnuplot
+คำสั่งชุดนี้รันสคริปต์แล้วเปิดดูข้อมูลที่จะส่งเข้า Jupyter Notebook, Matplotlib และ gnuplot
 
 ```bash
 EPI_RESULTS="$EPI_RESULTS" TWINB_RESULTS="$TWINB_RESULTS" python src/prepare_display_tables.py
@@ -177,9 +177,9 @@ sed -n '1,12p' results/display_epi_policy.tsv
 sed -n '1,12p' results/display_twinb_policy.tsv
 ```
 
-### ขั้นที่ 8: สร้าง Matplotlib Plot Script
+### ขั้นที่ 8: สร้างสคริปต์ Matplotlib สำหรับวาดกราฟ
 
-block นี้สร้าง Python script สำหรับวาด PNG ของ EpiSprint และ Twin-B MicroCosim
+คำสั่งชุดนี้สร้างสคริปต์ Python สำหรับวาด PNG ของ EpiSprint และ Twin-B MicroCosim
 
 ```bash
 cat > src/plot_display_matplotlib.py <<'PY'
@@ -219,9 +219,9 @@ print("figures/twinb_tradeoff_matplotlib.png")
 PY
 ```
 
-### ขั้นที่ 9: รัน Matplotlib Plot
+### ขั้นที่ 9: รัน Matplotlib เพื่อสร้างรูป
 
-block นี้สร้าง PNG แบบ headless และดูขนาดไฟล์
+คำสั่งชุดนี้สร้าง PNG แบบไร้หน้าจอและดูขนาดไฟล์
 
 ```bash
 python src/plot_display_matplotlib.py
@@ -230,7 +230,7 @@ ls -lh figures/*matplotlib.png
 
 ### ขั้นที่ 10: สร้าง Jupyter Notebook
 
-block นี้สร้าง notebook ที่อ่าน TSV เดียวกันและวาดกราฟ interactive ใน JupyterLab
+คำสั่งชุดนี้สร้างสมุดบันทึกที่อ่าน TSV เดียวกันและวาดกราฟแบบโต้ตอบใน JupyterLab
 
 ```bash
 cat > src/make_display_notebook.py <<'PY'
@@ -257,7 +257,7 @@ PY
 
 ### ขั้นที่ 11: ตรวจ Notebook
 
-block นี้สร้าง notebook และยืนยันว่า JSON ถูกต้อง
+คำสั่งชุดนี้สร้างสมุดบันทึกและยืนยันว่า JSON ถูกต้อง
 
 ```bash
 python src/make_display_notebook.py
@@ -265,9 +265,9 @@ python -m json.tool notebooks/mini_innovation_display.ipynb >/dev/null
 ls -lh notebooks/mini_innovation_display.ipynb
 ```
 
-### ขั้นที่ 12: สร้าง Gnuplot Script สำหรับ EpiSprint
+### ขั้นที่ 12: สร้างสคริปต์ gnuplot สำหรับ EpiSprint
 
-block นี้สร้าง script ที่อ่าน TSV และวาดกราฟ peak infectious กับ attack rate
+คำสั่งชุดนี้สร้างสคริปต์ที่อ่าน TSV และวาดกราฟ peak infectious กับ attack rate
 
 ```bash
 cat > plots/epi_policy.gp <<'GP'
@@ -287,9 +287,9 @@ plot "results/display_epi_policy.tsv" using 2:xtic(1) title "peak I", \
 GP
 ```
 
-### ขั้นที่ 13: สร้าง Gnuplot Script สำหรับ Twin-B
+### ขั้นที่ 13: สร้างสคริปต์ gnuplot สำหรับ Twin-B
 
-block นี้สร้าง script ที่วาด trade-off ระหว่าง energy และ discomfort พร้อม label ของ policy
+คำสั่งชุดนี้สร้างสคริปต์ที่วาดความสัมพันธ์แลกเปลี่ยนระหว่างพลังงานและความสบาย พร้อม label ของนโยบาย
 
 ```bash
 cat > plots/twinb_tradeoff.gp <<'GP'
@@ -307,7 +307,7 @@ GP
 
 ### ขั้นที่ 14: รัน Gnuplot เมื่อมี Executable
 
-block นี้ใช้ gnuplot เมื่อ `command -v gnuplot` คืน path และใช้ Matplotlib PNG เป็นหลักฐานสำรองเมื่อ path ว่าง
+คำสั่งชุดนี้ใช้ gnuplot เมื่อ `command -v gnuplot` คืนเส้นทาง และใช้ Matplotlib PNG เป็นหลักฐานสำรองเมื่อเส้นทางว่าง
 
 ```bash
 if command -v gnuplot >/dev/null 2>&1; then
@@ -321,9 +321,9 @@ fi
 
 ## รันแบบ Batch ด้วย Slurm
 
-### ขั้นที่ 1: สร้าง Slurm Script
+### ขั้นที่ 1: สร้างสคริปต์ Slurm
 
-block นี้สร้าง job ที่เตรียมตารางและวาด Matplotlib PNG บน compute node
+คำสั่งชุดนี้สร้างงานที่เตรียมตารางและวาด Matplotlib PNG บนเครื่องคำนวณ
 
 ```bash
 cat > jobs/display_plots.sbatch <<'SLURM'
@@ -353,9 +353,9 @@ ls -lh figures
 SLURM
 ```
 
-### ขั้นที่ 2: ส่ง Display Job
+### ขั้นที่ 2: ส่งงานสร้างรูป
 
-block นี้ส่ง job และบันทึก job id สำหรับอ่าน log
+คำสั่งชุดนี้ส่งงานและบันทึกเลขงานสำหรับอ่านบันทึก
 
 ```bash
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
@@ -367,9 +367,9 @@ echo "$job_id	display_plots	$(date -Is)" >> notes/job-history.tsv
 echo "Submitted display job: $job_id"
 ```
 
-### ขั้นที่ 3: อ่าน Log และ Resource
+### ขั้นที่ 3: อ่านบันทึกงานและทรัพยากร
 
-block นี้ตรวจว่า job จบและรูปถูกสร้างใน `figures/`
+คำสั่งชุดนี้ตรวจว่างานจบและรูปถูกสร้างใน `figures/`
 
 ```bash
 squeue -j "$job_id"
@@ -379,22 +379,22 @@ sacct -j "$job_id" --format=JobID,JobName,Partition,State,Elapsed,MaxRSS,ExitCod
 
 ## เปิด Notebook ใน JupyterLab
 
-เปิด JupyterLab ตาม [02-jupyter-notebook.md](02-jupyter-notebook.md) แล้วเข้า folder `$HOME/lanta-mini-display/notebooks/` จากนั้นเปิด `mini_innovation_display.ipynb`
+เปิด JupyterLab ตาม [02-jupyter-notebook.md](02-jupyter-notebook.md) แล้วเข้าโฟลเดอร์ `$HOME/lanta-mini-display/notebooks/` จากนั้นเปิด `mini_innovation_display.ipynb`
 
-ใน notebook ให้เลือก kernel `Python (hpc-mesa)` เพื่อใช้ pandas และ Matplotlib จาก environment เดียวกับ mini innovation
+ในสมุดบันทึกให้เลือกเคอร์เนล `Python (hpc-mesa)` เพื่อใช้ pandas และ Matplotlib จากสภาพแวดล้อมเดียวกับนวัตกรรมย่อย
 
 ## วิธีตัดสินว่าการแสดงผลดีและถูกต้อง
 
-1. `results/display_epi_policy.tsv` มี column `policy`, `mean_peak_I`, และ `mean_attack_rate`
-2. `results/display_twinb_policy.tsv` มี column `policy`, `mean_energy_kwh`, `mean_discomfort_c`, และ `mean_ac_request_rate`
-3. รูป EpiSprint แสดง policy ที่ peak infectious ต่ำพร้อม attack rate ต่ำ
-4. รูป Twin-B แสดง trade-off ระหว่าง energy และ discomfort โดย label ของ policy อ่านได้ครบ
-5. Slurm display job จบด้วย `COMPLETED` และไฟล์ PNG มีขนาดมากกว่าศูนย์
+1. `results/display_epi_policy.tsv` มีคอลัมน์ `policy`, `mean_peak_I`, และ `mean_attack_rate`
+2. `results/display_twinb_policy.tsv` มีคอลัมน์ `policy`, `mean_energy_kwh`, `mean_discomfort_c`, และ `mean_ac_request_rate`
+3. รูป EpiSprint แสดงนโยบายที่ลดจำนวนผู้ติดเชื้อสูงสุดพร้อมลด attack rate
+4. รูป Twin-B แสดงความสัมพันธ์แลกเปลี่ยนระหว่างพลังงานและความสบาย โดย label ของนโยบายอ่านได้ครบ
+5. งานสร้างรูปของ Slurm จบด้วย `COMPLETED` และไฟล์ PNG มีขนาดมากกว่าศูนย์
 
 ## คำอธิบายเชิงวิชาการ
 
-การแสดงผลของ EpiSprint ใช้กราฟคู่: `mean_peak_I` เป็นตัวแทน peak burden ของระบบ และ `mean_attack_rate` เป็นสัดส่วนประชากรที่เคยเข้าสู่สถานะติดเชื้อ การดูสองแกนพร้อมกันช่วยให้ผู้ใช้ประเมิน policy จากทั้งความรุนแรงช่วง peak และผลรวมทั้งช่วงเวลา
+การแสดงผลของ EpiSprint ใช้กราฟคู่: `mean_peak_I` เป็นตัวแทนภาระสูงสุดของระบบ และ `mean_attack_rate` เป็นสัดส่วนประชากรที่เคยเข้าสู่สถานะติดเชื้อ การดูสองแกนพร้อมกันช่วยให้ผู้ใช้ประเมินนโยบายจากทั้งความรุนแรงช่วงสูงสุดและผลรวมทั้งช่วงเวลา
 
-การแสดงผลของ Twin-B MicroCosim ใช้ scatter ของ `mean_energy_kwh` กับ `mean_discomfort_c` เพื่ออ่าน trade-off ระหว่างพลังงานและ comfort จุดที่เหมาะสมขึ้นกับโจทย์ของผู้ใช้ เช่น ลด discomfort, จำกัด energy budget หรือสำรวจความไวของ policy ต่อ outdoor temperature และ seed
+การแสดงผลของ Twin-B MicroCosim ใช้ scatter ของ `mean_energy_kwh` กับ `mean_discomfort_c` เพื่ออ่านความสัมพันธ์แลกเปลี่ยนระหว่างพลังงานและความสบาย จุดที่เหมาะสมขึ้นกับโจทย์ของผู้ใช้ เช่น ลดความอึดอัด จำกัดงบพลังงาน หรือสำรวจความไวของนโยบายต่ออุณหภูมิภายนอกและ seed
 
-Jupyter เหมาะกับการอธิบายผลทีละ cell และถามตอบในห้องเรียน ส่วน gnuplot เหมาะกับ workflow ที่ต้องสร้างรูปซ้ำจาก TSV ใน batch job การเตรียม table กลางทำให้ทั้งสองเครื่องมืออ่านข้อมูลเดียวกัน และลดความคลาดเคลื่อนระหว่างกราฟที่สร้างคนละวิธี
+Jupyter เหมาะกับการอธิบายผลทีละ cell และถามตอบในห้องเรียน ส่วน gnuplot เหมาะกับกระบวนการที่ต้องสร้างรูปซ้ำจาก TSV ในงานชุด การเตรียมตารางกลางทำให้ทั้งสองเครื่องมืออ่านข้อมูลเดียวกัน และลดความคลาดเคลื่อนระหว่างกราฟที่สร้างคนละวิธี

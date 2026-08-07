@@ -1,26 +1,26 @@
 # 03 พัฒนาและรัน Epidemic ABS ด้วย Mesa
 
-หน้านี้สร้าง agent-based simulation แบบ SEIR สำหรับ mini innovation `LANTA EpiSprint` แล้วรัน 3 วิธีที่ใช้แนวคิดจาก lab หลักของหนังสือ: single Slurm job, job array และ multicore ensemble ภายในหนึ่ง node
+หน้านี้สร้างแบบจำลองโรคระบาดชนิด SEIR ด้วย agent-based simulation สำหรับนวัตกรรมย่อย `LANTA EpiSprint` แล้วรัน 3 วิธีที่สอดคล้องกับบทฝึกหลักของหนังสือ: งาน Slurm เดี่ยว, job array และชุดทดลองหลายแกนภายในหนึ่งโหนด
 
-เตรียม environment ด้วย [01-custom-python-env-module.md](01-custom-python-env-module.md) ก่อนเริ่มหน้านี้
+เตรียมสภาพแวดล้อมด้วย [01-custom-python-env-module.md](01-custom-python-env-module.md) ก่อนเริ่มหน้านี้
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `module use`, `module load`, `cat > file <<'PY'`, `sbatch`, `squeue`, `tail`, job array, `SLURM_ARRAY_TASK_ID`, และ multicore worker
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
-## Copy-Paste เตรียม Code และ Scenario บน LANTA
+## Copy-Paste เตรียมโค้ดและสถานการณ์ทดลองบน LANTA
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของ EpiSprint และตั้งค่า account, project, partition, และ module path ที่ใช้ร่วมกันทั้งหน้า
+ขั้นนี้กำหนดพื้นที่ทำงานของ EpiSprint และตั้งค่าบัญชีโครงการ พื้นที่โครงการ พาร์ทิชัน และเส้นทางโมดูลที่ใช้ร่วมกันทั้งหน้า
 
 ```bash
 mkdir -p "$HOME/lanta-episprint"
@@ -42,9 +42,9 @@ export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 ```
 
-### ขั้นที่ 2: ตรวจ Mesa module
+### ขั้นที่ 2: ตรวจโมดูล Mesa
 
-ขั้นนี้ยืนยันว่า environment จากหน้า 01 พร้อมใช้ก่อนสร้างและส่ง simulation job
+ขั้นนี้ยืนยันว่าสภาพแวดล้อมจากหน้า 01 พร้อมใช้ก่อนสร้างและส่งงานจำลอง
 
 ```bash
 module purge
@@ -57,9 +57,9 @@ print("pandas", pandas.__version__)
 PY
 ```
 
-### ขั้นที่ 3: เขียน schema และ agent behavior
+### ขั้นที่ 3: เขียนโครงข้อมูลและพฤติกรรมของเอเจนต์
 
-ขั้นนี้สร้างครึ่งแรกของ `src/epi_model.py`: กำหนดสถานะ SEIR, scenario, และพฤติกรรมของ agent หนึ่งคน
+ขั้นนี้สร้างครึ่งแรกของ `src/epi_model.py`: กำหนดสถานะ SEIR, สถานการณ์ทดลอง และพฤติกรรมของเอเจนต์หนึ่งคน
 
 ```bash
 cat > src/epi_model.py <<'PY'
@@ -107,9 +107,9 @@ class Person(Agent):
 PY
 ```
 
-### ขั้นที่ 4: เติม model dynamics และ sanity count
+### ขั้นที่ 4: เติมพลวัตของแบบจำลองและการนับตรวจสอบ
 
-ขั้นนี้เติมครึ่งหลังของ `src/epi_model.py`: สร้างประชากรบน grid, คำนวณการติดเชื้อ, และคืนจำนวน `S/E/I/R` รายวัน
+ขั้นนี้เติมครึ่งหลังของ `src/epi_model.py`: สร้างประชากรบนกริด คำนวณการติดเชื้อ และคืนจำนวน `S/E/I/R` รายวัน
 
 ```bash
 cat >> src/epi_model.py <<'PY'
@@ -171,9 +171,9 @@ def run_scenario(scenario):
 PY
 ```
 
-### ขั้นที่ 5: สร้าง runner สำหรับหนึ่ง scenario
+### ขั้นที่ 5: สร้างตัวรันสำหรับหนึ่งสถานการณ์ทดลอง
 
-ขั้นนี้สร้าง `src/run_scenario.py` ให้รับ parameter จาก command line แล้วเขียน daily CSV และ summary CSV
+ขั้นนี้สร้าง `src/run_scenario.py` ให้รับพารามิเตอร์จาก command line แล้วเขียน CSV รายวันและ CSV สรุป
 
 ```bash
 cat > src/run_scenario.py <<'PY'
@@ -219,7 +219,7 @@ PY
 
 ### ขั้นที่ 6: สร้างตัวรวมผลลัพธ์
 
-ขั้นนี้สร้าง `src/merge_results.py` เพื่อรวม summary CSV หลายไฟล์และคำนวณค่าเฉลี่ยราย policy
+ขั้นนี้สร้าง `src/merge_results.py` เพื่อรวม CSV สรุปหลายไฟล์และคำนวณค่าเฉลี่ยรายนโยบาย
 
 ```bash
 cat > src/merge_results.py <<'PY'
@@ -251,7 +251,7 @@ PY
 
 ### ขั้นที่ 7: สร้าง multicore runner
 
-ขั้นนี้สร้าง `src/run_many.py` เพื่อรันหลาย scenario ใน allocation เดียวตามจำนวน CPU ที่ Slurm ให้มา
+ขั้นนี้สร้าง `src/run_many.py` เพื่อรันหลายสถานการณ์ทดลองในการจัดสรรทรัพยากรเดียวตามจำนวน CPU ที่ Slurm ให้มา
 
 ```bash
 cat > src/run_many.py <<'PY'
@@ -277,9 +277,9 @@ with mp.Pool(processes=workers) as pool:
 PY
 ```
 
-### ขั้นที่ 8: สร้างตาราง scenario
+### ขั้นที่ 8: สร้างตารางสถานการณ์ทดลอง
 
-ขั้นนี้สร้าง input หลักของการทดลอง ทุกแถวคือหนึ่ง scenario ที่ Slurm array หรือ multicore runner จะอ่าน
+ขั้นนี้สร้างข้อมูลเข้าหลักของการทดลอง ทุกแถวคือหนึ่งสถานการณ์ทดลองที่ Slurm array หรือตัวรันหลายแกนจะอ่าน
 
 ```bash
 cat > configs/epi_scenarios.csv <<'EOF'
@@ -295,9 +295,9 @@ combined_2,combined,0.20,0.55,402,1200,35
 EOF
 ```
 
-### ขั้นที่ 9: สร้าง AI scaffold
+### ขั้นที่ 9: สร้างตัวช่วย AI
 
-ขั้นนี้สร้าง prompt สำหรับใช้ AI ช่วยตรวจ scenario, resource request และคำอธิบายผล โดยยึด log และ output เป็นหลักฐาน
+ขั้นนี้สร้าง prompt สำหรับใช้ AI ช่วยตรวจสถานการณ์ทดลอง คำขอทรัพยากร และคำอธิบายผล โดยยึดบันทึกงานและผลลัพธ์เป็นหลักฐาน
 
 ```bash
 cat > prompts/ai-scaffold-th.md <<'EOF'
@@ -313,7 +313,7 @@ EOF
 
 ### ขั้นที่ 10: ตรวจ syntax ก่อนส่งงาน
 
-ขั้นนี้ใช้ Python compile check เพื่อจับ syntax error ตั้งแต่บน login node และยืนยันว่า module ที่ใช้คือ `hpc-mesa/2.3.4`
+ขั้นนี้ใช้การตรวจคอมไพล์ของ Python เพื่อจับข้อผิดพลาดด้านไวยากรณ์ตั้งแต่บนเครื่องเข้าใช้งาน และยืนยันว่าโมดูลที่ใช้คือ `hpc-mesa/2.3.4`
 
 ```bash
 module purge
@@ -324,21 +324,21 @@ head -5 configs/epi_scenarios.csv
 echo "source, scenario, prompt พร้อมสำหรับ Slurm"
 ```
 
-## Example 1: Single Slurm Job
+## Example 1: งาน Slurm เดี่ยว
 
-วิธีนี้ใช้สำหรับ smoke test ก่อนให้ผู้ใช้ทั้งห้องรัน array ให้รัน single job ให้ผ่านก่อนเสมอ
+วิธีนี้ใช้ตรวจควันก่อนให้ผู้ใช้ทั้งห้องรัน array ให้รันงานเดี่ยวให้ผ่านก่อนเสมอ
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เข้าพื้นที่ทำงาน
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กลับเข้าสู่พื้นที่ทำงานที่สร้างโค้ดและข้อมูลไว้แล้ว
 
 ```bash
 cd "$HOME/lanta-episprint"
 ```
 
-### ขั้นที่ 2: สร้าง Slurm script `jobs/epi_single.sbatch`
+### ขั้นที่ 2: สร้างสคริปต์ Slurm `jobs/epi_single.sbatch`
 
-ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุทรัพยากร โมดูล ไดเรกทอรีทำงาน และคำสั่งที่รันบนเครื่องคำนวณ
 
 ```bash
 cat > jobs/epi_single.sbatch <<'SLURM'
@@ -371,7 +371,7 @@ SLURM
 
 ### ขั้นที่ 3: ส่งงานเข้า Slurm
 
-ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+ขั้นนี้ส่งสคริปต์งานที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึกเลขงานเพื่อใช้ตามคิวและอ่านบันทึกภายหลัง
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/epi_single.sbatch)
@@ -381,21 +381,21 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: tail -60 logs/epi_single_${job_id}.out"
 ```
 
-## Example 2: Slurm Job Array
+## Example 2: งาน Slurm แบบ Array
 
-วิธีนี้ใช้ตาราง scenario แล้วให้ Slurm แตกงานย่อย ผู้ใช้แต่ละทีมสามารถรัน array สั้น ๆ ของตนเองได้
+วิธีนี้ใช้ตารางสถานการณ์ทดลอง แล้วให้ Slurm แตกงานย่อย ผู้ใช้แต่ละทีมสามารถรัน array สั้น ๆ ของตนเองได้
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เข้าพื้นที่ทำงาน
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กลับเข้าสู่พื้นที่ทำงานที่มีตารางสถานการณ์ทดลองและสคริปต์หลัก
 
 ```bash
 cd "$HOME/lanta-episprint"
 ```
 
-### ขั้นที่ 2: สร้าง Slurm script `jobs/epi_array.sbatch`
+### ขั้นที่ 2: สร้างสคริปต์ Slurm `jobs/epi_array.sbatch`
 
-ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุทรัพยากร โมดูล ไดเรกทอรีทำงาน และคำสั่งที่รันบนเครื่องคำนวณ
 
 ```bash
 cat > jobs/epi_array.sbatch <<'SLURM'
@@ -433,7 +433,7 @@ SLURM
 
 ### ขั้นที่ 3: ส่งงานเข้า Slurm
 
-ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+ขั้นนี้ส่งสคริปต์งานที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึกเลขงานเพื่อใช้ตามคิวและอ่านบันทึกภายหลัง
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/epi_array.sbatch)
@@ -444,7 +444,7 @@ echo "Logs: ls logs/epi_array_${job_id}_*.out"
 echo "Results: ls results/epi_summary_${job_id}_*.csv"
 ```
 
-เมื่อ array จบแล้ว merge ผลลัพธ์
+เมื่อ array จบแล้ว ให้รวมผลลัพธ์
 
 ```bash
 cd "$HOME/lanta-episprint"
@@ -457,21 +457,21 @@ python src/merge_results.py \
 cat "results/epi_array_${job_id}_policy_compare.csv"
 ```
 
-## Example 3: Multicore Ensemble ในหนึ่ง Node
+## Example 3: ชุดทดลองหลายแกนในหนึ่งโหนด
 
-วิธีนี้ใช้ `SLURM_CPUS_PER_TASK` เพื่อให้ Python เปิดหลาย process ภายในหนึ่ง allocation ผู้ใช้จะเห็นความต่างระหว่าง job array กับหลาย worker ใน job เดียว
+วิธีนี้ใช้ `SLURM_CPUS_PER_TASK` เพื่อให้ Python เปิดหลายกระบวนการภายในการจัดสรรทรัพยากรเดียว ผู้ใช้จะเห็นความต่างระหว่าง job array กับผู้ทำงานหลายตัวในงานเดียว
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เข้าพื้นที่ทำงาน
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กลับเข้าสู่พื้นที่ทำงานที่มีโค้ดและตารางสถานการณ์ทดลองครบแล้ว
 
 ```bash
 cd "$HOME/lanta-episprint"
 ```
 
-### ขั้นที่ 2: สร้าง Slurm script `jobs/epi_multicore.sbatch`
+### ขั้นที่ 2: สร้างสคริปต์ Slurm `jobs/epi_multicore.sbatch`
 
-ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุทรัพยากร โมดูล ไดเรกทอรีทำงาน และคำสั่งที่รันบนเครื่องคำนวณ
 
 ```bash
 cat > jobs/epi_multicore.sbatch <<'SLURM'
@@ -501,7 +501,7 @@ SLURM
 
 ### ขั้นที่ 3: ส่งงานเข้า Slurm
 
-ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+ขั้นนี้ส่งสคริปต์งานที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึกเลขงานเพื่อใช้ตามคิวและอ่านบันทึกภายหลัง
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/epi_multicore.sbatch)
@@ -513,13 +513,13 @@ echo "Read: tail -80 logs/epi_multicore_${job_id}.out"
 
 ## คำอธิบาย
 
-ใน lab นี้ ผู้ใช้จะรันแบบจำลอง SEIR แบบ agent-based simulation แต่ละ agent มีสถานะ `S`, `E`, `I`, หรือ `R` และเคลื่อนที่บน `MultiGrid` ของ Mesa นโยบายในตัวอย่างเป็นข้อมูล synthetic สำหรับเรียนรู้การออกแบบ experiment, uncertainty และการอ่านหลักฐานจาก simulation
+ในบทฝึกนี้ ผู้ใช้จะรันแบบจำลอง SEIR แบบ agent-based simulation แต่ละเอเจนต์มีสถานะ `S`, `E`, `I`, หรือ `R` และเคลื่อนที่บน `MultiGrid` ของ Mesa นโยบายในตัวอย่างเป็นข้อมูลสังเคราะห์สำหรับเรียนรู้การออกแบบการทดลอง ความแปรปรวน และการอ่านหลักฐานจากการจำลอง
 
-ตัวอย่างที่ 1 เป็น single Slurm job สำหรับตรวจว่า code, module, account และ partition ใช้งานได้ ตัวอย่างที่ 2 ใช้ job array เพื่อรันหลาย scenario จาก CSV ตัวอย่างที่ 3 ใช้หลาย worker ภายในหนึ่ง node เพื่อให้ผู้ใช้เห็น parallelism อีกรูปแบบหนึ่ง
+ตัวอย่างที่ 1 เป็นงาน Slurm เดี่ยวสำหรับตรวจว่าโค้ด โมดูล บัญชีโครงการ และพาร์ทิชันใช้งานได้ ตัวอย่างที่ 2 ใช้ job array เพื่อรันหลายสถานการณ์ทดลองจาก CSV ตัวอย่างที่ 3 ใช้ผู้ทำงานหลายตัวภายในหนึ่งโหนดเพื่อให้ผู้ใช้เห็นการทำงานขนานอีกรูปแบบหนึ่ง
 
-แนวปฏิบัติที่ดีคือรัน smoke job ก่อนเพื่อยืนยัน environment แล้วค่อยขยายเป็น array หรือ multicore ensemble บันทึก seed และพารามิเตอร์ทุกครั้ง เก็บ log แยกตาม job id และสรุปผลจากหลาย scenario เพื่อแยก pattern ของ model ออกจากความผันผวนของ run เดี่ยว
+แนวปฏิบัติที่ดีคือรันงานตรวจควันก่อนเพื่อยืนยันสภาพแวดล้อม แล้วค่อยขยายเป็น array หรือชุดทดลองหลายแกน บันทึก seed และพารามิเตอร์ทุกครั้ง เก็บบันทึกงานแยกตามเลขงาน และสรุปผลจากหลายสถานการณ์ทดลองเพื่อแยกรูปแบบของแบบจำลองออกจากความผันผวนของการรันเดี่ยว
 
-ไฟล์ `prompts/ai-scaffold-th.md` เป็นตัวช่วยสำหรับถาม AI ให้ช่วยตรวจ scenario, ตรวจ Slurm script และช่วยอธิบาย CSV โดยให้คำตอบผูกกับหลักฐานหลักคือ code, config, job log และ result file
+ไฟล์ `prompts/ai-scaffold-th.md` เป็นตัวช่วยสำหรับถาม AI ให้ช่วยตรวจสถานการณ์ทดลอง ตรวจสคริปต์ Slurm และอธิบาย CSV โดยให้คำตอบผูกกับหลักฐานหลักคือโค้ด ไฟล์กำหนดค่า บันทึกงาน และไฟล์ผลลัพธ์
 
 ## Check
 
@@ -530,6 +530,6 @@ cat notes/job-history.tsv 2>/dev/null || true
 cat notes/epi-policy-compare.txt 2>/dev/null || true
 ```
 
-เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ, จำนวนวันตรงกับค่า `days`, ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวน agent, และ policy comparison อ้างอิงหลาย scenario หรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิด error log เฉพาะ job หรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`
+เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ จำนวนวันตรงกับค่า `days` ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวนเอเจนต์ และตารางเปรียบเทียบนโยบายอ้างอิงหลายสถานการณ์ทดลองหรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิดบันทึกข้อผิดพลาดเฉพาะงานหรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`
 
-เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อแปลง summary CSV เป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG
+เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อแปลง CSV สรุปเป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG

@@ -1,38 +1,38 @@
-# Weather-Health ABS: High Performance Data Science บน LANTA
+# Weather-Health ABS: วิทยาการข้อมูลสมรรถนะสูงบน LANTA
 
-folder นี้เป็น mini innovation สำหรับสอน High Performance Data Science หรือ HPDS ผ่าน workflow ข้อมูลอากาศจริง, scientific building model, agent-based simulation และ evidence bundle บน LANTA
+โฟลเดอร์นี้เป็นนวัตกรรมย่อยสำหรับสอน High Performance Data Science หรือ HPDS ผ่านกระบวนการข้อมูลอากาศจริง แบบจำลองอาคารเชิงวิทยาศาสตร์ แบบจำลองเชิงตัวแทน และชุดหลักฐานที่รันบน LANTA
 
-ในชุมชน HPC คำที่พบมากคือ High Performance Data Analytics หรือ HPDA ส่วนชื่อ HPDS ใช้ในบทเรียนนี้เพื่อเน้นทักษะของผู้ปฏิบัติ data science ที่ต้องทำงานกับ scheduler, parallel filesystem, data transfer, chunking, provenance และ performance evidence
+ในชุมชน HPC มักใช้คำว่า High Performance Data Analytics หรือ HPDA บทเรียนนี้ใช้คำว่า HPDS เพื่อเน้นทักษะของผู้ทำงานวิทยาการข้อมูลที่ต้องเข้าใจระบบจัดคิว ระบบแฟ้มขนาน การย้ายข้อมูล การแบ่งข้อมูลเป็นก้อน ประวัติที่มาของข้อมูล และหลักฐานด้านสมรรถนะ
 
 ## เป้าหมายของบทเรียน
 
 - ดึงข้อมูลจากแหล่ง HTTP เข้าสู่ LANTA ด้วย `curl` และ `wget`
-- ฝึก `rsync` ผ่าน SSH สำหรับย้ายข้อมูลจากเครื่อง local ไปยัง LANTA
-- ใช้ `zip`, `unzip`, `tar`, `gzip`, `pigz` เพื่อจัดการ archive และปัญหา many-small-files
-- อ่านหลักฐานของ Lustre parallel filesystem ด้วย `df`, `lfs getstripe`, `du`, `find`
-- สร้าง Dask overlay environment โดยอิง project `hpc-mesa` แล้วเพิ่ม `dask` และ `distributed`
-- รัน Dask `LocalCluster` ภายใน Slurm allocation หนึ่ง node
-- สร้าง weather-derived features แล้วป้อนให้ reduced building model และ ABS
-- สรุปผลเป็น CSV, รูปภาพ, Slurm evidence และ AI review prompt
-- เชื่อมแนวคิด graph partitioning จาก METIS/ParMETIS เข้ากับ mobility graph และ communication cost
+- ฝึก `rsync` ผ่าน SSH สำหรับย้ายข้อมูลจากเครื่องผู้ใช้ไปยัง LANTA
+- ใช้ `zip`, `unzip`, `tar`, `gzip`, `pigz` เพื่อจัดแฟ้มรวมและลดปัญหาไฟล์ย่อยจำนวนมาก
+- อ่านหลักฐานของระบบแฟ้มขนาน Lustre ด้วย `df`, `lfs getstripe`, `du`, `find`
+- สร้างสภาพแวดล้อม Dask เพิ่มเติมบนฐานของโครงการ `hpc-mesa` แล้วติดตั้ง `dask` และ `distributed`
+- รัน Dask `LocalCluster` ภายในทรัพยากรหนึ่งโหนดที่ Slurm จัดให้
+- สร้างตัวแปรจากข้อมูลอากาศ แล้วส่งต่อให้แบบจำลองอาคารขนาดย่อและ ABS
+- สรุปผลเป็น CSV รูปภาพ หลักฐานจาก Slurm และ prompt สำหรับให้ AI ช่วยตรวจหลักฐาน
+- เชื่อมแนวคิดการแบ่งกราฟจาก METIS/ParMETIS เข้ากับกราฟการเดินทางและต้นทุนการสื่อสาร
 
-## โครงสร้าง workflow
+## ลำดับการทำงาน
 
-`HTTP/rsync data source -> manifest/checksum -> archive/staging -> Dask tasks -> building model -> ABS -> Slurm evidence -> summary display -> AI scaffold`
+`แหล่งข้อมูล HTTP/rsync -> manifest/checksum -> แฟ้มรวมและพื้นที่พักข้อมูล -> งานย่อยของ Dask -> แบบจำลองอาคาร -> ABS -> หลักฐานจาก Slurm -> การแสดงผลสรุป -> นั่งร้านการเรียนรู้ด้วย AI`
 
 ## ไฟล์สำคัญ
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| [TRAINING_SHEET_TH.md](TRAINING_SHEET_TH.md) | หน้า copy-paste standalone สำหรับผู้เรียน |
-| [DATA_RESCUE_CADC_TH.md](DATA_RESCUE_CADC_TH.md) | หน้า data-rescue สำหรับ host timeout, resumable download, checksum, manifest และ `rsync --append-verify` |
-| `src/stage_weather_data.py` | แปลง NASA POWER CSV เป็น weather chunks หลายพื้นที่และ manifest |
-| `src/cadc_resumable_fetch.py` | helper สำหรับ CADC/public-data probe, resumable download, checksum และ manifest |
-| `src/hpds_weather_abs.py` | Dask workflow ที่รัน building model และ ABS หลาย scenario |
-| `src/plot_hpds_summary.py` | สร้าง policy summary และรูป PNG |
-| `src/partition_mobility_graph.py` | เปรียบเทียบ partition แบบง่ายเพื่ออธิบาย METIS/ParMETIS |
-| `jobs/hpds_weather_abs.sbatch` | Slurm job สำหรับรัน Dask workflow |
-| `plots/hpds_dashboard.gp` | gnuplot dashboard จาก CSV summary |
+| [TRAINING_SHEET_TH.md](TRAINING_SHEET_TH.md) | หน้าเรียนแบบคัดลอกคำสั่งทีละขั้นสำหรับผู้เรียน |
+| [DATA_RESCUE_CADC_TH.md](DATA_RESCUE_CADC_TH.md) | หน้าเรียนกู้ข้อมูลเมื่อปลายทางหมดเวลา ครอบคลุมการดาวน์โหลดต่อจากไฟล์ค้าง checksum, manifest และ `rsync --append-verify` |
+| `src/stage_weather_data.py` | แปลง NASA POWER CSV เป็นชุดข้อมูลอากาศหลายพื้นที่พร้อม manifest |
+| `src/cadc_resumable_fetch.py` | ตัวช่วยสำหรับตรวจ CADC/ข้อมูลสาธารณะ ดาวน์โหลดต่อจากไฟล์ค้าง สร้าง checksum และ manifest |
+| `src/hpds_weather_abs.py` | กระบวนการ Dask ที่รันแบบจำลองอาคารและ ABS หลายสถานการณ์ |
+| `src/plot_hpds_summary.py` | สร้างตารางสรุปเชิงนโยบายและรูป PNG |
+| `src/partition_mobility_graph.py` | เปรียบเทียบการแบ่งกราฟแบบง่ายเพื่ออธิบาย METIS/ParMETIS |
+| `jobs/hpds_weather_abs.sbatch` | ไฟล์ Slurm สำหรับรันกระบวนการ Dask |
+| `plots/hpds_dashboard.gp` | แดชบอร์ดของ gnuplot จาก CSV สรุป |
 
 ## หลักฐานที่ผู้เรียนควรส่ง
 
@@ -50,9 +50,9 @@ folder นี้เป็น mini innovation สำหรับสอน High Pe
 
 ## เกณฑ์ตัดสินผล
 
-1. transfer สำเร็จ มีขนาดไฟล์และ checksum ใน manifest
-2. staged CSV ทุกไฟล์มี header, จำนวนแถว และค่า temperature/humidity อยู่ในช่วงสมเหตุสมผล
-3. Slurm job จบด้วย `COMPLETED` และ `ExitCode=0:0`
-4. Dask report ระบุจำนวน tasks และ workers
-5. policy summary แสดง trade-off ระหว่าง exposure, cooling และ risk proxy
-6. partition summary ชี้ให้เห็น load balance และ edge cut จาก mobility graph
+1. การย้ายข้อมูลสำเร็จ มีขนาดไฟล์และ checksum ใน manifest
+2. CSV ที่พักข้อมูลไว้ทุกไฟล์มีหัวตาราง จำนวนแถว และค่าอุณหภูมิ/ความชื้นอยู่ในช่วงสมเหตุสมผล
+3. งาน Slurm จบด้วย `COMPLETED` และ `ExitCode=0:0`
+4. รายงาน Dask ระบุจำนวนงานย่อยและจำนวน worker
+5. ตารางสรุปเชิงนโยบายแสดงการแลกเปลี่ยนระหว่างการสัมผัสความร้อน การทำความเย็น และตัวแทนความเสี่ยง
+6. ตารางสรุปการแบ่งกราฟชี้ให้เห็นสมดุลภาระงานและน้ำหนักขอบที่ถูกตัดจากกราฟการเดินทาง

@@ -1,65 +1,65 @@
-# Workshop: ประเมิน Performance ของ Enhanced SEIR บน LANTA
+# Workshop: ประเมินสมรรถนะของ Enhanced SEIR บน LANTA
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-หน้านี้เป็น practical ต่อจาก [TRAINING_SHEET_TH.md](TRAINING_SHEET_TH.md) สำหรับ onsite mini innovation ผู้ใช้เริ่มจากเครื่อง local, เข้า LANTA, สร้าง source และ Slurm script ด้วย heredoc, ส่งงานสั้น, อ่านหลักฐาน และตัดสินใจจากผลจริงใน workspace ของตนเอง
+หน้านี้เป็นแบบฝึกต่อจาก [TRAINING_SHEET_TH.md](TRAINING_SHEET_TH.md) สำหรับนวัตกรรมย่อยในห้องอบรม ผู้ใช้เริ่มจากเครื่องผู้ใช้ เข้า LANTA สร้างโค้ดและสคริปต์ Slurm ด้วย heredoc ส่งงานสั้น อ่านหลักฐาน และตัดสินใจจากผลจริงในพื้นที่ทำงานของตนเอง
 
 ## บทนำแบบ Verse
 
-ตั้งคำถามก่อนตั้งจำนวน core<br>
+ตั้งคำถามก่อนตั้งจำนวนแกนประมวลผล<br>
 ให้สมมติฐานเดินนำหน้า benchmark<br>
 วัดหนึ่งแกนของระบบ แล้วค่อยขยายแกนนั้น<br>
-อ่านเวลา หน่วยความจำ rank และผลวิทยาศาสตร์ในแฟ้มเดียวกัน<br>
-เมื่อ overhead ปรากฏ ให้จำแนกเป็น startup, memory, communication, GPU, I/O หรือ scheduler<br>
-คำตอบที่ดีคือ run ถัดไปที่มีเหตุผล ชี้ชัดว่าจะเปลี่ยนสิ่งใดและตรวจอะไร
+อ่านเวลา หน่วยความจำ rank และผลวิทยาศาสตร์ในแฟ้มหลักฐานเดียวกัน<br>
+เมื่อ overhead ปรากฏ ให้จำแนกเป็นเวลาเริ่มงาน หน่วยความจำ การสื่อสาร GPU, I/O หรือ scheduler<br>
+คำตอบที่ดีคือการรันถัดไปที่มีเหตุผล ชี้ชัดว่าจะเปลี่ยนสิ่งใดและตรวจอะไร
 
 ## คำอธิบายเชิงวิชาการ
 
-workshop นี้ยึดแนวคิดจาก `Booklet_LANTA-Experience.pdf` หน้า 15-17 ใน `/home/ubuntu/lanta/AI`: เริ่มจากโจทย์วิทยาศาสตร์ ระบุ input และ model เลือก resource ให้ตรงกับคอขวด เก็บ evidence bundle แล้วใช้หลักฐานเพื่อวาง run ถัดไป
+workshop นี้ยึดแนวคิดจาก `Booklet_LANTA-Experience.pdf` หน้า 15-17 ใน `/home/ubuntu/lanta/AI`: เริ่มจากโจทย์วิทยาศาสตร์ ระบุข้อมูลเข้าและแบบจำลอง เลือกทรัพยากรให้ตรงกับคอขวด เก็บชุดหลักฐาน แล้วใช้หลักฐานเพื่อวางการรันถัดไป
 
-เอกสาร `PerformanceEvaluationOfHPC-AI.pdf` ชี้ให้แยก profiling กับ tracing อย่างมีลำดับ: profiling ให้ภาพรวมว่าค่าเวลาสะสมอยู่ที่ส่วนใด ส่วน tracing ให้ลำดับเหตุการณ์ละเอียดเมื่อมีสมมติฐานแคบพอ ใน practical นี้ผู้ใช้ใช้ timing, Slurm evidence, MPI rank scaling และ CSV summary เป็น profiling ชั้นแรก
+เอกสาร `PerformanceEvaluationOfHPC-AI.pdf` ชี้ให้แยก profiling กับ tracing อย่างมีลำดับ: profiling ให้ภาพรวมว่าเวลาสะสมอยู่ที่ส่วนใด ส่วน tracing ให้ลำดับเหตุการณ์ละเอียดเมื่อสมมติฐานแคบพอ ในแบบฝึกนี้ผู้ใช้ใช้เวลา บันทึกจาก Slurm การขยายจำนวน rank ของ MPI และ CSV สรุปเป็น profiling ชั้นแรก
 
-เอกสาร Python performance ใน `/home/ubuntu/lanta/AI` เน้นว่า overhead เกิดได้จาก interpreter startup, import, pure Python loop, memory movement และการเรียก subprocess ดังนั้นตัวอย่างท้ายบทจึงวัด Python stack overhead ควบคู่กับ C++/MPI solver และ SEIR GPU/DDP evidence
+เอกสาร Python performance ใน `/home/ubuntu/lanta/AI` เน้นว่า overhead เกิดได้จากเวลาเริ่ม interpreter, การ import, วงรอบ pure Python, การย้ายข้อมูลในหน่วยความจำ และการเรียก subprocess ดังนั้นตัวอย่างท้ายบทจึงวัด Python stack overhead ควบคู่กับตัวแก้ปัญหา C++/MPI และหลักฐาน SEIR GPU/DDP
 
 ## แหล่งอ้างอิงจาก `/home/ubuntu/lanta/AI`
 
-| ไฟล์ | หลักคิดที่นำมาใช้ | จุดที่ปรากฏใน practical |
+| ไฟล์ | หลักคิดที่นำมาใช้ | จุดที่ปรากฏในแบบฝึก |
 |---|---|---|
-| `Booklet_LANTA-Experience.pdf` หน้า 15-17 | เริ่มจากคำถามวิทยาศาสตร์ เลือก resource จากลักษณะงาน และเก็บ evidence bundle | `notes/perf_workshop_evidence.txt`, `sacct`, log, CSV และคำถาม run ถัดไป |
+| `Booklet_LANTA-Experience.pdf` หน้า 15-17 | เริ่มจากคำถามวิทยาศาสตร์ เลือกทรัพยากรจากลักษณะงาน และเก็บชุดหลักฐาน | `notes/perf_workshop_evidence.txt`, `sacct`, บันทึกงาน, CSV และคำถามสำหรับการรันถัดไป |
 | `PerformanceEvaluationOfHPC-AI.pdf` | แยก profiling, tracing, event-based data, sampling และ instrumentation เป็นระดับคำถาม | timing ชั้นแรก, rank scaling, overhead taxonomy และแนวทางขยายไป IPM, Score-P, Nsight Systems, NVTX |
-| `1 Understanding Performant Python  High Performance Python 3rd Edition.pdf` | มองระบบเป็น compute, memory และ interconnect; ใช้ Amdahl อธิบาย serial fraction; ตรวจ GIL และ data movement ของ Python | `amdahl_gustafson.csv`, `solver_roofline_*.csv`, `python_stack_overhead.csv` |
-| `2 Profiling to Find Bottlenecks.pdf` | ตั้ง hypothesis, profile ด้วย representative case, ใช้ cProfile เป็นภาพรวม, ใช้ line/memory profiler เมื่อขอบเขตแคบ | ขั้น `cProfile`, report CSV และคำถามสะท้อนผล |
-| `ACM_School_Barcelona_2026_Wahib.pptx` | Scientific AI อยู่ในวงจร data, model, use in science; coupling กับ ModSim ต้องมี provenance, correctness, UQ และ throughput | AI scaffolding prompt ใช้เฉพาะ evidence จาก workspace และเชื่อมผล performance กลับสู่ SEIR mini innovation |
+| `1 Understanding Performant Python  High Performance Python 3rd Edition.pdf` | มองระบบเป็นการคำนวณ หน่วยความจำ และเครือข่ายเชื่อมต่อ; ใช้ Amdahl อธิบาย serial fraction; ตรวจ GIL และการย้ายข้อมูลของ Python | `amdahl_gustafson.csv`, `solver_roofline_*.csv`, `python_stack_overhead.csv` |
+| `2 Profiling to Find Bottlenecks.pdf` | ตั้งสมมติฐาน วัดด้วยกรณีแทนงานจริง ใช้ cProfile เป็นภาพรวม ใช้ line/memory profiler เมื่อขอบเขตแคบ | ขั้น `cProfile`, CSV รายงาน และคำถามสะท้อนผล |
+| `ACM_School_Barcelona_2026_Wahib.pptx` | Scientific AI อยู่ในวงจรข้อมูล แบบจำลอง และการใช้ในวิทยาศาสตร์; การเชื่อมกับ ModSim ต้องมี provenance, correctness, UQ และ throughput | AI scaffolding prompt ใช้เฉพาะหลักฐานจากพื้นที่ทำงาน และเชื่อมผลสมรรถนะกลับสู่นวัตกรรมย่อย SEIR |
 
 ## บันไดหลักฐานสำหรับ Performance Evaluation
 
 | ระดับ | คำถาม | หลักฐานที่เก็บใน workshop | เครื่องมือถัดไปเมื่อโจทย์ลึกขึ้น |
 |---|---|---|---|
-| Scientific question | run นี้ตอบเรื่องโรคระบาดหรือนโยบายใด | `question=...`, `seir_perf_compare.csv`, sanity check ของ policy | เพิ่มข้อมูลจริงหรือ scenario ensemble |
-| Resource choice | CPU, MPI, GPU หรือ I/O เป็นแกนทดลองหลัก | Slurm account, partition, ranks, GPU log | job array, multi-node MPI, GPU/DDP |
-| Timing profile | เวลารวมอยู่ที่ compute, startup หรือ stack | `/usr/bin/time -v`, elapsed CSV, `cProfile` | line profiler, memory profiler, Scalene |
+| Scientific question | การรันนี้ตอบเรื่องโรคระบาดหรือนโยบายใด | `question=...`, `seir_perf_compare.csv`, sanity check ของนโยบาย | เพิ่มข้อมูลจริงหรือ scenario ensemble |
+| Resource choice | CPU, MPI, GPU หรือ I/O เป็นแกนทดลองหลัก | บัญชี Slurm, พาร์ทิชัน, ranks, บันทึก GPU | job array, multi-node MPI, GPU/DDP |
+| Timing profile | เวลารวมอยู่ที่การคำนวณ เวลาเริ่มงาน หรือชั้นซอฟต์แวร์ | `/usr/bin/time -v`, elapsed CSV, `cProfile` | line profiler, memory profiler, Scalene |
 | Scaling profile | speedup ถูกจำกัดโดย serial fraction หรือ overhead | speedup, efficiency, Karp-Flatt, Amdahl/Gustafson | IPM สำหรับ MPI routine และ min-max spread |
-| Solver wall | stencil solver เดินชน compute หรือ memory bandwidth | GFLOP/s, GB/s, arithmetic intensity, residual | hardware counter, memory bandwidth benchmark |
+| Solver wall | stencil solver เดินชน throughput ของการคำนวณหรือ bandwidth หน่วยความจำ | GFLOP/s, GB/s, arithmetic intensity, residual | hardware counter, memory bandwidth benchmark |
 | Communication wall | rank ใดรอ collective หรือ halo exchange | rank scaling, overhead class, elapsed spread | Score-P profile, call path, targeted trace |
-| GPU/DDP wall | GPU ทำงานต่อเนื่องหรือมี data movement/NCCL gap | training log, GPU evidence, batch timing | Nsight Systems พร้อม NVTX range |
-| AI scaffold | AI ช่วยจัด hypothesis จาก evidence ได้ระดับใด | `notes/ai_perf_review_prompt.md` | เพิ่ม provenance, uncertainty และ model/data checklist |
+| GPU/DDP wall | GPU ทำงานต่อเนื่องหรือมีช่องว่างจากการย้ายข้อมูล/NCCL | training log, GPU evidence, batch timing | Nsight Systems พร้อม NVTX range |
+| AI scaffold | AI ช่วยจัดสมมติฐานจากหลักฐานได้ระดับใด | `notes/ai_perf_review_prompt.md` | เพิ่ม provenance, uncertainty และ model/data checklist |
 
 ## แผนภาพความคิด
 
-| แนวคิด | คำถามใน practical | หลักฐาน |
+| แนวคิด | คำถามในแบบฝึก | หลักฐาน |
 |---|---|---|
-| Roofline | งานมี arithmetic intensity สูงพอจะติด compute หรือเดินชน memory bandwidth | `gflop_s`, `gb_s`, `arith_intensity` |
+| Roofline | งานมี arithmetic intensity สูงพอจะติด throughput ของการคำนวณ หรือเดินชน bandwidth หน่วยความจำ | `gflop_s`, `gb_s`, `arith_intensity` |
 | Amdahl | serial fraction และ overhead จำกัด speedup เมื่อเพิ่ม ranks เท่าใด | `speedup`, `efficiency`, `karp_flatt_serial_fraction` |
-| Gustafson | ถ้าขยายขนาดโจทย์พร้อมจำนวน ranks จะคาดหวัง scaled speedup ระดับใด | `amdahl_gustafson.csv` |
-| Overhead taxonomy | เวลาที่เพิ่มมาจาก startup, MPI, memory, GPU, I/O, scheduler หรือ Python stack | `overhead_taxonomy.csv`, `/usr/bin/time -v`, `sacct` |
+| Gustafson | เมื่อขยายขนาดโจทย์พร้อมจำนวน ranks ควรคาดหวัง scaled speedup ระดับใด | `amdahl_gustafson.csv` |
+| Overhead taxonomy | เวลาที่เพิ่มมาจากการเริ่มงาน, MPI, หน่วยความจำ, GPU, I/O, scheduler หรือ Python stack | `overhead_taxonomy.csv`, `/usr/bin/time -v`, `sacct` |
 | Solver pattern | stencil, sparse matrix, halo exchange, reduction และ residual มีลักษณะอย่างไร | `solver_roofline_*.csv` |
 | Scientific sanity | ผล SEIR ยังสัมพันธ์เชิงนโยบายและค่าช่วงถูกต้อง | `seir_perf_compare.csv` จาก training sheet |
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-### ขั้นที่ 1: Login เข้า LANTA
+### ขั้นที่ 1: เข้าสู่ LANTA
 
-block นี้เปิด shell บน LANTA login node สำหรับสร้าง workspace และส่ง Slurm job
+คำสั่งชุดนี้เปิดเชลล์บนเครื่องเข้าใช้งานของ LANTA สำหรับสร้างพื้นที่ทำงานและส่งงาน Slurm
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
@@ -67,9 +67,9 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ## Copy-Paste บน LANTA
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
-block นี้ใช้ workspace เดียวกับ enhanced SEIR training sheet และสร้าง folder เพิ่มสำหรับ performance practical
+คำสั่งชุดนี้ใช้พื้นที่ทำงานเดียวกับแผ่นงาน Enhanced SEIR และสร้างโฟลเดอร์เพิ่มสำหรับแบบฝึกสมรรถนะ
 
 ```bash
 mkdir -p "$HOME/lanta-enhanced-seir"
@@ -85,9 +85,9 @@ export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
 pwd
 ```
 
-### ขั้นที่ 2: เปิด evidence note ของ workshop
+### ขั้นที่ 2: เปิดบันทึกหลักฐานของ workshop
 
-block นี้บันทึกคำถาม workspace เวลา user และ host เพื่อให้ผลการรันมีบริบทตรวจย้อนกลับ
+คำสั่งชุดนี้บันทึกคำถาม พื้นที่ทำงาน เวลา ผู้ใช้ และชื่อเครื่อง เพื่อให้ผลการรันมีบริบทตรวจย้อนกลับ
 
 ```bash
 {
@@ -105,9 +105,9 @@ sed -n '1,20p' notes/perf_workshop_evidence.txt
 
 ### ขั้นที่ 3: สร้างตาราง Amdahl, Gustafson และ taxonomy
 
-block นี้สร้าง script สั้นจาก standard library เพื่อคำนวณ speedup เชิงทฤษฎีและรายการ overhead ที่ต้องตรวจ
+คำสั่งชุดนี้สร้างสคริปต์สั้นจาก standard library เพื่อคำนวณ speedup เชิงทฤษฎีและรายการ overhead ที่ต้องตรวจ
 
-ถ้า `performance/perf_theory.py` มีอยู่แล้วใน workspace นี้ ให้ข้ามขั้นนี้และรัน `python performance/perf_theory.py` โดยตรง
+ถ้า `performance/perf_theory.py` มีอยู่แล้วในพื้นที่ทำงานนี้ ให้ข้ามขั้นนี้และรัน `python performance/perf_theory.py` โดยตรง
 
 ```bash
 cat > performance/perf_theory.py <<'PY'
@@ -152,7 +152,7 @@ PY
 
 ### ขั้นที่ 4: รันตารางทฤษฎีบน login node
 
-block นี้ใช้ Python ที่ระบบมีอยู่เพื่อสร้าง CSV ขนาดเล็ก แล้วเปิดอ่านหัวตาราง
+คำสั่งชุดนี้ใช้ Python ที่ระบบมีอยู่เพื่อสร้าง CSV ขนาดเล็ก แล้วเปิดอ่านหัวตาราง
 
 ```bash
 module purge
@@ -164,7 +164,7 @@ sed -n '1,10p' results/overhead_taxonomy.csv
 
 ### ขั้นที่ 5: สร้าง MPI roofline solver ส่วนที่ 1
 
-block นี้สร้าง header และ parser ของ Jacobi stencil solver สำหรับมองภาพ solver ใน HPC
+คำสั่งชุดนี้สร้างส่วนหัวและตัวอ่านพารามิเตอร์ของ Jacobi stencil solver สำหรับมองลักษณะตัวแก้ปัญหาใน HPC
 
 ```bash
 cat > performance/solver_roofline_mpi.cpp <<'CPP'
@@ -196,7 +196,7 @@ CPP
 
 ### ขั้นที่ 6: เติม MPI roofline solver ส่วนที่ 2
 
-block นี้เติม domain decomposition, halo exchange และ Jacobi update ซึ่งแทนคุณลักษณะของ sparse/stencil solver
+คำสั่งชุดนี้เติมการแบ่งโดเมน การแลกข้อมูลขอบ และการอัปเดตแบบ Jacobi ซึ่งแทนคุณลักษณะของ sparse/stencil solver
 
 ```bash
 cat >> performance/solver_roofline_mpi.cpp <<'CPP'
@@ -234,7 +234,7 @@ CPP
 
 ### ขั้นที่ 7: เติม MPI roofline solver ส่วนที่ 3
 
-block นี้สรุป elapsed time, flop, byte, arithmetic intensity และ residual ออกเป็น CSV row
+คำสั่งชุดนี้สรุปเวลาที่ใช้ จำนวนการคำนวณ จำนวนไบต์ arithmetic intensity และ residual ออกเป็นหนึ่งแถว CSV
 
 ```bash
 cat >> performance/solver_roofline_mpi.cpp <<'CPP'
@@ -263,9 +263,9 @@ cat >> performance/solver_roofline_mpi.cpp <<'CPP'
 CPP
 ```
 
-### ขั้นที่ 8: สร้าง Slurm script สำหรับ solver
+### ขั้นที่ 8: สร้างสคริปต์ Slurm สำหรับ solver
 
-block นี้ขอ 4 MPI tasks บน node เดียว แล้วรัน `srun -n 1`, `srun -n 2` และ `srun -n 4` ภายใน allocation เดียว
+คำสั่งชุดนี้ขอ 4 MPI tasks บนโหนดเดียว แล้วรัน `srun -n 1`, `srun -n 2` และ `srun -n 4` ภายในการจัดสรรทรัพยากรเดียว
 
 ```bash
 cat > jobs/roofline_solver.sbatch <<'SLURM'
@@ -302,7 +302,7 @@ sed -n '1,80p' jobs/roofline_solver.sbatch
 
 ### ขั้นที่ 9: ส่งงาน solver เข้า Slurm
 
-block นี้ส่ง job แล้วบันทึก job id ใน evidence note
+คำสั่งชุดนี้ส่งงานแล้วบันทึกเลขงานในบันทึกหลักฐาน
 
 ```bash
 roof_job=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/roofline_solver.sbatch)
@@ -312,7 +312,7 @@ squeue -j "$roof_job"
 
 ### ขั้นที่ 10: อ่านผล solver หลัง job จบ
 
-block นี้อ่าน `sacct`, log และ CSV เพื่อดู scaling, arithmetic intensity และ residual
+คำสั่งชุดนี้อ่าน `sacct`, บันทึกงาน และ CSV เพื่อดู scaling, arithmetic intensity และ residual
 
 ```bash
 sacct -j "$roof_job" --format=JobID,JobName,State,Elapsed,AllocCPUS,MaxRSS,ExitCode
@@ -321,9 +321,9 @@ sed -n '1,8p' "results/solver_roofline_${roof_job}.csv"
 sed -n '1,25p' "notes/time_solver_${roof_job}_4.txt"
 ```
 
-### ขั้นที่ 11: สร้าง report script ส่วนที่ 1
+### ขั้นที่ 11: สร้างสคริปต์รายงานส่วนที่ 1
 
-block นี้สร้างตัวอ่าน CSV และสูตร Karp-Flatt สำหรับแปลง timing เป็น overhead evidence
+คำสั่งชุดนี้สร้างตัวอ่าน CSV และสูตร Karp-Flatt สำหรับแปลงเวลาเป็นหลักฐาน overhead
 
 ```bash
 cat > performance/perf_workshop_report.py <<'PY'
@@ -349,9 +349,9 @@ def seir_note():
 PY
 ```
 
-### ขั้นที่ 12: สร้าง report script ส่วนที่ 2
+### ขั้นที่ 12: สร้างสคริปต์รายงานส่วนที่ 2
 
-block นี้เขียน Markdown report และ CSV summary สำหรับสรุป overhead และ physical wall
+คำสั่งชุดนี้เขียนรายงาน Markdown และ CSV สรุปสำหรับจำแนก overhead และกำแพงทางกายภาพ
 
 ```bash
 cat >> performance/perf_workshop_report.py <<'PY'
@@ -397,7 +397,7 @@ PY
 
 ### ขั้นที่ 13: รัน report และอ่านผล
 
-block นี้แปลง CSV ของ solver เป็นรายงานที่ใช้อภิปรายในห้อง
+คำสั่งชุดนี้แปลง CSV ของ solver เป็นรายงานที่ใช้อภิปรายในห้อง
 
 ```bash
 python performance/perf_workshop_report.py
@@ -405,9 +405,9 @@ sed -n '1,30p' results/perf_workshop_summary.csv
 sed -n '1,80p' results/perf_workshop_report.md
 ```
 
-### ขั้นที่ 14: สร้าง Python stack overhead script
+### ขั้นที่ 14: สร้างสคริปต์วัด Python stack overhead
 
-block นี้วัด interpreter startup, import, pure Python loop และ optional tensor/scientific library import
+คำสั่งชุดนี้วัดเวลาเริ่ม interpreter, การ import, วงรอบ pure Python และการ import ไลบรารี tensor/scientific ที่มีในสภาพแวดล้อม
 
 ```bash
 cat > performance/python_stack_overhead.py <<'PY'
@@ -442,8 +442,8 @@ PY
 
 ### ขั้นที่ 15: รัน Python overhead และ cProfile
 
-block นี้ดู runtime ของ stack สั้น ๆ และใช้ `cProfile` เพื่อให้เห็น call-level timing ของ script
-ค่า `status=0` หมายถึง import หรือ subprocess สำเร็จ ค่าอื่นเป็นหลักฐานว่า package นั้นยังอยู่นอก Python environment ปัจจุบัน
+คำสั่งชุดนี้ดูเวลารันของชั้นซอฟต์แวร์สั้น ๆ และใช้ `cProfile` เพื่อให้เห็นเวลาระดับ call ของสคริปต์
+ค่า `status=0` หมายถึงการ import หรือ subprocess สำเร็จ ค่าอื่นเป็นหลักฐานว่าแพ็กเกจนั้นยังอยู่นอกสภาพแวดล้อม Python ปัจจุบัน
 
 ```bash
 python -m cProfile -s cumulative performance/python_stack_overhead.py > notes/python_stack_cprofile.txt
@@ -452,9 +452,9 @@ sed -n '1,10p' results/python_stack_overhead.csv
 sed -n '1,35p' notes/python_stack_cprofile.txt
 ```
 
-### ขั้นที่ 16: สร้าง Python performance summary display ส่วนที่ 1
+### ขั้นที่ 16: สร้างการแสดงผลสรุปสมรรถนะด้วย Python ส่วนที่ 1
 
-block นี้สร้าง helper สำหรับวาด SVG ด้วย Python standard library จึงใช้ได้แม้ environment ยังมีเฉพาะ `cray-python`
+คำสั่งชุดนี้สร้างตัวช่วยสำหรับวาด SVG ด้วย Python standard library จึงใช้ได้แม้สภาพแวดล้อมยังมีเฉพาะ `cray-python`
 
 ```bash
 cat > performance/perf_summary_plot.py <<'PY'
@@ -500,9 +500,9 @@ def line_chart(path,title,xlabel,ylabel,xs,series):
 PY
 ```
 
-### ขั้นที่ 17: สร้าง Python performance summary display ส่วนที่ 2
+### ขั้นที่ 17: สร้างการแสดงผลสรุปสมรรถนะด้วย Python ส่วนที่ 2
 
-block นี้เติม bar chart และ main routine ที่อ่าน CSV แล้วสร้าง SVG กับ Markdown summary
+คำสั่งชุดนี้เติม bar chart และ main routine ที่อ่าน CSV แล้วสร้าง SVG กับ Markdown สรุป
 
 ```bash
 cat >> performance/perf_summary_plot.py <<'PY'
@@ -543,9 +543,9 @@ print("wrote SVG figures and results/perf_summary_display.md")
 PY
 ```
 
-### ขั้นที่ 18: รัน Python performance summary display
+### ขั้นที่ 18: รันการแสดงผลสรุปสมรรถนะด้วย Python
 
-block นี้สร้างรูป SVG ที่เปิดดูใน JupyterLab, browser หรือ download ไปใส่ slide ได้
+คำสั่งชุดนี้สร้างรูป SVG ที่เปิดดูใน JupyterLab, browser หรือดาวน์โหลดไปใส่สไลด์ได้
 
 ```bash
 python performance/perf_summary_plot.py
@@ -553,9 +553,9 @@ sed -n '1,20p' results/perf_summary_display.md
 ls -lh figures/perf_summary_*.svg
 ```
 
-### ขั้นที่ 19: สร้าง gnuplot dashboard รวมทุก analysis ส่วนที่ 1
+### ขั้นที่ 19: สร้าง gnuplot dashboard รวมทุกการวิเคราะห์ส่วนที่ 1
 
-block นี้สร้างส่วนตั้งค่าของ gnuplot dashboard และ panel ชุดแรกสำหรับ speedup, efficiency, overhead และ roofline signal ผู้ใช้เปิดอ่าน syntax ได้ทันที ส่วนการรันจริงเกิดในขั้นถัดไปเมื่อ environment มี `gnuplot`
+คำสั่งชุดนี้สร้างส่วนตั้งค่าของ gnuplot dashboard และ panel ชุดแรกสำหรับ speedup, efficiency, overhead และ roofline signal ผู้ใช้เปิดอ่าน syntax ได้ทันที ส่วนการรันจริงเกิดในขั้นถัดไปเมื่อสภาพแวดล้อมมี `gnuplot`
 
 ```bash
 cat > performance/plot_perf_dashboard.gp <<'GP'
@@ -610,9 +610,9 @@ GP
 sed -n '1,45p' performance/plot_perf_dashboard.gp
 ```
 
-### ขั้นที่ 20: เติม gnuplot dashboard รวมทุก analysis ส่วนที่ 2
+### ขั้นที่ 20: เติม gnuplot dashboard รวมทุกการวิเคราะห์ส่วนที่ 2
 
-block นี้เติม panel สำหรับ Amdahl/Gustafson, Python stack cost และรูปแยกสำหรับใช้ใน slide
+คำสั่งชุดนี้เติม panel สำหรับ Amdahl/Gustafson, Python stack cost และรูปแยกสำหรับใช้ในสไลด์
 
 ```bash
 cat >> performance/plot_perf_dashboard.gp <<'GP'
@@ -649,9 +649,9 @@ GP
 sed -n '46,120p' performance/plot_perf_dashboard.gp
 ```
 
-### ขั้นที่ 21: รัน gnuplot dashboard ด้วย native command หรือ Apptainer
+### ขั้นที่ 21: รัน gnuplot dashboard ด้วยคำสั่งตรงหรือ Apptainer
 
-block นี้สร้างรูป PNG รวมทุก analysis และไฟล์ summary ที่บอกว่า gnuplot ใช้ CSV ใด ถ้า shell พบ `gnuplot` จะใช้ command ตรง ๆ ถ้า environment ปัจจุบันมีเฉพาะ Apptainer จะดึง image `gitrust/gnuplot:latest` เป็น `containers/gnuplot.sif` แล้วรันผ่าน container
+คำสั่งชุดนี้สร้างรูป PNG รวมทุกการวิเคราะห์และไฟล์สรุปที่บอกว่า gnuplot ใช้ CSV ใด ถ้า shell พบ `gnuplot` จะใช้คำสั่งตรง ๆ ถ้าสภาพแวดล้อมปัจจุบันมีเฉพาะ Apptainer จะดึง image `gitrust/gnuplot:latest` เป็น `containers/gnuplot.sif` แล้วรันผ่าน container
 
 ```bash
 mkdir -p containers
@@ -673,9 +673,9 @@ sed -n '1,20p' results/perf_workshop_gnuplot_summary.txt
 ls -lh figures/perf_workshop_dashboard.png figures/perf_workshop_speedup_efficiency.png figures/perf_workshop_python_stack.png
 ```
 
-### ขั้นที่ 22: สร้าง AI scaffolding prompt จาก evidence จริง
+### ขั้นที่ 22: สร้าง prompt นั่งร้านการเรียนรู้จากหลักฐานจริง
 
-block นี้สร้าง prompt สำหรับให้ AI ช่วยจัดลำดับสมมติฐาน โดยยึดเฉพาะไฟล์ evidence ที่ผู้ใช้สร้างเอง
+คำสั่งชุดนี้สร้าง prompt สำหรับให้ AI ช่วยจัดลำดับสมมติฐาน โดยยึดเฉพาะไฟล์หลักฐานที่ผู้ใช้สร้างเอง
 
 ```bash
 {
@@ -710,13 +710,13 @@ sed -n '1,80p' notes/ai_perf_review_prompt.md
 
 1. `sacct` แสดง `COMPLETED`, `AllocCPUS`, `Elapsed` และ `MaxRSS`
 2. `solver_roofline_<jobid>.csv` มี 3 แถวสำหรับ 1, 2 และ 4 ranks
-3. `speedup` และ `efficiency` ชี้ว่า scaling ได้ตามทรัพยากรที่ขอเพียงใด
-4. `arith_intensity` ต่ำมักชี้ไปที่ memory bandwidth ใน stencil solver
-5. `overhead_sec` สูงขึ้นเมื่อเพิ่ม rank ชี้ไปที่ communication, synchronization หรือ load imbalance
-6. `python_stack_overhead.csv` แยกเวลา startup/import ออกจากงานคำนวณจริงของ Python
+3. `speedup` และ `efficiency` ชี้ว่าการขยายจำนวน rank ได้ผลตามทรัพยากรที่ขอเพียงใด
+4. `arith_intensity` ต่ำมักชี้ไปที่ bandwidth หน่วยความจำใน stencil solver
+5. `overhead_sec` สูงขึ้นเมื่อเพิ่ม rank ชี้ไปที่การสื่อสาร การรอจังหวะร่วม หรือการกระจายงานที่หนักเบาต่างกัน
+6. `python_stack_overhead.csv` แยกเวลาเริ่มงานและเวลา import ออกจากงานคำนวณจริงของ Python
 7. `perf_summary_display.md` และ `figures/perf_summary_*.svg` ใช้สื่อสาร speedup, efficiency, overhead และ Python stack cost
 8. `perf_workshop_dashboard.png` รวม speedup, efficiency, overhead, roofline signal, Amdahl/Gustafson และ Python stack cost ในรูปเดียว
-9. `seir_perf_compare.csv` จาก training sheet ใช้เชื่อมกลับไปยัง innovation หลัก C++/MPI เทียบ PyTorch GPU/DDP
+9. `seir_perf_compare.csv` จาก training sheet ใช้เชื่อมกลับไปยังนวัตกรรมหลัก C++/MPI เทียบ PyTorch GPU/DDP
 
 ## เกณฑ์ตัดสินว่าผลดีและถูกต้อง
 
@@ -725,11 +725,11 @@ sed -n '1,80p' notes/ai_perf_review_prompt.md
 - `residual` เป็นค่าจำนวนจริงและอยู่ในช่วงบวกจำกัด
 - `speedup` เพิ่มเมื่อเพิ่ม rank ในทิศทางที่อธิบายได้
 - `efficiency` ลดลงพร้อมหลักฐาน overhead ที่ชี้แหล่งกำเนิดได้
-- ค่า SEIR เช่น `attack_rate`, `peak_infectious` และ policy ordering ผ่าน sanity check จาก training sheet
+- ค่า SEIR เช่น `attack_rate`, `peak_infectious` และลำดับผลของนโยบายผ่าน sanity check จาก training sheet
 
 ## คำถามสะท้อนผล
 
 1. ถ้า `arith_intensity` ต่ำกว่า `1.0` ผู้ใช้จะเพิ่ม flop ต่อ byte หรือปรับ data locality ตรงไหน
 2. ถ้า 4 ranks เร็วกว่า 2 ranks เพียงเล็กน้อย ผู้ใช้ควรตรวจ halo exchange, Allreduce หรือ load balance ด้วยหลักฐานใด
-3. ถ้า `torch_import` ใช้เวลาสูงเมื่อเทียบกับ mini workload ผู้ใช้จะรวบ scenario เป็น batch หรือย้ายงานไป CPU/MPI อย่างไร
+3. ถ้า `torch_import` ใช้เวลาสูงเมื่อเทียบกับภาระงานขนาดเล็ก ผู้ใช้จะรวบสถานการณ์ทดลองเป็น batch หรือย้ายงานไป CPU/MPI อย่างไร
 4. ถ้าต้องสอนผู้บริหารด้วยรูปเดียว ผู้ใช้จะเลือกกราฟ speedup, efficiency หรือ roofline signal เพราะเหตุใด

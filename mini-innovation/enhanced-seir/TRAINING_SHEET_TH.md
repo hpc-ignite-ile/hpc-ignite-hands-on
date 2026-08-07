@@ -1,16 +1,16 @@
-# Training Sheet: Enhanced SEIR Performance Clinic บน LANTA
+# แผ่นงานฝึกปฏิบัติ: Enhanced SEIR Performance Clinic บน LANTA
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-หน้านี้เป็นแผ่นงานสำหรับผู้เรียนในห้องอบรม ผู้ใช้แปะคำสั่งทีละ block บน LANTA แล้วสร้าง data, source code, Slurm script, log และ result ได้ครบใน `$HOME/lanta-enhanced-seir` โดยสร้างทุกไฟล์จาก heredoc บน LANTA จากหน้าเดียว
+หน้านี้เป็นแผ่นงานสำหรับผู้เรียนในห้องอบรม ผู้ใช้คัดลอกคำสั่งทีละชุดบน LANTA แล้วสร้างข้อมูล โค้ด สคริปต์ Slurm บันทึกงาน และผลลัพธ์ได้ครบใน `$HOME/lanta-enhanced-seir` โดยสร้างทุกไฟล์จาก heredoc บน LANTA จากหน้าเดียว
 
-เป้าหมายคือเปรียบเทียบ workflow เดียวกันสองทาง: C++/MPI บน CPU และ PyTorch GPU/DDP จากนั้นอ่านหลักฐานแบบ booklet หน้า 15-17 ได้แก่ คำถามวิทยาศาสตร์, resource ที่ขอ, runtime, memory, GPU evidence, output CSV และข้อสรุปของ run ถัดไป
+เป้าหมายคือเปรียบเทียบกระบวนการเดียวกันสองทาง: C++/MPI บน CPU และ PyTorch GPU/DDP จากนั้นอ่านหลักฐานตามแนวทาง booklet หน้า 15-17 ได้แก่ คำถามวิทยาศาสตร์ ทรัพยากรที่ขอ เวลารัน หน่วยความจำ หลักฐาน GPU ไฟล์ CSV ผลลัพธ์ และข้อสรุปสำหรับการรันถัดไป
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-### ขั้นที่ 1: Login เข้า LANTA
+### ขั้นที่ 1: เข้าสู่ LANTA
 
-block นี้เปิด shell บน LANTA login node
+คำสั่งชุดนี้เปิดเชลล์บนเครื่องเข้าใช้งานของ LANTA
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
@@ -18,9 +18,9 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ## Copy-Paste บน LANTA
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
-block นี้สร้าง folder ของ practical และตั้งค่า account/partition สำหรับ job สั้น
+คำสั่งชุดนี้สร้างโฟลเดอร์ของแบบฝึก และตั้งค่าบัญชีโครงการกับพาร์ทิชันสำหรับงานสั้น
 
 ```bash
 mkdir -p "$HOME/lanta-enhanced-seir"
@@ -36,9 +36,9 @@ export LANTA_GPU_PARTITION="${LANTA_GPU_PARTITION:-gpu-devel}"
 pwd
 ```
 
-### ขั้นที่ 2: สร้าง input data
+### ขั้นที่ 2: สร้างข้อมูลเข้า
 
-block นี้สร้าง patch, contact matrix, mobility และ scenario table ที่ทั้ง MPI และ GPU ใช้ร่วมกัน
+คำสั่งชุดนี้สร้างพื้นที่ย่อย เมทริกซ์การสัมผัส ตารางการเดินทาง และตารางสถานการณ์ทดลองที่ทั้ง MPI และ GPU ใช้ร่วมกัน
 
 ```bash
 cat > data/patches.csv <<'CSV'
@@ -89,9 +89,9 @@ ls -lh data/*.csv
 sed -n '1,5p' data/patches.csv
 ```
 
-### ขั้นที่ 3: สร้าง C++/MPI source ส่วนที่ 1
+### ขั้นที่ 3: สร้างโค้ด C++/MPI ส่วนที่ 1
 
-block นี้สร้าง header, data structure และ CSV parser ของ `cpp_mpi/seir_mpi_train.cpp`
+คำสั่งชุดนี้สร้างส่วนหัว โครงสร้างข้อมูล และตัวอ่าน CSV ของ `cpp_mpi/seir_mpi_train.cpp`
 
 ```bash
 cat > cpp_mpi/seir_mpi_train.cpp <<'CPP'
@@ -122,9 +122,9 @@ int ix(int patch,int age){return patch*4+age;}
 CPP
 ```
 
-### ขั้นที่ 4: เติม C++/MPI source ส่วนที่ 2
+### ขั้นที่ 4: เติมโค้ด C++/MPI ส่วนที่ 2
 
-block นี้เติม kernel จำลอง SEIR-H-D ที่มี age contact, mobility, vaccination และ hospitalization
+คำสั่งชุดนี้เติมแกนคำนวณ SEIR-H-D ที่มีการสัมผัสตามวัย การเดินทาง การฉีดวัคซีน และการนอนโรงพยาบาล
 
 ```bash
 cat >> cpp_mpi/seir_mpi_train.cpp <<'CPP'
@@ -151,9 +151,9 @@ Summary run_one(const Scenario& sc,int rank){
 CPP
 ```
 
-### ขั้นที่ 5: เติม C++/MPI source ส่วนที่ 3
+### ขั้นที่ 5: เติมโค้ด C++/MPI ส่วนที่ 3
 
-block นี้เติม transition, MPI gather และการเขียน summary CSV
+คำสั่งชุดนี้เติมการเปลี่ยนสถานะ การรวมผลด้วย MPI และการเขียน CSV สรุป
 
 ```bash
 cat >> cpp_mpi/seir_mpi_train.cpp <<'CPP'
@@ -180,9 +180,9 @@ int main(int argc,char**argv){MPI_Init(&argc,&argv);int rank,size;MPI_Comm_rank(
 CPP
 ```
 
-### ขั้นที่ 6: สร้าง Slurm script สำหรับ C++/MPI
+### ขั้นที่ 6: สร้างสคริปต์ Slurm สำหรับ C++/MPI
 
-block นี้สร้าง job ที่ compile ด้วย Cray C++ wrapper และรันด้วย `srun`
+คำสั่งชุดนี้สร้างงานที่คอมไพล์ด้วย Cray C++ wrapper และรันด้วย `srun`
 
 ```bash
 cat > jobs/seir_mpi_train.sbatch <<'SLURM'
@@ -210,9 +210,9 @@ sacct -j "$SLURM_JOB_ID" --format=JobID,JobName,Partition,State,Elapsed,AllocCPU
 SLURM
 ```
 
-### ขั้นที่ 7: ส่ง C++/MPI job
+### ขั้นที่ 7: ส่งงาน C++/MPI
 
-block นี้ส่งงานและเก็บ job id ไว้ใช้เปรียบเทียบ
+คำสั่งชุดนี้ส่งงานและเก็บเลขงานไว้ใช้เปรียบเทียบ
 
 ```bash
 mpi_job=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/seir_mpi_train.sbatch)
@@ -221,9 +221,9 @@ echo "MPI job: $mpi_job"
 squeue -j "$mpi_job"
 ```
 
-### ขั้นที่ 8: อ่านผล C++/MPI job
+### ขั้นที่ 8: อ่านผลงาน C++/MPI
 
-block นี้อ่าน log, accounting และ summary CSV หลัง job จบ
+คำสั่งชุดนี้อ่านบันทึกงาน บัญชีทรัพยากร และ CSV สรุปหลังงานจบ
 
 ```bash
 squeue -j "$mpi_job"
@@ -232,9 +232,9 @@ tail -80 "logs/seir-mpi-train_${mpi_job}.out"
 sed -n '1,12p' "results/seir_mpi_summary_${mpi_job}.csv"
 ```
 
-### ขั้นที่ 9: สร้าง PyTorch/DDP source ส่วนที่ 1
+### ขั้นที่ 9: สร้างโค้ด PyTorch/DDP ส่วนที่ 1
 
-block นี้สร้าง import, scenario reader และ module buffers สำหรับ tensor SEIR-H-D
+คำสั่งชุดนี้สร้างส่วน import ตัวอ่านสถานการณ์ทดลอง และ buffer ของโมดูลสำหรับ SEIR-H-D บน tensor
 
 ```bash
 cat > torch_ddp/seir_torch_train.py <<'PY'
@@ -267,7 +267,7 @@ PY
 
 ### ขั้นที่ 10: เติม PyTorch/DDP source ส่วนที่ 2
 
-block นี้เติม forward pass แบบ batch scenario บน tensor device
+คำสั่งชุดนี้เติม forward pass สำหรับสถานการณ์ทดลองแบบ batch บนอุปกรณ์ tensor
 
 ```bash
 cat >> torch_ddp/seir_torch_train.py <<'PY'
@@ -298,7 +298,7 @@ PY
 
 ### ขั้นที่ 11: เติม PyTorch/DDP source ส่วนที่ 3
 
-block นี้เติม distributed setup, scenario sharding และ CSV writer
+คำสั่งชุดนี้เติมการตั้งค่าการรันกระจายงาน การแบ่งสถานการณ์ทดลองให้แต่ละ rank และตัวเขียน CSV
 
 ```bash
 cat >> torch_ddp/seir_torch_train.py <<'PY'
@@ -332,9 +332,9 @@ if __name__=="__main__": main()
 PY
 ```
 
-### ขั้นที่ 12: สร้าง Slurm script สำหรับ PyTorch GPU/DDP
+### ขั้นที่ 12: สร้างสคริปต์ Slurm สำหรับ PyTorch GPU/DDP
 
-block นี้สร้าง job ที่ใช้ `torchrun` และ PyTorch environment ของ LANTA
+คำสั่งชุดนี้สร้างงานที่ใช้ `torchrun` และสภาพแวดล้อม PyTorch ของ LANTA
 
 ```bash
 cat > jobs/seir_torch_gpu.sbatch <<'SLURM'
@@ -370,9 +370,9 @@ sacct -j "$SLURM_JOB_ID" --format=JobID,JobName,Partition,State,Elapsed,AllocCPU
 SLURM
 ```
 
-### ขั้นที่ 13: ส่ง PyTorch GPU job
+### ขั้นที่ 13: ส่งงาน PyTorch GPU
 
-block นี้ส่งงาน GPU และเก็บ job id ไว้ใช้เปรียบเทียบ
+คำสั่งชุดนี้ส่งงาน GPU และเก็บเลขงานไว้ใช้เปรียบเทียบ
 
 ```bash
 gpu_job=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_GPU_PARTITION" --parsable jobs/seir_torch_gpu.sbatch)
@@ -383,7 +383,7 @@ squeue -j "$gpu_job"
 
 ### ขั้นที่ 14: อ่านผล PyTorch GPU job
 
-block นี้อ่าน log, accounting, GPU evidence และ summary CSV หลัง job จบ
+คำสั่งชุดนี้อ่านบันทึกงาน บัญชีทรัพยากร หลักฐาน GPU และ CSV สรุปหลังงานจบ
 
 ```bash
 squeue -j "$gpu_job"
@@ -393,9 +393,9 @@ sed -n '1,20p' "notes/nvidia-smi_${gpu_job}.txt"
 sed -n '1,12p' "results/seir_torch_summary_${gpu_job}.csv"
 ```
 
-### ขั้นที่ 15: สร้าง script สรุป performance
+### ขั้นที่ 15: สร้างสคริปต์สรุปสมรรถนะ
 
-block นี้สร้าง script ที่รวม summary ของ MPI และ GPU เป็นตารางเดียว
+คำสั่งชุดนี้สร้างสคริปต์ที่รวมผลสรุปของ MPI และ GPU เป็นตารางเดียว
 
 ```bash
 cat > src/compare_perf.py <<'PY'
@@ -430,7 +430,7 @@ PY
 
 ### ขั้นที่ 16: ดูผลเปรียบเทียบ
 
-block นี้สร้างตารางเปรียบเทียบและเปิดดูหลักฐานทั้งหมดที่ควรส่งท้าย lab
+คำสั่งชุดนี้สร้างตารางเปรียบเทียบและเปิดดูหลักฐานทั้งหมดที่ควรส่งท้ายบทฝึก
 
 ```bash
 module purge
@@ -446,14 +446,14 @@ ls -lh logs notes results | sed -n '1,80p'
 
 ผลที่ใช้สอนได้ควรตอบได้ห้าข้อ
 
-1. job ทั้งสองจบ `COMPLETED` และ `ExitCode` เป็น `0:0`
+1. งานทั้งสองจบ `COMPLETED` และ `ExitCode` เป็น `0:0`
 2. `attack_rate` อยู่ในช่วง `0` ถึง `1`
-3. policy `combined` ลด `peak_infectious` เมื่อเทียบกับ `baseline`
-4. C++/MPI ใช้ CPU หลาย rank เพื่อแบ่ง scenario ensemble
-5. PyTorch/GPU มีค่า startup overhead จาก `torchrun` และ GPU allocation ที่มองเห็นจาก `nvidia-smi`
+3. นโยบาย `combined` ลด `peak_infectious` เมื่อเทียบกับ `baseline`
+4. C++/MPI ใช้ CPU หลาย rank เพื่อแบ่งกลุ่มสถานการณ์ทดลอง
+5. PyTorch/GPU มีค่า overhead ตอนเริ่มงานจาก `torchrun` และการจัดสรร GPU ที่มองเห็นจาก `nvidia-smi`
 
 ## คำถามสะท้อนผล
 
-- ถ้าเพิ่ม scenario จาก 6 เป็น 600 งาน CPU/MPI หรือ GPU/DDP ควรเปลี่ยนอย่างไร
-- ควรเปลี่ยน resource ทีละปัจจัยใดก่อน เช่น `--ntasks`, `--gpus-per-node`, จำนวนวัน หรือจำนวน scenario
-- หลักฐานใดบอกว่าคอขวดอยู่ที่ scheduler startup, CPU compute, GPU launch, memory หรือ I/O
+- ถ้าเพิ่มสถานการณ์ทดลองจาก 6 เป็น 600 งาน CPU/MPI หรือ GPU/DDP ควรเปลี่ยนอย่างไร
+- ควรเปลี่ยนทรัพยากรทีละปัจจัยใดก่อน เช่น `--ntasks`, `--gpus-per-node`, จำนวนวัน หรือจำนวนสถานการณ์ทดลอง
+- หลักฐานใดบอกว่าคอขวดอยู่ที่การเริ่มงานของตัวจัดคิว การคำนวณบน CPU การเริ่มงานบน GPU หน่วยความจำ หรือ I/O

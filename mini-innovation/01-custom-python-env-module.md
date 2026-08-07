@@ -1,20 +1,20 @@
-# 01 สร้าง Custom Python Environment และ Module
+# 01 สร้างสภาพแวดล้อม Python และโมดูลสำหรับกลุ่ม
 
-หน้านี้ใช้เตรียม environment กลางสำหรับ mini innovation แบบ epidemic ABS บน LANTA โดยติดตั้ง Mesa, scientific Python, ipykernel และ JupyterLab ลงใน project space แล้วสร้าง Lmod module ให้ผู้ใช้โหลดซ้ำได้ทั้งบน login node, compute node และ Slurm job
+หน้านี้ใช้เตรียมสภาพแวดล้อม Python กลางสำหรับนวัตกรรมย่อยแบบโรคระบาดด้วย ABS บน LANTA โดยติดตั้ง Mesa, ชุดวิทยาศาสตร์ของ Python, ipykernel และ JupyterLab ลงในพื้นที่โครงการ แล้วสร้างโมดูล Lmod ให้ผู้ใช้โหลดซ้ำได้ทั้งบนเครื่องเข้าใช้งาน เครื่องคำนวณ และงาน Slurm
 
-บทเรียนนี้แยกบทบาทเป็นสองส่วน `hpc-mesa` คือ Python kernel ที่มี Mesa และ scientific packages ตาม version ของกิจกรรม ส่วน JupyterLab คือ server ที่เปิดหน้าเว็บ ถ้า LANTA มี site/default JupyterLab ให้ใช้งานใน session ของผู้ใช้ สามารถใช้ site JupyterLab เป็น server fallback ได้ โดยยังเลือก kernel `Python (hpc-mesa)` เพื่อให้ code simulation ใช้ package ชุดเดียวกัน
+บทเรียนนี้แยกบทบาทเป็นสองส่วน `hpc-mesa` คือเคอร์เนล Python ที่มี Mesa และชุดโปรแกรมวิทยาศาสตร์ตามรุ่นของกิจกรรม ส่วน JupyterLab คือเซิร์ฟเวอร์ที่เปิดหน้าเว็บ ถ้า LANTA มี JupyterLab กลางในรอบอบรม ผู้ใช้สามารถใช้เซิร์ฟเวอร์กลางเป็นทางสำรอง และยังเลือกเคอร์เนล `Python (hpc-mesa)` เพื่อให้โค้ดจำลองใช้ชุดโปรแกรมเดียวกัน
 
-สำหรับการเริ่มจากเครื่อง local ให้ดู [00-connect-to-lanta.md](00-connect-to-lanta.md) ก่อน หน้านี้ใช้ transfer host เพราะมีการดาวน์โหลด package
+สำหรับการเริ่มจากเครื่องผู้ใช้ ให้ดู [00-connect-to-lanta.md](00-connect-to-lanta.md) ก่อน หน้านี้ใช้เครื่องสำหรับถ่ายโอนข้อมูลเพราะมีการดาวน์โหลดชุดโปรแกรม
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `mamba create`, `conda run`, `python -m pip`, heredoc, Lua modulefile, `chmod`, `module use` และ `module load`
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: Login เข้า Transfer Host
+### ขั้นที่ 1: เข้าสู่เครื่องสำหรับถ่ายโอนข้อมูล
 
-block นี้เปิด shell บน transfer host ซึ่งเหมาะกับการสร้าง environment และดาวน์โหลด package
+คำสั่งชุดนี้เปิดเชลล์บนเครื่องสำหรับถ่ายโอนข้อมูล ซึ่งเหมาะกับการสร้างสภาพแวดล้อมและดาวน์โหลดชุดโปรแกรม
 
 ```bash
 ssh <lanta-username>@transfer.lanta.nstda.or.th
@@ -22,11 +22,11 @@ ssh <lanta-username>@transfer.lanta.nstda.or.th
 
 ## Copy-Paste บน Transfer Host
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม Workspace
+### ขั้นที่ 1: เตรียมพื้นที่ทำงาน
 
-block นี้สร้าง workspace และรับ project directory ที่ใช้เก็บ environment, modulefile และ cache
+คำสั่งชุดนี้สร้างพื้นที่ทำงาน และรับเส้นทางพื้นที่โครงการที่จะใช้เก็บสภาพแวดล้อม โมดูล และแคชของการติดตั้ง
 
 ```bash
 mkdir -p "$HOME/lanta-episprint"
@@ -39,9 +39,9 @@ if [ -z "${LANTA_PROJECT:-}" ]; then
 fi
 ```
 
-### ขั้นที่ 2: ตั้ง Path ของ Environment
+### ขั้นที่ 2: ตั้งเส้นทางของสภาพแวดล้อม
 
-block นี้กำหนด path แบบใช้ซ้ำ เพื่อให้ทุกคนในกลุ่มโหลด module เดียวกันและใช้ cache ใน project space
+คำสั่งชุดนี้กำหนดเส้นทางแบบใช้ซ้ำ เพื่อให้สมาชิกกลุ่มโหลดโมดูลเดียวกันและใช้แคชในพื้นที่โครงการร่วมกัน
 
 ```bash
 export EPI_ENV_NAME="${EPI_ENV_NAME:-hpc-mesa}"
@@ -52,9 +52,9 @@ export CONDA_PKGS_DIRS="${CONDA_PKGS_DIRS:-$LANTA_PROJECT/conda-pkgs}"
 export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$LANTA_PROJECT/pip-cache}"
 ```
 
-### ขั้นที่ 3: สร้าง Folder กลาง
+### ขั้นที่ 3: สร้างโฟลเดอร์กลาง
 
-block นี้สร้าง directory ที่ใช้เก็บ conda environment, modulefile และ cache
+คำสั่งชุดนี้สร้างไดเรกทอรีสำหรับเก็บสภาพแวดล้อม conda ไฟล์โมดูล และแคช
 
 ```bash
 mkdir -p "$LANTA_PROJECT/envs"
@@ -65,7 +65,7 @@ mkdir -p "$PIP_CACHE_DIR"
 
 ### ขั้นที่ 4: โหลด Mamba
 
-block นี้โหลด package manager ที่ใช้สร้าง environment บน transfer host
+คำสั่งชุดนี้โหลดตัวจัดการแพ็กเกจที่ใช้สร้างสภาพแวดล้อมบนเครื่องสำหรับถ่ายโอนข้อมูล
 
 ```bash
 module purge
@@ -73,9 +73,9 @@ module load Mamba/23.11.0-0
 mamba --version
 ```
 
-### ขั้นที่ 5: สร้าง Environment เมื่อ Path ยังว่าง
+### ขั้นที่ 5: สร้างสภาพแวดล้อมเมื่อเส้นทางยังว่าง
 
-block นี้สร้าง environment ด้วย Python 3.10 และ scientific packages หลัก เมื่อ path มี environment เดิมอยู่ คำสั่งจะแสดง path เดิมเพื่อให้ตรวจต่อ
+คำสั่งชุดนี้สร้างสภาพแวดล้อมด้วย Python 3.10 และชุดโปรแกรมวิทยาศาสตร์หลัก เมื่อเส้นทางมีสภาพแวดล้อมเดิมอยู่ คำสั่งจะแสดงเส้นทางเดิมเพื่อให้ตรวจต่อ
 
 ```bash
 if [ ! -x "$EPI_ENV_PREFIX/bin/python" ]; then
@@ -87,9 +87,9 @@ else
 fi
 ```
 
-### ขั้นที่ 6: เติม Package สำหรับ Kernel และ Server สำรอง
+### ขั้นที่ 6: เติมแพ็กเกจสำหรับเคอร์เนลและเซิร์ฟเวอร์สำรอง
 
-block นี้ติดตั้งหรือปรับให้มี package ที่ mini innovation ใช้จริง แม้ environment จะถูกสร้างไว้ก่อนหน้าแล้ว ขั้นนี้ทำให้ `hpc-mesa` เป็น kernel ที่ครบถ้วน และเป็น JupyterLab server สำรองเมื่อ site/default JupyterLab ยังขาดใน session นั้น
+คำสั่งชุดนี้ติดตั้งหรือปรับให้มีแพ็กเกจที่นวัตกรรมย่อยใช้จริง แม้สภาพแวดล้อมจะถูกสร้างไว้ก่อนหน้าแล้ว ขั้นนี้ทำให้ `hpc-mesa` เป็นเคอร์เนลที่ครบถ้วน และเป็นเซิร์ฟเวอร์ JupyterLab สำรองเมื่อรอบใช้งานนั้นยังขาด JupyterLab กลาง
 
 ```bash
 conda run -p "$EPI_ENV_PREFIX" python -m pip install --no-cache-dir \
@@ -101,7 +101,7 @@ conda run -p "$EPI_ENV_PREFIX" python -m pip install --no-cache-dir \
 
 ### ขั้นที่ 7: สร้าง Modulefile
 
-block นี้สร้างไฟล์ Lua module ชื่อ `hpc-mesa/2.3.4` เพื่อให้ผู้ใช้เรียก environment ด้วย `module load`
+คำสั่งชุดนี้สร้างไฟล์โมดูล Lua ชื่อ `hpc-mesa/2.3.4` เพื่อให้ผู้ใช้เรียกสภาพแวดล้อมด้วย `module load`
 
 ```bash
 cat > "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" <<'LUA'
@@ -119,9 +119,9 @@ setenv("PYTHONNOUSERSITE", "1")
 LUA
 ```
 
-### ขั้นที่ 8: ใส่ Path จริงลง Modulefile
+### ขั้นที่ 8: ใส่เส้นทางจริงลง Modulefile
 
-block นี้แทนค่า placeholder ใน modulefile ด้วย path ของ environment ใน project space
+คำสั่งชุดนี้แทนค่า placeholder ในไฟล์โมดูลด้วยเส้นทางของสภาพแวดล้อมในพื้นที่โครงการ
 
 ```bash
 python - "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" "$EPI_ENV_PREFIX" <<'PY'
@@ -137,7 +137,7 @@ PY
 
 ### ขั้นที่ 9: ปรับสิทธิ์สำหรับกลุ่ม
 
-block นี้ให้สมาชิกกลุ่มอ่านและใช้ environment/modulefile ได้ และตั้ง setgid bit ให้ folder ใหม่สืบทอด group เดิม
+คำสั่งชุดนี้ให้สมาชิกกลุ่มอ่านและใช้สภาพแวดล้อมกับไฟล์โมดูลได้ และตั้ง setgid bit ให้โฟลเดอร์ใหม่สืบทอดกลุ่มเดิม
 
 ```bash
 chmod -R g+rwX "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT" "$CONDA_PKGS_DIRS" "$PIP_CACHE_DIR" 2>/dev/null || true
@@ -146,7 +146,7 @@ find "$LANTA_PROJECT/envs" "$EPI_MODULE_ROOT" -type d -exec chmod g+s {} \; 2>/d
 
 ### ขั้นที่ 10: โหลด Module และตรวจ Package
 
-block นี้ตรวจว่า `python` และ `jupyter` มาจาก environment กลาง และ package สำคัญ import ได้ครบ
+คำสั่งชุดนี้ตรวจว่า `python` และ `jupyter` มาจากสภาพแวดล้อมกลาง และแพ็กเกจสำคัญนำเข้าได้ครบ
 
 ```bash
 module purge
@@ -157,9 +157,9 @@ which jupyter
 jupyter lab --version
 ```
 
-### ขั้นที่ 11: ตรวจ Version ของ Scientific Stack
+### ขั้นที่ 11: ตรวจรุ่นของชุดโปรแกรมวิทยาศาสตร์
 
-block นี้บันทึก version ของ package หลักและ API ของ Mesa ที่ tutorial ใช้
+คำสั่งชุดนี้บันทึกรุ่นของแพ็กเกจหลักและ API ของ Mesa ที่บทเรียนใช้
 
 ```bash
 python - <<'PY'
@@ -189,16 +189,16 @@ PY
 
 ### ขั้นที่ 12: ลงทะเบียน Kernel สำหรับ JupyterLab
 
-block นี้สร้าง kernelspec ชื่อ `hpc-mesa` ในพื้นที่ผู้ใช้ เพื่อให้ JupyterLab จาก env นี้หรือ site/default JupyterLab แสดง kernel `Python (hpc-mesa)`
+คำสั่งชุดนี้สร้าง kernelspec ชื่อ `hpc-mesa` ในพื้นที่ผู้ใช้ เพื่อให้ JupyterLab จากสภาพแวดล้อมนี้หรือจากระบบกลางแสดงเคอร์เนล `Python (hpc-mesa)`
 
 ```bash
 python -m ipykernel install --user --name hpc-mesa --display-name "Python (hpc-mesa)"
 jupyter kernelspec list
 ```
 
-### ขั้นที่ 13: บันทึกค่า Environment สำหรับบทถัดไป
+### ขั้นที่ 13: บันทึกค่าสภาพแวดล้อมสำหรับบทถัดไป
 
-block นี้เขียนไฟล์ `notes/hpc-mesa-env.sh` เพื่อให้ผู้ใช้ source ค่าเดิมในหน้า Jupyter และหน้า epidemic ABS
+คำสั่งชุดนี้เขียนไฟล์ `notes/hpc-mesa-env.sh` เพื่อให้ผู้ใช้โหลดค่าชุดเดิมในหน้า Jupyter และหน้า ABS โรคระบาด
 
 ```bash
 cat > notes/hpc-mesa-env.sh <<EOF
@@ -211,25 +211,25 @@ module load "hpc-mesa/$EPI_MODULE_VERSION"
 EOF
 ```
 
-### ขั้นที่ 14: อ่านไฟล์ Environment ที่บันทึกไว้
+### ขั้นที่ 14: อ่านไฟล์ค่าสภาพแวดล้อมที่บันทึกไว้
 
-block นี้เปิดดูไฟล์ที่บทถัดไปจะใช้ เพื่อยืนยันว่า path ตรงกับ project space
+คำสั่งชุดนี้เปิดดูไฟล์ที่บทถัดไปจะใช้ เพื่อยืนยันว่าเส้นทางตรงกับพื้นที่โครงการ
 
 ```bash
 cat notes/hpc-mesa-env.sh
 ```
 
-## Check บน Login Host
+## ตรวจบนเครื่องเข้าใช้งาน
 
-ออกจาก transfer host แล้วเข้า login host เพื่อทดสอบ module จากมุมมองที่ใช้ submit job
+ออกจากเครื่องสำหรับถ่ายโอนข้อมูล แล้วเข้าเครื่องเข้าใช้งานเพื่อทดสอบโมดูลจากมุมมองเดียวกับการส่งงาน
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
-### ขั้นที่ 1: เข้า Workspace และโหลดค่าเดิม
+### ขั้นที่ 1: เข้าพื้นที่ทำงานและโหลดค่าเดิม
 
-block นี้กลับเข้าสู่ workspace ของ mini innovation และโหลดค่าที่บันทึกไว้จาก transfer host
+คำสั่งชุดนี้กลับเข้าสู่พื้นที่ทำงานของนวัตกรรมย่อย และโหลดค่าที่บันทึกไว้จากเครื่องสำหรับถ่ายโอนข้อมูล
 
 ```bash
 cd "$HOME/lanta-episprint"
@@ -238,7 +238,7 @@ source notes/hpc-mesa-env.sh 2>/dev/null || true
 
 ### ขั้นที่ 2: ระบุ Module Root เมื่อต้องกรอกเอง
 
-block นี้รับ `EPI_MODULE_ROOT` เมื่อลืม source ไฟล์จากขั้นก่อน หรือเปิด shell ใหม่
+คำสั่งชุดนี้รับค่า `EPI_MODULE_ROOT` เมื่อยังขาดการโหลดไฟล์จากขั้นก่อน หรือเมื่อเปิดเชลล์ใหม่
 
 ```bash
 if [ -z "${EPI_MODULE_ROOT:-}" ]; then
@@ -247,9 +247,9 @@ if [ -z "${EPI_MODULE_ROOT:-}" ]; then
 fi
 ```
 
-### ขั้นที่ 3: ทดสอบ Module บน Login Host
+### ขั้นที่ 3: ทดสอบโมดูลบนเครื่องเข้าใช้งาน
 
-block นี้ยืนยันว่า login host เห็น module เดียวกับ transfer host และ JupyterLab พร้อมสำหรับ Slurm job
+คำสั่งชุดนี้ยืนยันว่าเครื่องเข้าใช้งานเห็นโมดูลเดียวกับเครื่องสำหรับถ่ายโอนข้อมูล และ JupyterLab พร้อมใช้ภายในงาน Slurm
 
 ```bash
 module purge
@@ -263,8 +263,8 @@ python -c "import mesa; from mesa.time import RandomActivation; print('mesa', me
 
 ## คำอธิบาย
 
-ทีมสร้าง environment แบบ `--prefix` ใน project space เพื่อให้ใช้ร่วมกันได้ทั้งกลุ่มและอ้างอิง path กลางของ project การแยกขั้นสร้าง environment ออกจากขั้นเติม package ช่วยให้ env เดิมที่มีอยู่แล้วได้รับ `jupyterlab`, `notebook`, `ipykernel` และ `mesa` ตาม version ที่บทเรียนใช้จริง
+ทีมสร้างสภาพแวดล้อมแบบ `--prefix` ในพื้นที่โครงการเพื่อให้ใช้ร่วมกันได้ทั้งกลุ่มและอ้างอิงเส้นทางกลางของโครงการ การแยกขั้นสร้างสภาพแวดล้อมออกจากขั้นเติมแพ็กเกจช่วยให้สภาพแวดล้อมเดิมที่มีอยู่แล้วได้รับ `jupyterlab`, `notebook`, `ipykernel` และ `mesa` ตามรุ่นที่บทเรียนใช้จริง
 
-หลักฐานที่ใช้ตัดสินความพร้อมมีสี่ส่วน: `which python` ต้องชี้เข้า `$LANTA_PROJECT/envs/hpc-mesa`, `jupyter lab --version` ต้องแสดงเลข version เมื่อใช้ env นี้เป็น server, `jupyter kernelspec list` ต้องมี `hpc-mesa`, และ Python import ต้องรายงาน `mesa 2.3.4` พร้อม API `RandomActivation` กับ `MultiGrid` เมื่อครบสี่ส่วนนี้ บท Jupyter และบท epidemic ABS จะใช้ runtime เดียวกันทั้งแบบ interactive และ batch job
+หลักฐานที่ใช้ตัดสินความพร้อมมีสี่ส่วน: `which python` ต้องชี้เข้า `$LANTA_PROJECT/envs/hpc-mesa`, `jupyter lab --version` ต้องแสดงเลขรุ่นเมื่อใช้สภาพแวดล้อมนี้เป็นเซิร์ฟเวอร์, `jupyter kernelspec list` ต้องมี `hpc-mesa`, และการนำเข้าแพ็กเกจใน Python ต้องรายงาน `mesa 2.3.4` พร้อม API `RandomActivation` กับ `MultiGrid` เมื่อครบสี่ส่วนนี้ บท Jupyter และบท ABS โรคระบาดจะใช้รันไทม์เดียวกันทั้งแบบโต้ตอบและแบบงานชุด
 
-ผลตรวจด้วยบัญชี `tn642` เมื่อ 2026-08-02 พบว่า `jupyter lab` พร้อมใช้งานใน `hpc-mesa` หลังเติม package ตามขั้นที่ 6 ส่วน PATH เริ่มต้น, `cray-python/3.10.10`, และ `Mamba/23.11.0-0` ยังไร้ executable `jupyter lab` ใน session ที่ตรวจ ดังนั้น training path หลักใช้ `hpc-mesa` เป็น server และ kernel ส่วน site/default JupyterLab เป็น fallback เมื่อผู้ดูแลเปิดให้ผ่าน module หรือ PATH ของรอบอบรมนั้น
+ผลตรวจด้วยบัญชี `tn642` เมื่อ 2026-08-02 พบว่า `jupyter lab` พร้อมใช้งานใน `hpc-mesa` หลังเติมแพ็กเกจตามขั้นที่ 6 ส่วน PATH เริ่มต้น, `cray-python/3.10.10`, และ `Mamba/23.11.0-0` ยังขาด executable `jupyter lab` ในรอบตรวจนั้น ดังนั้นเส้นทางหลักของการอบรมใช้ `hpc-mesa` เป็นทั้งเซิร์ฟเวอร์และเคอร์เนล ส่วน JupyterLab กลางของระบบใช้เป็นทางสำรองเมื่อผู้ดูแลเปิดให้ผ่านโมดูลหรือ PATH ของรอบอบรมนั้น

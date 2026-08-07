@@ -1,41 +1,41 @@
-# 04 Co-Simulation: Scientific Thermal Model กับ ABS แบบ Twin-B
+# 04 การจำลองร่วม: แบบจำลองความร้อนเชิงวิทยาศาสตร์กับ ABS แบบ Twin-B
 
-หน้านี้สร้าง mini innovation ชื่อ **Twin-B MicroCosim** โดยย่อแนวคิดจาก [wdiazcarballo/hpcignite-twinb](https://github.com/wdiazcarballo/hpcignite-twinb) ให้เหมาะกับกิจกรรมสดบน LANTA สำหรับผู้ใช้ประมาณ 40 คน
+หน้านี้สร้างนวัตกรรมย่อยชื่อ **Twin-B MicroCosim** โดยย่อแนวคิดจาก [wdiazcarballo/hpcignite-twinb](https://github.com/wdiazcarballo/hpcignite-twinb) ให้เหมาะกับกิจกรรมสดบน LANTA สำหรับผู้ใช้ประมาณ 40 คน
 
-ต้นฉบับ Twin-B ใช้ EnergyPlus เป็น scientific building-energy model และใช้ Mesa เป็น agent-based simulation ของผู้ใช้อาคาร การสื่อสารหลักคือ scientific model ส่งอุณหภูมิราย zone ให้ agent ส่วน agent ส่ง cooling setpoint request กลับไปควบคุม model อาคาร
+ต้นฉบับ Twin-B ใช้ EnergyPlus เป็นแบบจำลองพลังงานอาคารเชิงวิทยาศาสตร์ และใช้ Mesa เป็น agent-based simulation ของผู้ใช้อาคาร การสื่อสารหลักคือแบบจำลองวิทยาศาสตร์ส่งอุณหภูมิรายโซนให้เอเจนต์ ส่วนเอเจนต์ส่งคำขอจุดตั้งอุณหภูมิของระบบทำความเย็นกลับไปควบคุมแบบจำลองอาคาร
 
-หน้านี้ใช้ **thermal surrogate model** แบบ first-order heat balance แทน EnergyPlus เต็ม เพื่อให้รันสั้นบน `compute-devel` และยังรักษาสัญญา data exchange เดียวกัน: `zone_temperature -> occupant comfort -> setpoint request -> cooling energy -> next zone_temperature`
+หน้านี้ใช้ **thermal surrogate model** แบบสมดุลความร้อนอันดับหนึ่งแทน EnergyPlus เต็ม เพื่อให้รันสั้นบน `compute-devel` และยังรักษาสัญญาแลกเปลี่ยนข้อมูลเดิม: `zone_temperature -> occupant comfort -> setpoint request -> cooling energy -> next zone_temperature`
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `module use`, `module load`, `cat > file <<'PY'`, `sbatch`, `squeue`, `tail`, `sacct`, `sed`, และ job array
 
 ## ภาพรวม
 
 ```text
-Scientific model: zone heat balance + outdoor weather
-        | sends zone temperature
+แบบจำลองวิทยาศาสตร์: สมดุลความร้อนของโซน + อากาศภายนอก
+        | ส่งอุณหภูมิของโซน
         v
-ABS model: Mesa occupants decide AC demand and preferred setpoint
-        | sends setpoint request by zone
+แบบจำลอง ABS: ผู้ใช้อาคารใน Mesa ตัดสินความต้องการแอร์และจุดตั้งอุณหภูมิ
+        | ส่งคำขอจุดตั้งอุณหภูมิแยกตามโซน
         v
-Scientific model: updates cooling energy and next temperature
+แบบจำลองวิทยาศาสตร์: อัปเดตพลังงานทำความเย็นและอุณหภูมิถัดไป
 ```
 
 ## Mapping จาก Twin-B ต้นฉบับ
 
-| Twin-B เต็ม | Twin-B MicroCosim ในบทนี้ | เหตุผลสำหรับ training |
+| Twin-B เต็ม | Twin-B MicroCosim ในบทนี้ | เหตุผลสำหรับการอบรม |
 |---|---|---|
-| EnergyPlus IDF + EPW | first-order thermal surrogate + synthetic hot-day weather | job จบในระดับวินาทีและตรวจสมการได้ |
-| `BuildingModel` ใน Mesa | `TwinBCosim` ใน Mesa | เก็บ agent comfort และ setpoint request |
-| EnergyPlus callback | loop co-simulation ราย timestep | เห็น data contract ชัดใน CSV |
-| distributed setpoint aggregation | Slurm array หลาย scenario | เห็น HPC workflow และ reproducibility |
+| EnergyPlus IDF + EPW | แบบจำลองความร้อนอันดับหนึ่ง + อากาศวันร้อนแบบสังเคราะห์ | งานจบในระดับวินาทีและตรวจสมการได้ |
+| `BuildingModel` ใน Mesa | `TwinBCosim` ใน Mesa | เก็บความสบายของเอเจนต์และคำขอจุดตั้งอุณหภูมิ |
+| EnergyPlus callback | วงรอบจำลองร่วมราย timestep | เห็นสัญญาข้อมูลชัดใน CSV |
+| การรวมคำขอจุดตั้งอุณหภูมิแบบกระจาย | Slurm array หลายสถานการณ์ทดลอง | เห็นกระบวนการ HPC และการทำซ้ำตรวจสอบได้ |
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: Login เข้า LANTA
+### ขั้นที่ 1: เข้าสู่ LANTA
 
-block นี้เปิด shell บน login node เพื่อสร้าง source และส่ง Slurm job
+คำสั่งชุดนี้เปิดเชลล์บนเครื่องเข้าใช้งานเพื่อสร้างโค้ดและส่งงาน Slurm
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
@@ -45,11 +45,11 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ## Copy-Paste บน LANTA
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม Workspace และตัวแปร
+### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
-block นี้สร้างพื้นที่ทำงานของ co-simulation และตั้งค่า account, partition, และ module root
+คำสั่งชุดนี้สร้างพื้นที่ทำงานของการจำลองร่วม และตั้งค่าบัญชีโครงการ พาร์ทิชัน และตำแหน่งโมดูล
 
 ```bash
 mkdir -p "$HOME/lanta-twinb-micro"
@@ -71,9 +71,9 @@ export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 ```
 
-### ขั้นที่ 2: ตรวจ Environment
+### ขั้นที่ 2: ตรวจสภาพแวดล้อม
 
-block นี้โหลด `hpc-mesa/2.3.4` และตรวจ package ที่ใช้สร้าง co-simulation
+คำสั่งชุดนี้โหลด `hpc-mesa/2.3.4` และตรวจแพ็กเกจที่ใช้สร้างการจำลองร่วม
 
 ```bash
 module purge
@@ -87,9 +87,9 @@ print("pyyaml", yaml.__version__)
 PY
 ```
 
-### ขั้นที่ 3: สร้าง Config ของ Scientific Model
+### ขั้นที่ 3: สร้างไฟล์กำหนดค่าของแบบจำลองวิทยาศาสตร์
 
-block นี้กำหนด zone, timestep, weather synthetic และ policy ของ cooling setpoint
+คำสั่งชุดนี้กำหนดโซน ช่วงเวลา อากาศสังเคราะห์ และนโยบายของจุดตั้งอุณหภูมิระบบทำความเย็น
 
 ```bash
 cat > configs/twinb_micro.yaml <<'EOF'
@@ -115,9 +115,9 @@ policies:
 EOF
 ```
 
-### ขั้นที่ 4: สร้าง Config ของ Occupant Agents
+### ขั้นที่ 4: สร้างไฟล์กำหนดค่าของเอเจนต์ผู้ใช้อาคาร
 
-block นี้กำหนดประชากรจำลองตามแนวคิดของ Twin-B: student, staff และ visitor มี preferred temperature และ comfort tolerance ต่างกัน
+คำสั่งชุดนี้กำหนดประชากรจำลองตามแนวคิดของ Twin-B: นักศึกษา บุคลากร และผู้เยี่ยมชมมีอุณหภูมิที่ชอบและช่วงทนต่อความสบายต่างกัน
 
 ```bash
 cat > configs/occupants.json <<'EOF'
@@ -143,9 +143,9 @@ cat > configs/occupants.json <<'EOF'
 EOF
 ```
 
-### ขั้นที่ 5: เขียน Scientific Thermal Model
+### ขั้นที่ 5: เขียนแบบจำลองความร้อนเชิงวิทยาศาสตร์
 
-block นี้สร้างครึ่งแรกของ `src/thermal_surrogate.py` สำหรับเก็บ state ของ zone และคำนวณ outdoor temperature ตามชั่วโมง
+คำสั่งชุดนี้สร้างครึ่งแรกของ `src/thermal_surrogate.py` สำหรับเก็บสถานะของโซนและคำนวณอุณหภูมิภายนอกตามชั่วโมง
 
 ```bash
 cat > src/thermal_surrogate.py <<'PY'
@@ -174,9 +174,9 @@ class ThermalSurrogate:
 PY
 ```
 
-### ขั้นที่ 6: เติม Coupling Step ของ Scientific Model
+### ขั้นที่ 6: เติมขั้นเชื่อมแบบจำลองวิทยาศาสตร์
 
-block นี้เติมสมการ heat balance และรับ setpoint request จาก ABS ราย zone
+คำสั่งชุดนี้เติมสมการสมดุลความร้อน และรับคำขอจุดตั้งอุณหภูมิจาก ABS รายโซน
 
 ```bash
 cat >> src/thermal_surrogate.py <<'PY'
@@ -214,9 +214,9 @@ cat >> src/thermal_surrogate.py <<'PY'
 PY
 ```
 
-### ขั้นที่ 7: เขียน Mesa Agent
+### ขั้นที่ 7: เขียนเอเจนต์ของ Mesa
 
-block นี้สร้าง agent ที่อ่านอุณหภูมิห้องแล้วตัดสินใจขอเปิด cooling ตาม preferred temperature และ tolerance
+คำสั่งชุดนี้สร้างเอเจนต์ที่อ่านอุณหภูมิห้องแล้วตัดสินใจขอเปิดระบบทำความเย็นตามอุณหภูมิที่ชอบและช่วงทนต่อความสบาย
 
 ```bash
 cat > src/twinb_agents.py <<'PY'
@@ -247,9 +247,9 @@ class OccupantAgent(Agent):
 PY
 ```
 
-### ขั้นที่ 8: เขียน Mesa Model
+### ขั้นที่ 8: เขียนแบบจำลองของ Mesa
 
-block นี้สร้าง `TwinBCosim` ให้รวม agent request เป็น setpoint ราย zone แล้วส่งกลับ scientific model
+คำสั่งชุดนี้สร้าง `TwinBCosim` ให้รวมคำขอของเอเจนต์เป็นจุดตั้งอุณหภูมิรายโซน แล้วส่งกลับสู่แบบจำลองวิทยาศาสตร์
 
 ```bash
 cat >> src/twinb_agents.py <<'PY'
@@ -287,9 +287,9 @@ class TwinBCosim(Model):
 PY
 ```
 
-### ขั้นที่ 9: เติม Logic ของ Co-Simulation
+### ขั้นที่ 9: เติมตรรกะของการจำลองร่วม
 
-block นี้กำหนดเวลาที่ agent แต่ละประเภทอยู่ในอาคาร, การ clip setpoint ตาม policy และการบันทึก evidence ราย timestep
+คำสั่งชุดนี้กำหนดเวลาที่เอเจนต์แต่ละประเภทอยู่ในอาคาร การจำกัดจุดตั้งอุณหภูมิตามนโยบาย และการบันทึกหลักฐานราย timestep
 
 ```bash
 cat >> src/twinb_agents.py <<'PY'
@@ -323,9 +323,9 @@ cat >> src/twinb_agents.py <<'PY'
 PY
 ```
 
-### ขั้นที่ 10: เติม Step และ Export Records
+### ขั้นที่ 10: เติมการเดินหนึ่งก้าวและการส่งออกระเบียน
 
-block นี้ทำให้หนึ่ง timestep เดินครบวงจร scientific model -> ABS -> scientific model และเก็บ CSV-ready records
+คำสั่งชุดนี้ทำให้หนึ่ง timestep เดินครบวงจรแบบจำลองวิทยาศาสตร์ -> ABS -> แบบจำลองวิทยาศาสตร์ และเก็บระเบียนที่เขียนเป็น CSV ได้
 
 ```bash
 cat >> src/twinb_agents.py <<'PY'
@@ -357,9 +357,9 @@ cat >> src/twinb_agents.py <<'PY'
 PY
 ```
 
-### ขั้นที่ 11: สร้าง Runner
+### ขั้นที่ 11: สร้างตัวรัน
 
-block นี้สร้าง command line runner ที่อ่าน config, รัน co-simulation และเขียน agent/zone CSV
+คำสั่งชุดนี้สร้างตัวรันจาก command line ที่อ่านไฟล์กำหนดค่า รันการจำลองร่วม และเขียน CSV ของเอเจนต์กับโซน
 
 ```bash
 cat > src/run_twinb_cosim.py <<'PY'
@@ -395,9 +395,9 @@ pd.DataFrame(model.zone_records).to_csv(f"results/twinb_zone_{run_id}.csv", inde
 PY
 ```
 
-### ขั้นที่ 12: เติม Summary Output
+### ขั้นที่ 12: เติมผลลัพธ์สรุป
 
-block นี้ต่อท้าย runner เพื่อเขียน summary CSV ที่ใช้เปรียบเทียบ policy
+คำสั่งชุดนี้ต่อท้ายตัวรันเพื่อเขียน CSV สรุปที่ใช้เปรียบเทียบนโยบาย
 
 ```bash
 cat >> src/run_twinb_cosim.py <<'PY'
@@ -427,7 +427,7 @@ PY
 
 ### ขั้นที่ 13: สร้างตัวรวมผลลัพธ์
 
-block นี้รวม summary หลาย scenario และคำนวณค่าเฉลี่ยราย policy
+คำสั่งชุดนี้รวม CSV สรุปหลายสถานการณ์ทดลองและคำนวณค่าเฉลี่ยรายนโยบาย
 
 ```bash
 cat > src/merge_twinb_results.py <<'PY'
@@ -459,9 +459,9 @@ print(table.to_string(index=False))
 PY
 ```
 
-### ขั้นที่ 14: สร้าง AI Scaffold
+### ขั้นที่ 14: สร้างตัวช่วย AI
 
-block นี้สร้าง prompt ให้ AI ช่วยตรวจ coupling, scenario และผลลัพธ์ โดยอ้างอิง code/log/CSV
+คำสั่งชุดนี้สร้าง prompt ให้ AI ช่วยตรวจการเชื่อมแบบจำลอง สถานการณ์ทดลอง และผลลัพธ์ โดยอ้างอิงโค้ด บันทึกงาน และ CSV
 
 ```bash
 cat > prompts/twinb-ai-scaffold-th.md <<'EOF'
@@ -475,9 +475,9 @@ Result tutor: อ่าน twinb_policy_compare.csv แล้วอธิบา�
 EOF
 ```
 
-### ขั้นที่ 15: ตรวจ Syntax และรัน Smoke บน Login Node
+### ขั้นที่ 15: ตรวจ Syntax และรันตรวจควันบนเครื่องเข้าใช้งาน
 
-block นี้ compile source และรัน smoke ขนาดเล็กเพื่อจับ error ก่อนส่ง Slurm
+คำสั่งชุดนี้ตรวจคอมไพล์ซอร์ส และรันตรวจควันขนาดเล็กเพื่อจับข้อผิดพลาดก่อนส่ง Slurm
 
 ```bash
 python -m py_compile src/thermal_surrogate.py src/twinb_agents.py src/run_twinb_cosim.py src/merge_twinb_results.py
@@ -485,13 +485,13 @@ python src/run_twinb_cosim.py
 ls -lh results/twinb_summary_manual_0_balanced_101.csv
 ```
 
-## Example 1: Single Slurm Job
+## Example 1: งาน Slurm เดี่ยว
 
-single job ใช้ตรวจว่า co-simulation, account, partition และ module ใช้งานพร้อมกัน
+งานเดี่ยวใช้ตรวจว่าการจำลองร่วม บัญชีโครงการ พาร์ทิชัน และโมดูลใช้งานพร้อมกันได้
 
-### ขั้นที่ 1: สร้าง Slurm Script
+### ขั้นที่ 1: สร้างสคริปต์ Slurm
 
-block นี้สร้าง job ที่รัน scenario เดียวด้วย resource ขนาดเล็ก
+คำสั่งชุดนี้สร้างงานที่รันสถานการณ์ทดลองเดียวด้วยทรัพยากรขนาดเล็ก
 
 ```bash
 cat > jobs/twinb_single.sbatch <<'SLURM'
@@ -517,9 +517,9 @@ python src/run_twinb_cosim.py \
 SLURM
 ```
 
-### ขั้นที่ 2: ส่ง Single Job
+### ขั้นที่ 2: ส่งงานเดี่ยว
 
-block นี้ส่ง job และบันทึก job id เพื่ออ่าน log และ summary
+คำสั่งชุดนี้ส่งงานและบันทึกเลขงานเพื่ออ่านบันทึกและผลสรุป
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/twinb_single.sbatch)
@@ -528,13 +528,13 @@ echo "Submitted single job: $job_id"
 echo "Read: tail -80 logs/twinb_single_${job_id}.out"
 ```
 
-## Example 2: Slurm Job Array
+## Example 2: งาน Slurm แบบ Array
 
-job array ใช้เปรียบเทียบ policy หลายแบบในเวลาอบรมสั้น แต่ละ task เปลี่ยน scenario และ seed
+ชุดงานแบบ array ใช้เปรียบเทียบนโยบายหลายแบบในเวลาอบรมสั้น แต่ละงานย่อยเปลี่ยนสถานการณ์ทดลองและ seed
 
-### ขั้นที่ 1: สร้าง Scenario Table
+### ขั้นที่ 1: สร้างตารางสถานการณ์ทดลอง
 
-block นี้กำหนด 6 scenario เพื่อให้ LANTA กระจายเป็นงานย่อย
+คำสั่งชุดนี้กำหนด 6 สถานการณ์ทดลองเพื่อให้ LANTA กระจายเป็นงานย่อย
 
 ```bash
 cat > configs/twinb_scenarios.csv <<'EOF'
@@ -548,9 +548,9 @@ saving_302,energy_saving,302,32.5
 EOF
 ```
 
-### ขั้นที่ 2: สร้าง Array Slurm Script
+### ขั้นที่ 2: สร้างสคริปต์ Slurm สำหรับ Array
 
-block นี้อ่านหนึ่งแถวจาก CSV ต่อหนึ่ง array task แล้วสร้าง config ย่อยของ scenario นั้น
+คำสั่งชุดนี้อ่านหนึ่งแถวจาก CSV ต่อหนึ่ง array task แล้วสร้างไฟล์กำหนดค่าย่อยของสถานการณ์ทดลองนั้น
 
 ```bash
 cat > jobs/twinb_array.sbatch <<'SLURM'
@@ -591,9 +591,9 @@ python src/run_twinb_cosim.py --config "$run_config" --occupants configs/occupan
 SLURM
 ```
 
-### ขั้นที่ 3: ส่ง Array Job
+### ขั้นที่ 3: ส่งงานแบบ Array
 
-block นี้ส่ง array job และบันทึก job id
+คำสั่งชุดนี้ส่งงานแบบ array และบันทึกเลขงาน
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,EPI_MODULE_ROOT="$EPI_MODULE_ROOT" --parsable jobs/twinb_array.sbatch)
@@ -604,7 +604,7 @@ echo "Monitor: squeue -j $job_id"
 
 ### ขั้นที่ 4: รวมผล Array
 
-block นี้รวมเฉพาะ summary ของ array job ปัจจุบัน และสร้าง policy comparison
+คำสั่งชุดนี้รวมเฉพาะผลสรุปของงาน array ปัจจุบัน และสร้างตารางเปรียบเทียบนโยบาย
 
 ```bash
 module use "$EPI_MODULE_ROOT"
@@ -617,9 +617,9 @@ cat "results/twinb_policy_compare_${job_id}.csv"
 
 ## Check
 
-### ขั้นที่ 1: ตรวจ Job Evidence
+### ขั้นที่ 1: ตรวจหลักฐานของงาน
 
-block นี้ดู queue, accounting และ log ของ job ที่เพิ่งส่ง
+คำสั่งชุดนี้ดูคิวงาน บัญชีทรัพยากร และบันทึกของงานที่เพิ่งส่ง
 
 ```bash
 squeue -u "$USER"
@@ -627,9 +627,9 @@ sacct -j <jobid> --format=JobID,JobName,Partition,State,Elapsed,MaxRSS,ExitCode
 tail -80 logs/twinb_array_<jobid>_1.out
 ```
 
-### ขั้นที่ 2: ตรวจ Result Evidence
+### ขั้นที่ 2: ตรวจหลักฐานของผลลัพธ์
 
-block นี้เปิดดูไฟล์ผลลัพธ์หลักของ co-simulation
+คำสั่งชุดนี้เปิดดูไฟล์ผลลัพธ์หลักของการจำลองร่วม
 
 ```bash
 find results -maxdepth 1 -type f -name 'twinb_*csv' | sort | tail -30
@@ -644,19 +644,19 @@ head -5 results/twinb_zone_<jobid>_1_comfort_101.csv
 1. Slurm state เป็น `COMPLETED` และ `ExitCode` เป็น `0:0`
 2. `twinb_zone_*.csv` มีจำนวนแถวเท่ากับ `steps x zones`
 3. `energy_kwh` เป็นค่าศูนย์หรือบวก และสูงขึ้นเมื่อ cooling ทำงานถี่
-4. `setpoint_c` อยู่ในช่วง policy เช่น comfort, balanced หรือ energy_saving
-5. `twinb_policy_compare_*.csv` แสดง trade-off ระหว่าง energy และ discomfort จากหลาย seed
+4. `setpoint_c` อยู่ในช่วงนโยบาย เช่น comfort, balanced หรือ energy_saving
+5. `twinb_policy_compare_*.csv` แสดงความสัมพันธ์แลกเปลี่ยนระหว่างพลังงานและความสบายจากหลาย seed
 
 ## คำอธิบายเชิงวิชาการ
 
-Twin-B MicroCosim เป็น co-simulation แบบ time-stepped coupling ระหว่าง model เชิงฟิสิกส์และ ABS โดย state variable หลักคืออุณหภูมิราย zone ส่วน control variable คือ cooling setpoint ที่ได้จากการรวม decision ของ occupant agents
+Twin-B MicroCosim เป็นการจำลองร่วมแบบเดินทีละช่วงเวลา ระหว่างแบบจำลองเชิงฟิสิกส์และ ABS โดยตัวแปรสถานะหลักคืออุณหภูมิรายโซน ส่วนตัวแปรควบคุมคือจุดตั้งอุณหภูมิของระบบทำความเย็นที่ได้จากการรวมการตัดสินใจของเอเจนต์ผู้ใช้อาคาร
 
-scientific model ใช้สมการสมดุลความร้อนอันดับหนึ่งเพื่ออัปเดต `next_temp_c` จาก outdoor temperature, thermal inertia, internal heat gain จากจำนวนคน และ cooling rate จาก setpoint ส่วน ABS ใช้ Mesa สร้างประชากรที่มี preferred temperature และ comfort tolerance ต่างกัน Agent ประเมิน comfort จากอุณหภูมิที่ scientific model ส่งมา แล้วส่ง request กลับผ่าน `requested_setpoint_c`
+แบบจำลองวิทยาศาสตร์ใช้สมการสมดุลความร้อนอันดับหนึ่งเพื่ออัปเดต `next_temp_c` จากอุณหภูมิภายนอก ความเฉื่อยทางความร้อน ความร้อนภายในจากจำนวนคน และอัตราทำความเย็นจากจุดตั้งอุณหภูมิ ส่วน ABS ใช้ Mesa สร้างประชากรที่มีอุณหภูมิที่ชอบและช่วงทนต่อความสบายต่างกัน เอเจนต์ประเมินความสบายจากอุณหภูมิที่แบบจำลองวิทยาศาสตร์ส่งมา แล้วส่งคำขอกลับผ่าน `requested_setpoint_c`
 
-การออกแบบนี้เหมาะกับ LANTA เพราะผู้ใช้เห็นความหมายของ HPC ผ่านการกระจาย scenario มากกว่าการรัน simulation เดี่ยว งานหนึ่งชิ้นมี config, source, scheduler evidence, output CSV และ summary table ครบวงจร จึงใช้สอน reproducibility, coupling contract, policy sensitivity และการตรวจผลแบบ evidence-based ได้ในเวลาสั้น
+การออกแบบนี้เหมาะกับ LANTA เพราะผู้ใช้เห็นความหมายของ HPC ผ่านการกระจายสถานการณ์ทดลอง งานหนึ่งชิ้นมีไฟล์กำหนดค่า โค้ด หลักฐานจากตัวจัดคิว CSV ผลลัพธ์ และตารางสรุปครบวงจร จึงใช้สอนการทำซ้ำตรวจสอบได้ สัญญาการเชื่อมแบบจำลอง ความไวต่อนโยบาย และการตรวจผลจากหลักฐานได้ในเวลาสั้น
 
-เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อวาด trade-off ระหว่าง energy และ comfort จาก summary CSV เป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG
+เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อวาดความสัมพันธ์แลกเปลี่ยนระหว่างพลังงานและความสบายจาก CSV สรุป เป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG
 
 ## ต่อกับ Twin-B เต็ม
 
-เมื่อทีมมี EnergyPlus, `pyenergyplus`, IDF และ EPW พร้อมใช้งาน ให้แทน `ThermalSurrogate.advance()` ด้วย callback จาก EnergyPlus แล้วคง interface เดิมไว้ ได้แก่ `zone_temp_c`, `occupants`, `setpoint_c` และ `energy_kwh` วิธีนี้ช่วยให้ tutorial ขนาดเล็กขยายไปสู่ digital twin อาคารเต็มรูปแบบตามแนวทางของ Twin-B ได้โดยรักษาโครงสร้าง experiment เดิม
+เมื่อทีมมี EnergyPlus, `pyenergyplus`, IDF และ EPW พร้อมใช้งาน ให้แทน `ThermalSurrogate.advance()` ด้วย callback จาก EnergyPlus แล้วคง interface เดิมไว้ ได้แก่ `zone_temp_c`, `occupants`, `setpoint_c` และ `energy_kwh` วิธีนี้ช่วยให้บทฝึกขนาดเล็กขยายไปสู่ digital twin อาคารเต็มรูปแบบตามแนวทางของ Twin-B ได้โดยรักษาโครงสร้างการทดลองเดิม

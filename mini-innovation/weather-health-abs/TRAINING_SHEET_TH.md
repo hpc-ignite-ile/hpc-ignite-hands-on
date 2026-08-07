@@ -1,41 +1,41 @@
-# Training Sheet: HPDS Weather-Health ABS บน LANTA
+# แผ่นงาน: HPDS Weather-Health ABS บน LANTA
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-หน้านี้เป็น practical แบบ standalone สำหรับผู้เรียน 40 คน ผู้ใช้เริ่มจากเครื่อง local, ย้ายหรือดึงข้อมูลเข้า LANTA, จัด archive, อ่านหลักฐานของ Lustre, สร้าง Dask overlay environment, รัน weather + building + agent-based simulation ด้วย Slurm แล้วสรุปผลเป็น evidence bundle
+หน้านี้เป็นแบบฝึกปฏิบัติที่จบได้ในหน้าเดียวสำหรับผู้เรียน 40 คน ผู้ใช้เริ่มจากเครื่องของตนเอง ย้ายหรือดึงข้อมูลเข้า LANTA จัดแฟ้มรวม อ่านหลักฐานของ Lustre สร้างสภาพแวดล้อม Dask เพิ่มเติม รันแบบจำลองอากาศ-อาคาร-ตัวแทนด้วย Slurm แล้วสรุปผลเป็นชุดหลักฐาน
 
 ## บทนำแบบ Verse
 
-ย้ายข้อมูลให้มีหลักฐาน ก่อนเปิด model<br>
-นับไฟล์ นับแถว นับ byte แล้วค่อยถามเรื่อง speed<br>
-ให้ chunk สัมพันธ์กับ memory, worker และรูปแบบคำถาม<br>
-ให้ weather เป็นแรงขับ ให้ building เป็นตัวกรอง ให้ agent เป็นผู้รับผลกระทบ<br>
-เมื่อผลออกมา ให้ดูทั้ง policy, exposure, cooling, risk และเวลาที่ใช้<br>
-AI ช่วยอ่านหลักฐานได้ดี เมื่อหลักฐานอยู่ครบและมีขอบเขตชัด
+ย้ายข้อมูลให้มีหลักฐาน ก่อนเปิดแบบจำลอง<br>
+นับไฟล์ นับแถว นับไบต์ แล้วค่อยถามเรื่องความเร็ว<br>
+ให้ก้อนข้อมูลสัมพันธ์กับหน่วยความจำ worker และคำถามวิเคราะห์<br>
+ให้อากาศเป็นแรงขับ ให้อาคารเป็นตัวกรอง ให้ตัวแทนเป็นผู้รับผลกระทบ<br>
+เมื่อผลออกมา ให้ดูทั้งนโยบาย การสัมผัสความร้อน การทำความเย็น ความเสี่ยง และเวลาที่ใช้<br>
+AI ช่วยอ่านหลักฐานได้ดี เมื่อหลักฐานครบและขอบเขตคำถามชัดเจน
 
 ## สิ่งที่ผู้ใช้จะฝึก
 
-- `rsync` ผ่าน SSH สำหรับย้าย folder จากเครื่อง local ไปยัง LANTA
-- `curl`, `wget` และ pattern ของ `lftp` สำหรับดึงข้อมูล HTTP/FTP
-- `zip`, `unzip`, `tar`, `gzip`, `pigz` สำหรับ archive และ many-small-files
-- `df`, `lfs getstripe`, `du`, `find`, `sha256sum` สำหรับ parallel filesystem evidence
-- Dask `LocalCluster` ใน Slurm allocation หนึ่ง node
-- weather-derived features, reduced building model และ ABS mobility/exposure model
-- evidence bundle แบบ SC-style สำหรับ rerun, review และอภิปรายผล
+- `rsync` ผ่าน SSH สำหรับย้ายโฟลเดอร์จากเครื่องผู้ใช้ไปยัง LANTA
+- `curl`, `wget` และรูปแบบคำสั่ง `lftp` สำหรับดึงข้อมูล HTTP/FTP
+- `zip`, `unzip`, `tar`, `gzip`, `pigz` สำหรับจัดแฟ้มรวมและลดปัญหาไฟล์ย่อยจำนวนมาก
+- `df`, `lfs getstripe`, `du`, `find`, `sha256sum` สำหรับเก็บหลักฐานของระบบแฟ้มขนาน
+- Dask `LocalCluster` ภายในการจัดสรรทรัพยากรหนึ่งโหนดของ Slurm
+- ตัวแปรที่คำนวณจากข้อมูลอากาศ แบบจำลองอาคารขนาดย่อ และแบบจำลองตัวแทนด้านการเดินทางกับการสัมผัสความร้อน
+- ชุดหลักฐานแบบงานประชุม SC สำหรับรันซ้ำ ตรวจทาน และอภิปรายผล
 
-## Copy-Paste จากเครื่อง Local
+## Copy-Paste จากเครื่องผู้ใช้
 
-### ขั้นที่ 1: Login เข้า LANTA
+### ขั้นที่ 1: เข้าสู่ LANTA
 
-block นี้เปิด shell บน LANTA login node
+คำสั่งนี้เปิดเชลล์บนเครื่องเข้าใช้งานของ LANTA
 
 ```bash
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
-### ขั้นที่ 2: ทดลอง `rsync --dry-run` จากเครื่อง local
+### ขั้นที่ 2: ทดลอง `rsync --dry-run` จากเครื่องผู้ใช้
 
-block นี้สร้าง folder ตัวอย่างบนเครื่อง local แล้วตรวจคำสั่ง transfer ผ่าน SSH แบบ rehearsal ก่อนส่งไฟล์จริง
+คำสั่งชุดนี้สร้างโฟลเดอร์ตัวอย่างบนเครื่องผู้ใช้ แล้วซ้อมคำสั่งย้ายข้อมูลผ่าน SSH ก่อนส่งไฟล์จริง
 
 ```bash
 mkdir -p hpds-transfer-demo/raw
@@ -43,9 +43,9 @@ printf "city,temp_c\nBangkok,32.1\nChiangMai,29.4\n" > hpds-transfer-demo/raw/we
 rsync -avP --dry-run hpds-transfer-demo/ <lanta-username>@lanta.nstda.or.th:~/incoming-hpds-transfer-demo/
 ```
 
-### ขั้นที่ 3: ส่ง folder ตัวอย่างด้วย `rsync`
+### ขั้นที่ 3: ส่งโฟลเดอร์ตัวอย่างด้วย `rsync`
 
-block นี้ส่งไฟล์จริงและใช้ `--partial` เพื่อเก็บไฟล์ค้างไว้เมื่อ network หลุดกลางทาง
+คำสั่งนี้ส่งไฟล์จริงและใช้ `--partial` เพื่อเก็บไฟล์ที่ส่งค้างไว้เมื่อเครือข่ายหลุดกลางทาง
 
 ```bash
 rsync -avP --partial hpds-transfer-demo/ <lanta-username>@lanta.nstda.or.th:~/incoming-hpds-transfer-demo/
@@ -53,9 +53,9 @@ rsync -avP --partial hpds-transfer-demo/ <lanta-username>@lanta.nstda.or.th:~/in
 
 ## Copy-Paste บน LANTA
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
-block นี้สร้าง workspace สำหรับงาน HPDS และตั้งค่า account/partition
+คำสั่งชุดนี้สร้างพื้นที่ทำงานสำหรับงาน HPDS และตั้งค่าบัญชีโครงการกับพาร์ทิชัน
 
 ```bash
 export HPDS_WORKSPACE="${HPDS_WORKSPACE:-$HOME/lanta-hpds-weather}"
@@ -72,9 +72,9 @@ export HPDS_ENV_PREFIX="${HPDS_ENV_PREFIX:-$PWD/envs/hpds-dask}"
 pwd
 ```
 
-### ขั้นที่ 2: สร้าง Dask overlay environment
+### ขั้นที่ 2: สร้างสภาพแวดล้อม Dask เพิ่มเติม
 
-block นี้โหลด `hpc-mesa` เป็นฐาน แล้วสร้าง venv เฉพาะ workspace เพื่อเพิ่ม Dask โดยกระทบ environment กลาง
+คำสั่งชุดนี้โหลด `hpc-mesa` เป็นฐาน แล้วสร้าง `venv` เฉพาะพื้นที่ทำงานเพื่อเพิ่ม Dask โดยแยกจากสภาพแวดล้อมกลาง
 
 ```bash
 module purge
@@ -97,7 +97,7 @@ PY
 
 ### ขั้นที่ 3: ตรวจเครื่องมือ transfer และ filesystem
 
-block นี้บันทึกเครื่องมือที่ใช้กับ data movement และหลักฐานว่า workspace อยู่บน Lustre
+คำสั่งชุดนี้บันทึกเครื่องมือที่ใช้ย้ายข้อมูล และเก็บหลักฐานว่าพื้นที่ทำงานอยู่บน Lustre
 
 ```bash
 {
@@ -119,7 +119,7 @@ sed -n '1,40p' notes/filesystem_evidence.txt
 
 ### ขั้นที่ 4: ดาวน์โหลดข้อมูลอากาศจริงด้วย `curl`
 
-block นี้ดึง NASA POWER hourly CSV สำหรับกรุงเทพฯ 2 วัน และบันทึก checksum
+คำสั่งชุดนี้ดึง CSV รายชั่วโมงจาก NASA POWER สำหรับกรุงเทพฯ 2 วัน แล้วบันทึก checksum
 
 ```bash
 POWER_URL="https://power.larc.nasa.gov/api/temporal/hourly/point?parameters=T2M,RH2M,ALLSKY_SFC_SW_DWN,WS10M&community=SB&longitude=100.5018&latitude=13.7563&start=20260101&end=20260102&format=CSV&header=false&time-standard=UTC"
@@ -132,7 +132,7 @@ sed -n '1,5p' data/http/nasa_power_bangkok.csv
 
 ### ขั้นที่ 5: บันทึก pattern สำหรับ `wget` และ `lftp`
 
-block นี้เก็บตัวอย่างคำสั่ง data source ขนาดใหญ่ไว้ใน notes สำหรับใช้ปรับกับ FTP/HTTP endpoint จริงของผู้ใช้
+คำสั่งชุดนี้เก็บตัวอย่างคำสั่งสำหรับแหล่งข้อมูลขนาดใหญ่ไว้ใน `notes` ผู้ใช้สามารถปรับกับปลายทาง FTP/HTTP จริงของตนเอง
 
 ```bash
 cat > notes/transfer_patterns.txt <<'TXT'
@@ -149,9 +149,9 @@ TXT
 sed -n '1,20p' notes/transfer_patterns.txt
 ```
 
-### ขั้นที่ 6: สร้าง location และ scenario table
+### ขั้นที่ 6: สร้างตารางพื้นที่และสถานการณ์ทดลอง
 
-block นี้สร้าง input table ขนาดเล็กที่ scientific model และ ABS ใช้ร่วมกัน
+คำสั่งชุดนี้สร้างตารางข้อมูลเข้าแบบสั้นที่แบบจำลองวิทยาศาสตร์และ ABS ใช้ร่วมกัน
 
 ```bash
 cat > data/locations.csv <<'CSV'
@@ -170,9 +170,9 @@ scenario_id,policy,agents,seed,outdoor_reduction,crowding_factor,cooling_setpoin
 CSV
 ```
 
-### ขั้นที่ 7: สร้าง weather staging script
+### ขั้นที่ 7: สร้างสคริปต์พักข้อมูลอากาศ
 
-block นี้สร้าง script ที่แปลง NASA POWER CSV หนึ่งไฟล์เป็น weather chunks หลายพื้นที่พร้อม manifest
+คำสั่งชุดนี้สร้างสคริปต์ที่แปลง NASA POWER CSV หนึ่งไฟล์เป็นชุดข้อมูลอากาศหลายพื้นที่พร้อม manifest
 
 ```bash
 cat > src/stage_weather_data.py <<'PY'
@@ -217,7 +217,7 @@ PY
 
 ### ขั้นที่ 8: รัน staging และตรวจ manifest
 
-block นี้สร้าง staged chunks แล้วตรวจจำนวนไฟล์ แถว และ checksum
+คำสั่งชุดนี้สร้างชุดข้อมูลพักไว้ แล้วตรวจจำนวนไฟล์ จำนวนแถว และ checksum
 
 ```bash
 python src/stage_weather_data.py
@@ -227,7 +227,7 @@ find data/staged -type f -name 'weather_*.csv' -print
 
 ### ขั้นที่ 9: ทดลอง many-small-files และ archive
 
-block นี้สร้างไฟล์เล็กจำนวนมาก แล้วเปรียบเทียบ archive ด้วย `zip` และ `tar` + `pigz`
+คำสั่งชุดนี้สร้างไฟล์เล็กจำนวนมาก แล้วเปรียบเทียบการรวมแฟ้มด้วย `zip` และ `tar` + `pigz`
 
 ```bash
 python - <<'PY'
@@ -244,9 +244,9 @@ unzip -t archives/small_files.zip > notes/unzip_test.txt
 du -sh data/small_files archives/small_files.zip archives/small_files.tar.gz
 ```
 
-### ขั้นที่ 10: สร้าง Dask workflow source ส่วนที่ 1
+### ขั้นที่ 10: สร้างโค้ดกระบวนการ Dask ส่วนที่ 1
 
-block นี้สร้าง import, helper และสูตร heat index
+คำสั่งชุดนี้สร้างส่วน import ฟังก์ชันช่วย และสูตรดัชนีความร้อน
 
 ```bash
 cat > src/hpds_weather_abs.py <<'PY'
@@ -271,9 +271,9 @@ def heat_index_c(temp_c,rh_pct):
 PY
 ```
 
-### ขั้นที่ 11: เติม Dask workflow source ส่วนที่ 2
+### ขั้นที่ 11: เติมโค้ดกระบวนการ Dask ส่วนที่ 2
 
-block นี้เติม reduced building model และ ABS simulation
+คำสั่งชุดนี้เติมแบบจำลองอาคารขนาดย่อและการจำลอง ABS
 
 ```bash
 cat >> src/hpds_weather_abs.py <<'PY'
@@ -312,9 +312,9 @@ def simulate(weather_path,loc,sc):
 PY
 ```
 
-### ขั้นที่ 12: เติม Dask workflow source ส่วนที่ 3
+### ขั้นที่ 12: เติมโค้ดกระบวนการ Dask ส่วนที่ 3
 
-block นี้เติม main routine ที่สร้าง Dask tasks และเขียน CSV
+คำสั่งชุดนี้เติมส่วนหลักของโปรแกรม สร้างงานย่อยของ Dask และเขียน CSV
 
 ```bash
 cat >> src/hpds_weather_abs.py <<'PY'
@@ -346,9 +346,9 @@ if __name__=="__main__":
 PY
 ```
 
-### ขั้นที่ 13: สร้าง plot script
+### ขั้นที่ 13: สร้างสคริปต์วาดรูป
 
-block นี้สร้างรูปสรุป policy ด้วย Matplotlib แบบ batch
+คำสั่งชุดนี้สร้างรูปสรุปเชิงนโยบายด้วย Matplotlib ในงานแบบแบตช์
 
 ```bash
 cat > src/plot_hpds_summary.py <<'PY'
@@ -380,9 +380,9 @@ print("wrote figures/hpds_weather_abs_summary.png")
 PY
 ```
 
-### ขั้นที่ 14: สร้าง graph partitioning mini exercise
+### ขั้นที่ 14: สร้างแบบฝึกย่อยเรื่องการแบ่งกราฟ
 
-block นี้เปรียบเทียบ partition แบบง่ายเพื่ออธิบายแนวคิด METIS/ParMETIS เรื่อง load balance และ edge cut
+คำสั่งชุดนี้เปรียบเทียบการแบ่งกราฟแบบง่าย เพื่ออธิบายแนวคิด METIS/ParMETIS เรื่องสมดุลภาระงานและน้ำหนักขอบที่ถูกตัด
 
 ```bash
 cat > src/partition_mobility_graph.py <<'PY'
@@ -415,7 +415,7 @@ PY
 
 ### ขั้นที่ 15: ตรวจ ParMETIS และ SCOTCH บน LANTA
 
-block นี้ตรวจว่าเครื่องมือ partitioning ระดับ HPC มี module ให้เรียกใช้ในระบบ
+คำสั่งชุดนี้ตรวจว่าเครื่องมือแบ่งกราฟระดับ HPC มีโมดูลให้เรียกใช้ในระบบ
 
 ```bash
 {
@@ -428,9 +428,9 @@ block นี้ตรวจว่าเครื่องมือ partitioning 
 sed -n '1,80p' notes/partitioning_modules.txt
 ```
 
-### ขั้นที่ 16: สร้าง Slurm script สำหรับ Dask workflow
+### ขั้นที่ 16: สร้างไฟล์ Slurm สำหรับกระบวนการ Dask
 
-block นี้สร้าง job ที่ใช้ 4 CPU cores ใน allocation เดียว แล้วให้ Dask สร้าง workers ตาม `SLURM_CPUS_PER_TASK`
+คำสั่งชุดนี้สร้างงานที่ใช้ CPU 4 แกนในทรัพยากรชุดเดียว แล้วให้ Dask สร้าง worker ตามค่า `SLURM_CPUS_PER_TASK`
 
 ```bash
 cat > jobs/hpds_weather_abs.sbatch <<'SLURM'
@@ -475,7 +475,7 @@ SLURM
 
 ### ขั้นที่ 17: ส่งงานเข้า Slurm
 
-block นี้ส่ง job และบันทึก job id
+คำสั่งชุดนี้ส่งงานเข้า Slurm และบันทึกหมายเลขงาน
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --export=ALL,HPDS_ENV_PREFIX="$HPDS_ENV_PREFIX" --parsable jobs/hpds_weather_abs.sbatch)
@@ -483,9 +483,9 @@ echo "hpds_weather_job=$job_id" | tee -a notes/filesystem_evidence.txt
 squeue -j "$job_id"
 ```
 
-### ขั้นที่ 18: อ่านผลหลัง job จบ
+### ขั้นที่ 18: อ่านผลหลังงานจบ
 
-block นี้อ่าน Slurm evidence, timing, summary CSV และรูปที่สร้างจากผลจริง
+คำสั่งชุดนี้อ่านหลักฐานจาก Slurm เวลาที่ใช้ CSV สรุป และรูปที่สร้างจากผลจริง
 
 ```bash
 sacct -j "$job_id" --format=JobID,JobName,State,Elapsed,AllocCPUS,MaxRSS,ExitCode
@@ -496,9 +496,9 @@ sed -n '1,10p' results/hpds_policy_summary.csv
 ls -lh figures/hpds_weather_abs_summary.png
 ```
 
-### ขั้นที่ 19: สร้าง AI evidence prompt
+### ขั้นที่ 19: สร้าง prompt สำหรับให้ AI อ่านหลักฐาน
 
-block นี้รวมหลักฐานให้ AI ช่วย classify bottleneck และเสนอ run ถัดไปโดยอ้างอิงเฉพาะไฟล์ใน workspace
+คำสั่งชุดนี้รวมหลักฐานให้ AI ช่วยจัดกลุ่มคอขวด และเสนอการรันครั้งถัดไปโดยอ้างอิงเฉพาะไฟล์ในพื้นที่ทำงาน
 
 ```bash
 {
@@ -525,20 +525,20 @@ sed -n '1,120p' notes/ai_hpds_review_prompt.md
 
 ## วิธีอภิปรายผลในห้อง
 
-1. `filesystem_evidence.txt` บอกว่า workspace อยู่บน filesystem ชนิดใด และมีเครื่องมือ transfer/archive ครบหรือขาดอะไร
-2. `weather_manifest.csv` บอก path, rows, bytes และ checksum ของข้อมูลที่ staged แล้ว
-3. `time_zip.txt` และ `time_tar_pigz.txt` ชี้ให้เห็นต้นทุน archive ของ many-small-files
-4. `environment_<jobid>.txt` บอกว่า job ใช้ Python/Dask version ใด
-5. `hpds_weather_abs_summary.csv` แสดงผลราย location และ policy
-6. `hpds_policy_summary.csv` ใช้ตอบ trade-off ระหว่าง exposure, cooling และ risk proxy
-7. `mobility_partition_summary.csv` ใช้อธิบายว่าการตัด graph มีผลต่อ communication cost อย่างไร
+1. `filesystem_evidence.txt` บอกว่าพื้นที่ทำงานอยู่บนระบบแฟ้มชนิดใด และมีเครื่องมือย้ายข้อมูล/จัดแฟ้มรวมครบเพียงใด
+2. `weather_manifest.csv` บอก path จำนวนแถว จำนวนไบต์ และ checksum ของข้อมูลที่พักไว้แล้ว
+3. `time_zip.txt` และ `time_tar_pigz.txt` ชี้ให้เห็นต้นทุนของการจัดแฟ้มรวมเมื่อมีไฟล์เล็กจำนวนมาก
+4. `environment_<jobid>.txt` บอกว่างานใช้ Python/Dask รุ่นใด
+5. `hpds_weather_abs_summary.csv` แสดงผลรายพื้นที่และนโยบาย
+6. `hpds_policy_summary.csv` ใช้ตอบการแลกเปลี่ยนระหว่างการสัมผัสความร้อน การทำความเย็น และตัวแทนความเสี่ยง
+7. `mobility_partition_summary.csv` ใช้อธิบายว่าการตัดกราฟมีผลต่อต้นทุนการสื่อสารอย่างไร
 
 ## เกณฑ์ตัดสินว่าผลดีและถูกต้อง
 
 - checksum ของข้อมูล HTTP มีอยู่ใน `notes/nasa_power_bangkok.sha256`
-- staged weather files มีจำนวนเท่ากับจำนวน location
-- Slurm job จบด้วย `COMPLETED` และ `ExitCode=0:0`
+- ไฟล์ข้อมูลอากาศที่พักไว้มีจำนวนเท่ากับจำนวนพื้นที่
+- งาน Slurm จบด้วย `COMPLETED` และ `ExitCode=0:0`
 - Dask stdout มีจำนวน `tasks` เท่ากับ `locations x scenarios`
 - `max_heat_index_c`, `peak_indoor_c`, `cooling_kwh`, `exposure_agent_hours` เป็นค่าจำนวนจริง
-- policy ที่เพิ่ม cooling ลด indoor burden พร้อมแลกด้วย cooling proxy ที่สูงขึ้น
-- partition ที่ลด edge cut มีเหตุผลด้าน communication แม้ load imbalance ต้องถูกตรวจร่วมกัน
+- นโยบายที่เพิ่มการทำความเย็นลดภาระความร้อนในอาคาร พร้อมแลกด้วยค่าตัวแทนพลังงานทำความเย็นที่สูงขึ้น
+- การแบ่งกราฟที่ลดน้ำหนักขอบที่ถูกตัดมีเหตุผลด้านการสื่อสาร และต้องตรวจสมดุลภาระงานร่วมกัน
