@@ -1,0 +1,278 @@
+[
+  {
+    "script": "tutorials/ai-applications/chapter-11-containers/README/jobs/apptainer_preflight.sbatch",
+    "original_sha256": "22eb034e899a6608e1c30baef895faef0bea1428cea67f84e39fad9c86346d31"
+  },
+  {
+    "script": "tutorials/ai-applications/chapter-12-ai-development/README/jobs/tiny_train.sbatch",
+    "original_sha256": "7580701dcab5c76b86478d578cce38734a2fe7cacf3c2a9d4d0d440673af70c1"
+  },
+  {
+    "script": "tutorials/ai-applications/chapter-13-prompts/README/jobs/prompt-scaffold.sbatch",
+    "original_sha256": "2eb6908ee2966c97758574f032d5735d69ec13adec0dfae36a5880429f6251ec"
+  },
+  {
+    "script": "tutorials/ai-applications/chapter-28-llm-finetuning/README/jobs/lora-math.sbatch",
+    "original_sha256": "6b025f9d742c3357d7bceccf0f89558662854ae664450ecc6339c13ec0ee34fc"
+  },
+  {
+    "script": "tutorials/ai-applications/chapter-30-carbon/README/jobs/carbon-proxy.sbatch",
+    "original_sha256": "381fac1da8b69d8978fef4bd69d8400ece5d057a0c40d69078e1589cd2c43481"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-02-environment/README/jobs/env-audit.sbatch",
+    "original_sha256": "acafb6988f9957237786630cb120c1b1180e0fc5650935f40c7d504b1fb1498b"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-03-parallel/README/jobs/mpi_rank.sbatch",
+    "original_sha256": "3fcd07da37cd6e52797816d2b77df2a4209047c81862ca579ef27a81703cea69"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-04-deep-learning/README/jobs/gpu_torch.sbatch",
+    "original_sha256": "6217f7cab72a4ff37da1217725879a40d3977c16f283c8b8c5fdf1753ef895f0"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-05-big-data/README/jobs/bigdata-chunk.sbatch",
+    "original_sha256": "1928df75f1fd18f85d4811fc906677182c50736c98499ba479080213c9e09adf"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-06-visualization/README/jobs/viz-plot.sbatch",
+    "original_sha256": "cceb40180aa6cd13b6894f9e653d563146a10155a84771041f468a46286cdac3"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-07-dask/README/jobs/dask-shape.sbatch",
+    "original_sha256": "3f49f9c5803ad89040d13e60b1ba7b4fe20e8081657ed50cc96c658aa1bcf594"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-08-mpi/README/jobs/mpi_collective.sbatch",
+    "original_sha256": "d5d50177573d89d70fb196a965d02c63487ca110ec49853cb93c8ad73dc1ed1c"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-09-spark/README/jobs/spark-shape.sbatch",
+    "original_sha256": "7a296cfdd2464dffc3c2b8a07174bc40cd00a639b1183b4e30726e35a8ae15f6"
+  },
+  {
+    "script": "tutorials/core-hpc/chapter-10-gpu/README/jobs/gpu_torch.sbatch",
+    "original_sha256": "6217f7cab72a4ff37da1217725879a40d3977c16f283c8b8c5fdf1753ef895f0"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-20-computational-chemistry/README/jobs/chem-mass.sbatch",
+    "original_sha256": "e3c42ec7c0fffc559242f7e777cc89e16c7e39bed17f65dd10655890968a3b17"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-21-molecular-dynamics/README/jobs/gromacs_preflight.sbatch",
+    "original_sha256": "b013626a89d138f7aeb075a71cb5e132390fd98dfad0281655f4c4a2acd3ac58"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-22-climate-modeling/README/jobs/climate-grid.sbatch",
+    "original_sha256": "ad09a881fd6c3539de9db0b585bf61f0116a0d700329c07c160c45736fa76e61"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-23-materials-science/README/jobs/qe_si_preflight.sbatch",
+    "original_sha256": "535d339166f5315c10e7d5b2661aa6ef3f55e7893a835f36ab5c39449f9036d6"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-24-ai-forest/README/jobs/forest-ndvi.sbatch",
+    "original_sha256": "60fdaae8d64de12f70dc0a69b6a27da340dd7224fd38da17d5d56432a72787a4"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-25-bioinformatics/README/jobs/blast_smoke.sbatch",
+    "original_sha256": "7ffa4c623febe66be1a51f3be45693337bb5575de0119fb8449248ba31ec66af"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-26-smart-agriculture/README/jobs/agri-risk.sbatch",
+    "original_sha256": "30c414b8be229d70b2c960e433aec00a0954ce63f65fcfa620de51413b794140"
+  },
+  {
+    "script": "tutorials/domain-science/chapter-27-disaster-prevention/README/jobs/hazard-grid.sbatch",
+    "original_sha256": "c434ec597baab8d4b4763841c65abfddbacd3e7dd9bf44c7990c268c5959b924"
+  },
+  {
+    "script": "tutorials/foundation/chapter-00/README/jobs/hello-lanta.sbatch",
+    "original_sha256": "964bdeef681d9baa164dbee57e8f5283481fc43db7789f5a80a7392ecce38af5"
+  },
+  {
+    "script": "tutorials/foundation/lanta-foundation/README/jobs/foundation-visible.sbatch",
+    "original_sha256": "b1167f62eee644a1244afbb5fcaf7a145b266f8c29e116678a2fa0dd3df8dc93"
+  },
+  {
+    "script": "tutorials/lanta-experience/01-first-slurm-job/jobs/hello_lanta.sbatch",
+    "original_sha256": "ad2a8b0d561de9ea0bd2d8d07a835f2b6d3c9455c89e857b1ec380c8696a2c1e"
+  },
+  {
+    "script": "tutorials/lanta-experience/02-cpu-array/jobs/parallel_pi.sbatch",
+    "original_sha256": "f823875a30f9250a48b3544374728882bb9f418688091e76fec7447c682936a6"
+  },
+  {
+    "script": "tutorials/lanta-experience/02-cpu-array/jobs/pi_array.sbatch",
+    "original_sha256": "13981575043674cc27f07cf5ed86a6d2779e5e9ced7d97c38ec5f4817e188e1f"
+  },
+  {
+    "script": "tutorials/lanta-experience/03-openmp-mpi/jobs/mpi_hello.sbatch",
+    "original_sha256": "f4229b679f264951d9da9853da2da9efc326ef161e78b438b0df3306b550e2e6"
+  },
+  {
+    "script": "tutorials/lanta-experience/03-openmp-mpi/jobs/omp_hello.sbatch",
+    "original_sha256": "f8caf33e5757edc2a36112c28e8774a495f309c6f7f13da76bb01e4def66f564"
+  },
+  {
+    "script": "tutorials/lanta-experience/04-science-data/jobs/diffusion.sbatch",
+    "original_sha256": "21d70dc2775feadb914a4330a26889717ddedb163157882bd4890040fcdb1e98"
+  },
+  {
+    "script": "tutorials/lanta-experience/05-ai-gpu/jobs/gpu_check.sbatch",
+    "original_sha256": "4e75785398172f27ad639a2ed04ceb6d64f34a9b06d42537741c02645ec78336"
+  },
+  {
+    "script": "tutorials/mini-innovation/02-jupyter-notebook/jobs/jupyter_episprint.sbatch",
+    "original_sha256": "1ce41f2f5d1e832f4ffc625055257c2a25840991941840eaca6947462237c1b6"
+  },
+  {
+    "script": "tutorials/mini-innovation/03-epidemic-abs-examples/jobs/epi_array.sbatch",
+    "original_sha256": "2947a73caa028903849b1f889234c086fdb16c0fdcf55414f8847a2e1bce93a3"
+  },
+  {
+    "script": "tutorials/mini-innovation/03-epidemic-abs-examples/jobs/epi_multicore.sbatch",
+    "original_sha256": "8c7d05ab41ab5261243338a81bf92874fe4f7f39ac5211b3ae422911666aa67a"
+  },
+  {
+    "script": "tutorials/mini-innovation/03-epidemic-abs-examples/jobs/epi_single.sbatch",
+    "original_sha256": "4988709ed0e2ff450f04e761172b77743c088528ef1ee921e321333151f24540"
+  },
+  {
+    "script": "tutorials/mini-innovation/04-building-cosimulation-twinb/jobs/twinb_array.sbatch",
+    "original_sha256": "63e3ac6ce6a86d7c3d9f0944944c3a9369e19ad942a6f52fea178949474cf934"
+  },
+  {
+    "script": "tutorials/mini-innovation/04-building-cosimulation-twinb/jobs/twinb_single.sbatch",
+    "original_sha256": "def1332efb3a17d8c9af7642f5a876b69439480ded6b5086d363a6859a46d04f"
+  },
+  {
+    "script": "tutorials/mini-innovation/05-output-display-jupyter-gnuplot/jobs/display_plots.sbatch",
+    "original_sha256": "e7ac935aff8b21530ac27957b746d9a8447c488888d84c8b590e16ca7d1b9411"
+  },
+  {
+    "script": "tutorials/mini-innovation/06-twinb-heatlab-repository/jobs/twinb_cpu_baseline.sbatch",
+    "original_sha256": "43c7214d0e7edb2253ccb3c4122294874a49a3bb153dc1e099f005a69b69a182"
+  },
+  {
+    "script": "tutorials/mini-innovation/README/jobs/epi_smoke.sbatch",
+    "original_sha256": "e124feddc012e8faee0be6244f4302684b6798837593669866609752a66054e9"
+  },
+  {
+    "script": "tutorials/mini-innovation/enhanced-seir/PERFORMANCE_WORKSHOP_TH/jobs/roofline_solver.sbatch",
+    "original_sha256": "def2da5030cf1014ec76c88b7495efae066d1b4e3e3abe532a0544ca5fbb453f"
+  },
+  {
+    "script": "tutorials/mini-innovation/enhanced-seir/TRAINING_SHEET_TH/jobs/seir_mpi_train.sbatch",
+    "original_sha256": "70abbf80d32887e39aff959320c9a9fe4811d3f01864559b86c4a442114e0bad"
+  },
+  {
+    "script": "tutorials/mini-innovation/enhanced-seir/TRAINING_SHEET_TH/jobs/seir_torch_gpu.sbatch",
+    "original_sha256": "ab0b115a5a2b59c89ad08a06b55d1e2bacffc155344d90343c9f922387b537d0"
+  },
+  {
+    "script": "tutorials/mini-innovation/weather-health-abs/TRAINING_SHEET_TH/jobs/hpds_weather_abs.sbatch",
+    "original_sha256": "377e2a053afb597b68d469bfa75d45e72c12892a8cb205d2f682a9d050488acc"
+  },
+  {
+    "script": "repo/ai-applications/chapter-11-containers/jobs/apptainer_smoke.sbatch",
+    "original_sha256": "189edc95db2a6d26376e9341dfb5e43a8ecc59c6d039c9bec9e35d7db9ea4915"
+  },
+  {
+    "script": "repo/ai-applications/chapter-12-ai-development/jobs/pytorch_gpu_smoke.sbatch",
+    "original_sha256": "ce21bb953bb451728c507993a5a63427d750b7be3aeeefb85c1c2bc539a665b1"
+  },
+  {
+    "script": "repo/core-hpc/chapter-02-environment/jobs/environment_audit.sbatch",
+    "original_sha256": "d71aff0582aea6786a33aa2ab22b7a1d2245b80b7e802bb349ac5cb0c3b6ddda"
+  },
+  {
+    "script": "repo/core-hpc/chapter-03-parallel/jobs/mpi_rank_smoke.sbatch",
+    "original_sha256": "dad5f97a0414ac6a8d7b92d7230ea3f2fa6b17c2748b83321c77f95861a58871"
+  },
+  {
+    "script": "repo/core-hpc/chapter-04-deep-learning/jobs/gpu_smoke.sbatch",
+    "original_sha256": "b3cf7370830fe61323e29cc947650e75ddba5074e29d0af4a515072f98e83014"
+  },
+  {
+    "script": "repo/core-hpc/chapter-08-mpi/jobs/mpi_collective_smoke.sbatch",
+    "original_sha256": "1b12d2bdcddb9834fbe5ac71902186cc30e60112d6e5319d22d15f149ef56a0f"
+  },
+  {
+    "script": "repo/core-hpc/chapter-10-gpu/jobs/gpu_smoke.sbatch",
+    "original_sha256": "8b3542b3344cce9da57102a009b2fb781c3632ac058fa27a75b56f10034b3036"
+  },
+  {
+    "script": "repo/domain-science/chapter-20-computational-chemistry/jobs/chemistry_preflight.sbatch",
+    "original_sha256": "0281dcd8d7a7100b456910a62a5c8618765bd8d9e093f37cc2551d44c3b0f469"
+  },
+  {
+    "script": "repo/domain-science/chapter-21-molecular-dynamics/jobs/gromacs_gpu_smoke.sbatch",
+    "original_sha256": "fc7fad5a039abd99d6bcedcaf4728c79c1befacda0c6e2959262ebf4676b48be"
+  },
+  {
+    "script": "repo/domain-science/chapter-22-climate-modeling/jobs/netcdf_wrf_summary.sbatch",
+    "original_sha256": "8a05c126316e889fb37eb1ca51aafd6404a3ed4cd0e4508b8359fbc0c4970ddd"
+  },
+  {
+    "script": "repo/domain-science/chapter-23-materials-science/jobs/qe_scf_smoke.sbatch",
+    "original_sha256": "9e37e421a2b1244f50700e57c29d17f9e52ca697ab6a9372bd2cb961bb305519"
+  },
+  {
+    "script": "repo/domain-science/chapter-24-ai-forest/jobs/gdal_forest_smoke.sbatch",
+    "original_sha256": "5ce917860b6fc93a6187cd62860b92db86d08a2dc168dd834cf60c0b60c82851"
+  },
+  {
+    "script": "repo/domain-science/chapter-25-bioinformatics/jobs/blast_cli_smoke.sbatch",
+    "original_sha256": "1e09965ba0688982b7e952cfba06754a5f96ae9f39bf70c7a8de52bb98ff44c2"
+  },
+  {
+    "script": "repo/domain-science/chapter-26-smart-agriculture/jobs/agri_geodata_smoke.sbatch",
+    "original_sha256": "4d8e4986f0c2d77f6b291e5cb1f34ad252c17fb15986310133982f96e50fdf62"
+  },
+  {
+    "script": "repo/domain-science/chapter-27-disaster-prevention/jobs/hazard_grid_smoke.sbatch",
+    "original_sha256": "a0c961428703aa20611153a05ec1955b6a6140ff64d353cda524a2eff9ebd90a"
+  },
+  {
+    "script": "repo/foundation/chapter-00/hello_lanta.sbatch",
+    "original_sha256": "2e8e0bded6756d4161d190a410212c6bbb9fcaea4dd949575e68b621932de3e0"
+  },
+  {
+    "script": "repo/foundation/chapter-00/wrf_chem_airquality.sbatch",
+    "original_sha256": "a7e6195184226c74a861384c7b99ff28030051b436fb80dd6a72e1dd66dca379"
+  },
+  {
+    "script": "repo/foundation/lanta-foundation/jobs/00-smoke-cpu.sbatch",
+    "original_sha256": "8f07d787e99a91dd4f2d8bca0118cdd60b455352921c75c51d0a8ea3bcbbf73c"
+  },
+  {
+    "script": "repo/foundation/lanta-foundation/jobs/01-array-foundation.sbatch",
+    "original_sha256": "bbcf205ff7744aea77f79db8c342c43735e8afbb67f1e68ea2e6eef6083ac568"
+  },
+  {
+    "script": "repo/foundation/lanta-foundation/jobs/02-env-report.sbatch",
+    "original_sha256": "3836ecc6fdd4f89a1d6d389a181b8b44517a917760d48949d80784c154e96374"
+  },
+  {
+    "script": "repo/mini-innovation/enhanced-seir/jobs/seir_mpi_perf.sbatch",
+    "original_sha256": "d8985935166fcd912c46ff62f6c6ed0151fca3fa13b113ef294b3e4bc36aaffd"
+  },
+  {
+    "script": "repo/mini-innovation/enhanced-seir/jobs/seir_roofline_solver.sbatch",
+    "original_sha256": "bf6d6a4332e1ff6f55cfb1d6259926267ea4ffa5dbb353418ab9f6c5bbb90ba5"
+  },
+  {
+    "script": "repo/mini-innovation/enhanced-seir/jobs/seir_torch_ddp_gpu.sbatch",
+    "original_sha256": "ac4a0e0e9d967e4698d77dec5cd02ec108a599fac9b3e33029d61b43d2ecdc06"
+  },
+  {
+    "script": "repo/mini-innovation/jobs/epi_smoke.sbatch",
+    "original_sha256": "146264cdb08ee136c124e1c1eb97dd3bd81ea1b37c140040fc5778a727a98e10"
+  },
+  {
+    "script": "repo/mini-innovation/weather-health-abs/jobs/hpds_weather_abs.sbatch",
+    "original_sha256": "dc94f950daa53cd2b0b005e95ccfdde7dad2737d8ba2724ec9722d474a48fd11"
+  }
+]

@@ -1,5 +1,7 @@
 # HPC Ignite Hands-On Labs
 
+Latest: [fresh LANTA resource/performance campaign](docs/lanta-runs/2026-09-26-performance/README.md) — 72 completed workflows, recorded CPU/GPU/memory usage, example outputs, 40 updated tutorial evidence panels, real browser screenshots, and repeated CFD/EnergyPlus benchmarks. Proposed application tracks are distinguished from executed tutorials.
+
 ![HPC IGNITE learning journey: connect, prepare, submit, run, check and improve](docs/images/beginners/tutorial-overview.png)
 
 New to HPC? Start with the [illustrated beginner guide / คู่มือเริ่มต้นด้วยภาพ](docs/BEGINNER_VISUAL_GUIDE_TH.md). The illustrations explain concepts; [real run evidence](docs/lanta-runs/2026-09-26-pv915002/README.md) is labeled separately.

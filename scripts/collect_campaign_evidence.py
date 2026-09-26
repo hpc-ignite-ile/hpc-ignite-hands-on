@@ -53,7 +53,8 @@ def main():
     (dest/'submissions.jsonl').write_bytes((root/'submissions.jsonl').read_bytes())
     roots = [root/'notes',root/'tutorials',root/'repo/logs',root/'repo/results',root/'repo/foundation/chapter-00',
              root/'repo/mini-innovation/enhanced-seir',root/'repo/mini-innovation/weather-health-abs',
-             root/'twinb/logs',root/'twinb/results',root/'twinb/mesa_out_result',root/'twinb/innovation/generated',root/'cadc']
+             root/'twinb/logs',root/'twinb/results',root/'twinb/notes',root/'twinb/mesa_out_result',root/'twinb/innovation/generated',root/'cadc',
+             root/'repo/notes',root/'benchmarks',root/'cfd']
     suffixes = {'.out','.err','.txt','.log','.csv','.tsv','.json','.png','.svg','.md','.ipynb','.sha256'}
     candidates = set()
     for folder in roots:

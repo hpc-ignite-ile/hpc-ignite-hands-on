@@ -592,3 +592,19 @@ cat notes/epi-policy-compare.txt 2>/dev/null || true
 เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ จำนวนวันตรงกับค่า `days` ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวนเอเจนต์ และตารางเปรียบเทียบนโยบายอ้างอิงหลายสถานการณ์ทดลองหรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิดบันทึกข้อผิดพลาดเฉพาะงานหรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/3.5.1`
 
 เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อแปลง CSV สรุปเป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340192 | COMPLETED | 8 | 66 | 16.016 | 0.018333 | 42.71 |
+| 6340193 | COMPLETED | 1 | 9 | 10.746 | 0.005000 | 1.78 |
+| 6340194 | COMPLETED | 1 | 3 | 2.038 | 0.000833 | 0.41 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-03-epidemic-abs-examples.png)
+<!-- performance-rerun:end -->

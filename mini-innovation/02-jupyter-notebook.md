@@ -437,3 +437,17 @@ sacct -j <jobid> --format=JobID,JobName,Partition,State,Elapsed,AllocCPUS,ReqMem
 - ใช้สมุดบันทึกสำหรับสำรวจข้อมูล สร้างกราฟ และตรวจข้อผิดพลาดแบบโต้ตอบ
 - ย้ายงานที่รันยาวหรือรันซ้ำหลายสถานการณ์ไปเป็นสคริปต์ Python แล้วส่งด้วย `sbatch`
 - เก็บผลลัพธ์ขนาดใหญ่ในพื้นที่โครงการ และให้สมุดบันทึกอ่านจากเส้นทางหรือ symbolic link ที่ควบคุมได้
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340238 | COMPLETED | 1 | 33 | 3.586 | 0.018333 | 90.65 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-02-jupyter-notebook.png)
+<!-- performance-rerun:end -->

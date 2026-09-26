@@ -1,5 +1,7 @@
 # Public applications: from smoke tests to repeatable scientific experiments
 
+**Fresh execution evidence:** [26 September performance campaign](lanta-runs/2026-09-26-performance/README.md) reran every existing runnable tutorial, the real EnergyPlus/Mesa benchmark, and a new bounded OpenFOAM cavity experiment. This does not mark the other proposed applications below as executed.
+
 Research checked **2026-09-26**. This is a selection and experiment-design catalog,
 not a claim that these new applications have run on LANTA. The existing
 [EnergyPlus + Mesa benchmark](TWINB_REFERENCE_BENCHMARKS.md) already has archived

@@ -1,0 +1,291 @@
+{
+  "method": "Playwright Chromium browser screenshots, 1440px viewport, full page",
+  "captures": [
+    {
+      "page": "foundation/chapter-00/README.md",
+      "html": "foundation-chapter-00-readme.html",
+      "screenshot": "foundation-chapter-00-readme.png",
+      "html_sha256": "4481a62e35e18874342aea9f37ffbc2f57f3dad67cd8399e3954865c3352cdfb",
+      "png_sha256": "fa56c916b44202f5db6b7c3086959723a8a72fefb1afacd04ada0871d2f844db"
+    },
+    {
+      "page": "foundation/lanta-foundation/README.md",
+      "html": "foundation-lanta-foundation-readme.html",
+      "screenshot": "foundation-lanta-foundation-readme.png",
+      "html_sha256": "3b7bae8ae8311d5d45d363e42566b828064765b5369e75120f7f7e34ef06288a",
+      "png_sha256": "889e6fe0498d0073873fc022a01bee26cb1e074984766068e6d2c2c71bd64e2e"
+    },
+    {
+      "page": "core-hpc/chapter-02-environment/README.md",
+      "html": "core-hpc-chapter-02-environment-readme.html",
+      "screenshot": "core-hpc-chapter-02-environment-readme.png",
+      "html_sha256": "1d81dd1de8b616b58b4c795286d9d5ca81dacf980b3f3b5eade874a778d8c5bc",
+      "png_sha256": "b86db2f0abdf180a22bf57770c7c36a33ae8137804d76d708d9169a2b2840d19"
+    },
+    {
+      "page": "core-hpc/chapter-03-parallel/README.md",
+      "html": "core-hpc-chapter-03-parallel-readme.html",
+      "screenshot": "core-hpc-chapter-03-parallel-readme.png",
+      "html_sha256": "52299fd61ff1e7e201fbe02b2dcae0e9c480c171561cc27162743919fdca94cd",
+      "png_sha256": "3b0f8b763fb53e48c1ed820666c8d9820dda1ddfd0a55f8c36b2675ab78229d4"
+    },
+    {
+      "page": "core-hpc/chapter-04-deep-learning/README.md",
+      "html": "core-hpc-chapter-04-deep-learning-readme.html",
+      "screenshot": "core-hpc-chapter-04-deep-learning-readme.png",
+      "html_sha256": "fecc507114acfb89352136c7886b0eda4ecfb6581f6fdab2db23d4db3b67dae1",
+      "png_sha256": "91559891b50756f3e71f6abd89a6efe54591431edcb501e765354766b9f616b9"
+    },
+    {
+      "page": "core-hpc/chapter-05-big-data/README.md",
+      "html": "core-hpc-chapter-05-big-data-readme.html",
+      "screenshot": "core-hpc-chapter-05-big-data-readme.png",
+      "html_sha256": "a215612ebc72cde67bdf5b1600df49bfd44921cbbaaa87e17cc96382c1e0dcd8",
+      "png_sha256": "a42585adbae11827909318eb5b4383c5b2b97c7780947caa32277a18ded33ecb"
+    },
+    {
+      "page": "core-hpc/chapter-06-visualization/README.md",
+      "html": "core-hpc-chapter-06-visualization-readme.html",
+      "screenshot": "core-hpc-chapter-06-visualization-readme.png",
+      "html_sha256": "d1e9045142174f14dcba39eeb3217b04b838a2e4cd2b1bb77b24a1a899a4d0b0",
+      "png_sha256": "baf7a47868afe1215817ecfe94d6172ff32e35011e76e2296a57b31d75231d26"
+    },
+    {
+      "page": "core-hpc/chapter-07-dask/README.md",
+      "html": "core-hpc-chapter-07-dask-readme.html",
+      "screenshot": "core-hpc-chapter-07-dask-readme.png",
+      "html_sha256": "5a8fc28c8505abe1fa7d3421ca3e1a99b3c06a4535c8de1183b15a086839807a",
+      "png_sha256": "1dcdd97afec3262600a32c5528e895551e4217614d1b1c9f2dd21faab90e4d9d"
+    },
+    {
+      "page": "core-hpc/chapter-08-mpi/README.md",
+      "html": "core-hpc-chapter-08-mpi-readme.html",
+      "screenshot": "core-hpc-chapter-08-mpi-readme.png",
+      "html_sha256": "c4a4124cb3974caf57f8073aacf616c07e4044329ddbc42cfac87b8db87f4cc2",
+      "png_sha256": "39705fecc9cabda85f528f4e9aec48b4287039f9b479d65eddfc4ce6d7cbc4a3"
+    },
+    {
+      "page": "core-hpc/chapter-09-spark/README.md",
+      "html": "core-hpc-chapter-09-spark-readme.html",
+      "screenshot": "core-hpc-chapter-09-spark-readme.png",
+      "html_sha256": "57b5d5632c2fab88fcab3df6b017deaa4ce73ed434e0d1d5cb9938a2c78e2c21",
+      "png_sha256": "92172afd4a422d3fade5d350f7f8f8ae116859ef94f747a166df63add2a40e2c"
+    },
+    {
+      "page": "core-hpc/chapter-10-gpu/README.md",
+      "html": "core-hpc-chapter-10-gpu-readme.html",
+      "screenshot": "core-hpc-chapter-10-gpu-readme.png",
+      "html_sha256": "1c92f3e9facab834f87f9e800ed7a105e7cf409b99a4523cc25b4d6a5e243bb4",
+      "png_sha256": "4b460fa9e6e6ee7649d32df07893f483d756c6517e75f5f17f206c27e6a3b4d5"
+    },
+    {
+      "page": "ai-applications/chapter-11-containers/README.md",
+      "html": "ai-applications-chapter-11-containers-readme.html",
+      "screenshot": "ai-applications-chapter-11-containers-readme.png",
+      "html_sha256": "dfdb2a697d685abefface327dcd2319d7b828eddf3cc2c3987553e210730c362",
+      "png_sha256": "e564afd0f020bc90a823a3a849b8b1062b2d2b13778e13c7600e2e9e66c05ed0"
+    },
+    {
+      "page": "ai-applications/chapter-12-ai-development/README.md",
+      "html": "ai-applications-chapter-12-ai-development-readme.html",
+      "screenshot": "ai-applications-chapter-12-ai-development-readme.png",
+      "html_sha256": "b67dac3aca148e686b2b26a2f3b27dafede3d07168eaec8ee52bed960a1d4157",
+      "png_sha256": "ac06b4f05021a2828f196cc99d93e9d3b676ddc302cb9e30c83513930d5b9e20"
+    },
+    {
+      "page": "ai-applications/chapter-13-prompts/README.md",
+      "html": "ai-applications-chapter-13-prompts-readme.html",
+      "screenshot": "ai-applications-chapter-13-prompts-readme.png",
+      "html_sha256": "c9d48b16cfd2a62c1004a94dbc83e60667ec258f9927f38c0a4b28efe753c157",
+      "png_sha256": "335bd7f73d27b2df4fe349b9b0ef46b36fef4caafa01fd337ffc82ed939290ae"
+    },
+    {
+      "page": "ai-applications/chapter-28-llm-finetuning/README.md",
+      "html": "ai-applications-chapter-28-llm-finetuning-readme.html",
+      "screenshot": "ai-applications-chapter-28-llm-finetuning-readme.png",
+      "html_sha256": "539a5f185417642ad9f05f8b3a707861012b42250af252bd4251a8db67bb6462",
+      "png_sha256": "77040ffebdb6cf6ae9704f9d0bc79c7d26a337162a30dbca0ca5ee9c9ad6e90c"
+    },
+    {
+      "page": "ai-applications/chapter-30-carbon/README.md",
+      "html": "ai-applications-chapter-30-carbon-readme.html",
+      "screenshot": "ai-applications-chapter-30-carbon-readme.png",
+      "html_sha256": "e16bc2659b8d61944b89e58df9c2d7cc1ac4a0bae085a31e2a83d9afa9e9c94d",
+      "png_sha256": "05330e25618031c035e18d3c6be3798b85e81dbb17257932c9298f8322c2f23f"
+    },
+    {
+      "page": "domain-science/chapter-20-computational-chemistry/README.md",
+      "html": "domain-science-chapter-20-computational-chemistry-readme.html",
+      "screenshot": "domain-science-chapter-20-computational-chemistry-readme.png",
+      "html_sha256": "329257d524e56c69ab2d5f9154d6e181e0d267ec24586310724ebb3d7091dcb7",
+      "png_sha256": "69b1e4cfd365f09584d129f5785e9d83504c8e712d53c2ec6fe6a1ba924efdfe"
+    },
+    {
+      "page": "domain-science/chapter-21-molecular-dynamics/README.md",
+      "html": "domain-science-chapter-21-molecular-dynamics-readme.html",
+      "screenshot": "domain-science-chapter-21-molecular-dynamics-readme.png",
+      "html_sha256": "ae2347a6a79783a85fc2555d449e66e3e17dc3f25c41932c3c60fdfe922e5dad",
+      "png_sha256": "2a381e970025763034091ab65f5aa9f2799e75a13b4adee76c7a2d9733b96016"
+    },
+    {
+      "page": "domain-science/chapter-22-climate-modeling/README.md",
+      "html": "domain-science-chapter-22-climate-modeling-readme.html",
+      "screenshot": "domain-science-chapter-22-climate-modeling-readme.png",
+      "html_sha256": "7ccbb0dca1839c85a20859970c6bc078eae34fdfcdc0d386e0871859ba9ac48f",
+      "png_sha256": "44d8b074d5f10a1bf223d1d4055b0c3efebb40a8738b7f2d79217fac6f8f3a6f"
+    },
+    {
+      "page": "domain-science/chapter-23-materials-science/README.md",
+      "html": "domain-science-chapter-23-materials-science-readme.html",
+      "screenshot": "domain-science-chapter-23-materials-science-readme.png",
+      "html_sha256": "b937cd6683b7229c1de83f72d639bbd9529a3e8429d6f2ec69cae52c6a13e04c",
+      "png_sha256": "6ac7d7fbcb7aabfecfa009e5488492a03a516d621d30e9cf67956d6562658d84"
+    },
+    {
+      "page": "domain-science/chapter-24-ai-forest/README.md",
+      "html": "domain-science-chapter-24-ai-forest-readme.html",
+      "screenshot": "domain-science-chapter-24-ai-forest-readme.png",
+      "html_sha256": "c19f36d03b1116d79844b9c078f39808e60cd597eba909bb5ced2d7fbd86b2c8",
+      "png_sha256": "7566948d934243d34982adc48731db91450107cccb4c853da91f6af3780c06d1"
+    },
+    {
+      "page": "domain-science/chapter-25-bioinformatics/README.md",
+      "html": "domain-science-chapter-25-bioinformatics-readme.html",
+      "screenshot": "domain-science-chapter-25-bioinformatics-readme.png",
+      "html_sha256": "c3ddec9bce48f4fa718cc0ff9583c6dfec3138ab7e778c3f03a18a5c60ff1a3d",
+      "png_sha256": "73875ccdb246060f06e8db74944020fc73673c2c42a6eb8ef937cfa2321916ea"
+    },
+    {
+      "page": "domain-science/chapter-26-smart-agriculture/README.md",
+      "html": "domain-science-chapter-26-smart-agriculture-readme.html",
+      "screenshot": "domain-science-chapter-26-smart-agriculture-readme.png",
+      "html_sha256": "9882db55cdd6c6b788d84d983678544113a5d4cc15d67be8e88af7143175126f",
+      "png_sha256": "dab2ef9b421e84ad08c10b813be391f772dfb7b24dd78a701c252cc825d57dad"
+    },
+    {
+      "page": "domain-science/chapter-27-disaster-prevention/README.md",
+      "html": "domain-science-chapter-27-disaster-prevention-readme.html",
+      "screenshot": "domain-science-chapter-27-disaster-prevention-readme.png",
+      "html_sha256": "2caffa2b38a949e3a2bf4c9ed6cb5dd18340f50a6a8afa5c821fcf90a741d188",
+      "png_sha256": "731f1bcdbc8eb54225e1e83617c060cbb08ec7d324fb24309199b71dc5d252b2"
+    },
+    {
+      "page": "lanta-experience/01-first-slurm-job.md",
+      "html": "lanta-experience-01-first-slurm-job.html",
+      "screenshot": "lanta-experience-01-first-slurm-job.png",
+      "html_sha256": "8fa17174b26adf2774dd8c44fa5ce660388e8c20ab0e6c80e22ff3b2f96343d1",
+      "png_sha256": "b4ddc69571bb1612acd92220b6d19a3a796470ddc615f2fedcb1bba79df4fca0"
+    },
+    {
+      "page": "lanta-experience/02-cpu-array.md",
+      "html": "lanta-experience-02-cpu-array.html",
+      "screenshot": "lanta-experience-02-cpu-array.png",
+      "html_sha256": "b4e1ea0783cb0d637a71ae1b311e688c28fbd5bb3e74ee0d03837f83a48e5421",
+      "png_sha256": "cac7b6c0be00f3785e2b41c6ccaf3af072e1915d255bc6ef1f01d0bb5fe44920"
+    },
+    {
+      "page": "lanta-experience/03-openmp-mpi.md",
+      "html": "lanta-experience-03-openmp-mpi.html",
+      "screenshot": "lanta-experience-03-openmp-mpi.png",
+      "html_sha256": "8dfa1cd897b7de7543a4d4fa8ffe07f571f8685388a5c88bd5b0b0ad99f4930b",
+      "png_sha256": "91985c91beb86be04855346f93a8ba90b1fda9b1456ff706b05e74509bad4b2a"
+    },
+    {
+      "page": "lanta-experience/04-science-data.md",
+      "html": "lanta-experience-04-science-data.html",
+      "screenshot": "lanta-experience-04-science-data.png",
+      "html_sha256": "8569382d87fd887c5d8461d1c262ee4bc41c4d3eaf34d2f6ff54e0c08ffea4e7",
+      "png_sha256": "d7d87a1b1d2684443bb9d33a880920e0e18ecd370a1f5752f9c8a47cc2a0b009"
+    },
+    {
+      "page": "lanta-experience/05-ai-gpu.md",
+      "html": "lanta-experience-05-ai-gpu.html",
+      "screenshot": "lanta-experience-05-ai-gpu.png",
+      "html_sha256": "a797938983da147765bab90ee043b001e43a244bc25d4fd81bc5123aacd1e72e",
+      "png_sha256": "9b08ad05b4445858339d0fb53f726e3c28df7c5db254fa5a48448e941c0d9326"
+    },
+    {
+      "page": "mini-innovation/02-jupyter-notebook.md",
+      "html": "mini-innovation-02-jupyter-notebook.html",
+      "screenshot": "mini-innovation-02-jupyter-notebook.png",
+      "html_sha256": "5e026ca69467b867ddc66d62ec1edc1257088c07c6a048c55a78c0c9abd9afab",
+      "png_sha256": "197149b59486b140d7e2a72094e5f737bca54a6522e84db2177a9114f8c99bd7"
+    },
+    {
+      "page": "mini-innovation/03-epidemic-abs-examples.md",
+      "html": "mini-innovation-03-epidemic-abs-examples.html",
+      "screenshot": "mini-innovation-03-epidemic-abs-examples.png",
+      "html_sha256": "988da670463187f21cff19b8b5e984e163174e7277e419c8b99db5eba65cdead",
+      "png_sha256": "f33b6904715ba1a6be2f9e846e51a1133591f95395f0693e1c1c64fb9066abcf"
+    },
+    {
+      "page": "mini-innovation/04-building-cosimulation-twinb.md",
+      "html": "mini-innovation-04-building-cosimulation-twinb.html",
+      "screenshot": "mini-innovation-04-building-cosimulation-twinb.png",
+      "html_sha256": "4afb7f7d943576c0f88f1201b402950f30a741c3772facd63edd05abb8af8ca2",
+      "png_sha256": "dd7a65c18044e2c612d07b167f3d43966ae0233bbbe548f87b160bf09783779e"
+    },
+    {
+      "page": "mini-innovation/05-output-display-jupyter-gnuplot.md",
+      "html": "mini-innovation-05-output-display-jupyter-gnuplot.html",
+      "screenshot": "mini-innovation-05-output-display-jupyter-gnuplot.png",
+      "html_sha256": "2d32d83d0ab4e84c5042fc116cb5f5022854e15b45b9972cded8c9ef04c8b53d",
+      "png_sha256": "01c34e9c4c71e276084baad9b33c6eb681aa980c48237593b8f25d921bdf007d"
+    },
+    {
+      "page": "mini-innovation/06-twinb-heatlab-repository.md",
+      "html": "mini-innovation-06-twinb-heatlab-repository.html",
+      "screenshot": "mini-innovation-06-twinb-heatlab-repository.png",
+      "html_sha256": "d3b1d0f8e29cd2a3429c5644a16a1c33d06f96ff054fc133995e5be74a52cf8b",
+      "png_sha256": "94f2f6a500a67d565eed15ac847546fba297358795fb7c623817786bb83a4454"
+    },
+    {
+      "page": "mini-innovation/README.md",
+      "html": "mini-innovation-readme.html",
+      "screenshot": "mini-innovation-readme.png",
+      "html_sha256": "4b7a77d6fcefe8272548e39c8a950cfec2dd21f1425a37f2f9922a49f4fe8dc4",
+      "png_sha256": "10921fca1ca965af38eb92ad1f92ffdf7e5fe0e4f23404393f90940eb5d53324"
+    },
+    {
+      "page": "mini-innovation/enhanced-seir/PERFORMANCE_WORKSHOP_TH.md",
+      "html": "mini-innovation-enhanced-seir-performance-workshop-th.html",
+      "screenshot": "mini-innovation-enhanced-seir-performance-workshop-th.png",
+      "html_sha256": "246dc26c1ae11b7a17e22db3c872d8ca152a0cd884913e751bac6a6f8bec17a7",
+      "png_sha256": "88d08589703b786a02b20e8ed762842423128601e8b0b184b7c8ed96cbeeb42a"
+    },
+    {
+      "page": "mini-innovation/enhanced-seir/README.md",
+      "html": "mini-innovation-enhanced-seir-readme.html",
+      "screenshot": "mini-innovation-enhanced-seir-readme.png",
+      "html_sha256": "5fb3809c89e23876cbb72919e5b23fe4273ffab8c743f8865094e484c8368dfd",
+      "png_sha256": "385b5c69be02e0093122226b4e42faf7cf2240dfc6bd51a19dcbfdabd6ae941d"
+    },
+    {
+      "page": "mini-innovation/enhanced-seir/TRAINING_SHEET_TH.md",
+      "html": "mini-innovation-enhanced-seir-training-sheet-th.html",
+      "screenshot": "mini-innovation-enhanced-seir-training-sheet-th.png",
+      "html_sha256": "54cea916e333af791758b5c88a41f94f2ea372fb1ebee5c59ca39d069e4a4cc5",
+      "png_sha256": "61fb18e2f8c8b6145e108c875bf4003643ee145540e9bb3d38fbae53ac6fe7c8"
+    },
+    {
+      "page": "mini-innovation/weather-health-abs/README.md",
+      "html": "mini-innovation-weather-health-abs-readme.html",
+      "screenshot": "mini-innovation-weather-health-abs-readme.png",
+      "html_sha256": "6d0d243731ff7e97765d061bd72063d8b1d8e4e2752371213b37fc374bb377af",
+      "png_sha256": "f78a9adf400ad5dedfffbdf020714ea1d8f8c440a02a02c7a29b02da3e28b8e1"
+    },
+    {
+      "page": "mini-innovation/weather-health-abs/TRAINING_SHEET_TH.md",
+      "html": "mini-innovation-weather-health-abs-training-sheet-th.html",
+      "screenshot": "mini-innovation-weather-health-abs-training-sheet-th.png",
+      "html_sha256": "53f4cbc951d241b4466a6f59f0590394867e07d31e3af9110ea992aa457fec88",
+      "png_sha256": "15b39526a295fe6b157ba65fdba2acd1f90078a32989744d53333aec5209c66c"
+    },
+    {
+      "html": "index.html",
+      "screenshot": "overview.png",
+      "html_sha256": "b1e7149db2b02b9915314cddff2efa5e666703ef0e9eb96d6edd20c79bff9aa0",
+      "png_sha256": "4409164319bf5eda937519cefc12dfef89a81c2805184ee4e06c5ba20115976f"
+    }
+  ]
+}

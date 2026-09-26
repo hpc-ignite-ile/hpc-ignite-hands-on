@@ -729,3 +729,18 @@ Twin-B MicroCosim เป็นการจำลองร่วมแบบเ�
 ## ต่อกับ Twin-B เต็ม
 
 เมื่อทีมมี EnergyPlus, `pyenergyplus`, IDF และ EPW พร้อมใช้งาน ให้แทน `ThermalSurrogate.advance()` ด้วย callback จาก EnergyPlus แล้วคง interface เดิมไว้ ได้แก่ `zone_temp_c`, `occupants`, `setpoint_c` และ `energy_kwh` วิธีนี้ช่วยให้บทฝึกขนาดเล็กขยายไปสู่ digital twin อาคารเต็มรูปแบบตามแนวทางของ Twin-B ได้โดยรักษาโครงสร้างการทดลองเดิม
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340195 | COMPLETED | 6 | 58 | 13.084 | 0.016111 | 23.21 |
+| 6340196 | COMPLETED | 1 | 4 | 2.052 | 0.001111 | 4.55 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-04-building-cosimulation-twinb.png)
+<!-- performance-rerun:end -->

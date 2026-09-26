@@ -1,0 +1,202 @@
+[
+  {
+    "page": "foundation/chapter-00/README.md",
+    "html": "foundation-chapter-00-readme.html",
+    "screenshot": "foundation-chapter-00-readme.png"
+  },
+  {
+    "page": "foundation/lanta-foundation/README.md",
+    "html": "foundation-lanta-foundation-readme.html",
+    "screenshot": "foundation-lanta-foundation-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-02-environment/README.md",
+    "html": "core-hpc-chapter-02-environment-readme.html",
+    "screenshot": "core-hpc-chapter-02-environment-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-03-parallel/README.md",
+    "html": "core-hpc-chapter-03-parallel-readme.html",
+    "screenshot": "core-hpc-chapter-03-parallel-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-04-deep-learning/README.md",
+    "html": "core-hpc-chapter-04-deep-learning-readme.html",
+    "screenshot": "core-hpc-chapter-04-deep-learning-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-05-big-data/README.md",
+    "html": "core-hpc-chapter-05-big-data-readme.html",
+    "screenshot": "core-hpc-chapter-05-big-data-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-06-visualization/README.md",
+    "html": "core-hpc-chapter-06-visualization-readme.html",
+    "screenshot": "core-hpc-chapter-06-visualization-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-07-dask/README.md",
+    "html": "core-hpc-chapter-07-dask-readme.html",
+    "screenshot": "core-hpc-chapter-07-dask-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-08-mpi/README.md",
+    "html": "core-hpc-chapter-08-mpi-readme.html",
+    "screenshot": "core-hpc-chapter-08-mpi-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-09-spark/README.md",
+    "html": "core-hpc-chapter-09-spark-readme.html",
+    "screenshot": "core-hpc-chapter-09-spark-readme.png"
+  },
+  {
+    "page": "core-hpc/chapter-10-gpu/README.md",
+    "html": "core-hpc-chapter-10-gpu-readme.html",
+    "screenshot": "core-hpc-chapter-10-gpu-readme.png"
+  },
+  {
+    "page": "ai-applications/chapter-11-containers/README.md",
+    "html": "ai-applications-chapter-11-containers-readme.html",
+    "screenshot": "ai-applications-chapter-11-containers-readme.png"
+  },
+  {
+    "page": "ai-applications/chapter-12-ai-development/README.md",
+    "html": "ai-applications-chapter-12-ai-development-readme.html",
+    "screenshot": "ai-applications-chapter-12-ai-development-readme.png"
+  },
+  {
+    "page": "ai-applications/chapter-13-prompts/README.md",
+    "html": "ai-applications-chapter-13-prompts-readme.html",
+    "screenshot": "ai-applications-chapter-13-prompts-readme.png"
+  },
+  {
+    "page": "ai-applications/chapter-28-llm-finetuning/README.md",
+    "html": "ai-applications-chapter-28-llm-finetuning-readme.html",
+    "screenshot": "ai-applications-chapter-28-llm-finetuning-readme.png"
+  },
+  {
+    "page": "ai-applications/chapter-30-carbon/README.md",
+    "html": "ai-applications-chapter-30-carbon-readme.html",
+    "screenshot": "ai-applications-chapter-30-carbon-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-20-computational-chemistry/README.md",
+    "html": "domain-science-chapter-20-computational-chemistry-readme.html",
+    "screenshot": "domain-science-chapter-20-computational-chemistry-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-21-molecular-dynamics/README.md",
+    "html": "domain-science-chapter-21-molecular-dynamics-readme.html",
+    "screenshot": "domain-science-chapter-21-molecular-dynamics-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-22-climate-modeling/README.md",
+    "html": "domain-science-chapter-22-climate-modeling-readme.html",
+    "screenshot": "domain-science-chapter-22-climate-modeling-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-23-materials-science/README.md",
+    "html": "domain-science-chapter-23-materials-science-readme.html",
+    "screenshot": "domain-science-chapter-23-materials-science-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-24-ai-forest/README.md",
+    "html": "domain-science-chapter-24-ai-forest-readme.html",
+    "screenshot": "domain-science-chapter-24-ai-forest-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-25-bioinformatics/README.md",
+    "html": "domain-science-chapter-25-bioinformatics-readme.html",
+    "screenshot": "domain-science-chapter-25-bioinformatics-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-26-smart-agriculture/README.md",
+    "html": "domain-science-chapter-26-smart-agriculture-readme.html",
+    "screenshot": "domain-science-chapter-26-smart-agriculture-readme.png"
+  },
+  {
+    "page": "domain-science/chapter-27-disaster-prevention/README.md",
+    "html": "domain-science-chapter-27-disaster-prevention-readme.html",
+    "screenshot": "domain-science-chapter-27-disaster-prevention-readme.png"
+  },
+  {
+    "page": "lanta-experience/01-first-slurm-job.md",
+    "html": "lanta-experience-01-first-slurm-job.html",
+    "screenshot": "lanta-experience-01-first-slurm-job.png"
+  },
+  {
+    "page": "lanta-experience/02-cpu-array.md",
+    "html": "lanta-experience-02-cpu-array.html",
+    "screenshot": "lanta-experience-02-cpu-array.png"
+  },
+  {
+    "page": "lanta-experience/03-openmp-mpi.md",
+    "html": "lanta-experience-03-openmp-mpi.html",
+    "screenshot": "lanta-experience-03-openmp-mpi.png"
+  },
+  {
+    "page": "lanta-experience/04-science-data.md",
+    "html": "lanta-experience-04-science-data.html",
+    "screenshot": "lanta-experience-04-science-data.png"
+  },
+  {
+    "page": "lanta-experience/05-ai-gpu.md",
+    "html": "lanta-experience-05-ai-gpu.html",
+    "screenshot": "lanta-experience-05-ai-gpu.png"
+  },
+  {
+    "page": "mini-innovation/02-jupyter-notebook.md",
+    "html": "mini-innovation-02-jupyter-notebook.html",
+    "screenshot": "mini-innovation-02-jupyter-notebook.png"
+  },
+  {
+    "page": "mini-innovation/03-epidemic-abs-examples.md",
+    "html": "mini-innovation-03-epidemic-abs-examples.html",
+    "screenshot": "mini-innovation-03-epidemic-abs-examples.png"
+  },
+  {
+    "page": "mini-innovation/04-building-cosimulation-twinb.md",
+    "html": "mini-innovation-04-building-cosimulation-twinb.html",
+    "screenshot": "mini-innovation-04-building-cosimulation-twinb.png"
+  },
+  {
+    "page": "mini-innovation/05-output-display-jupyter-gnuplot.md",
+    "html": "mini-innovation-05-output-display-jupyter-gnuplot.html",
+    "screenshot": "mini-innovation-05-output-display-jupyter-gnuplot.png"
+  },
+  {
+    "page": "mini-innovation/06-twinb-heatlab-repository.md",
+    "html": "mini-innovation-06-twinb-heatlab-repository.html",
+    "screenshot": "mini-innovation-06-twinb-heatlab-repository.png"
+  },
+  {
+    "page": "mini-innovation/README.md",
+    "html": "mini-innovation-readme.html",
+    "screenshot": "mini-innovation-readme.png"
+  },
+  {
+    "page": "mini-innovation/enhanced-seir/PERFORMANCE_WORKSHOP_TH.md",
+    "html": "mini-innovation-enhanced-seir-performance-workshop-th.html",
+    "screenshot": "mini-innovation-enhanced-seir-performance-workshop-th.png"
+  },
+  {
+    "page": "mini-innovation/enhanced-seir/README.md",
+    "html": "mini-innovation-enhanced-seir-readme.html",
+    "screenshot": "mini-innovation-enhanced-seir-readme.png"
+  },
+  {
+    "page": "mini-innovation/enhanced-seir/TRAINING_SHEET_TH.md",
+    "html": "mini-innovation-enhanced-seir-training-sheet-th.html",
+    "screenshot": "mini-innovation-enhanced-seir-training-sheet-th.png"
+  },
+  {
+    "page": "mini-innovation/weather-health-abs/README.md",
+    "html": "mini-innovation-weather-health-abs-readme.html",
+    "screenshot": "mini-innovation-weather-health-abs-readme.png"
+  },
+  {
+    "page": "mini-innovation/weather-health-abs/TRAINING_SHEET_TH.md",
+    "html": "mini-innovation-weather-health-abs-training-sheet-th.html",
+    "screenshot": "mini-innovation-weather-health-abs-training-sheet-th.png"
+  }
+]

@@ -344,3 +344,17 @@ IDF มี `HVACTemplate:*` ต้องใช้ `-x`/ExpandObjects; RunPeriod 
 ถ้า GPU-2/GPU-4 ช้ากว่า ให้สรุปตามหลักฐานว่า Twin-B shape นี้เหมาะกับ CPU scenario arrays มากกว่า นั่นเป็นผล optimization ที่ถูกต้อง ไม่ใช่ความล้มเหลว
 
 ข้อสรุปต้องรายงาน communication overhead แยกจาก EnergyPlus, Mesa agent stepping และ file I/O เพื่อไม่โทษ GPU จากเวลาที่ใช้ในส่วนอื่น
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340239 | COMPLETED | 1 | 22 | 10.364 | 0.048889 | 188.25 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-06-twinb-heatlab-repository.png)
+<!-- performance-rerun:end -->

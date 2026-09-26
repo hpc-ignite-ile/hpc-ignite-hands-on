@@ -284,3 +284,18 @@ echo "Read: ls logs/pi_array_${job_id}_*.out results/pi_${job_id}_*.txt"
 Slurm ใช้ `SLURM_ARRAY_TASK_ID` เพื่อเลือกบรรทัดจากไฟล์ config และใช้ `%A_%a` ในชื่อ log เพื่อแยก array job id กับ task id ออกจากกัน วิธีนี้เหมาะกับงานหลาย seed หลาย input file หรือหลายค่าพารามิเตอร์
 
 เมื่อสำเร็จ ผู้ใช้จะเห็น log หลายไฟล์ เช่น `logs/pi_array_<jobid>_1.out` และผลลัพธ์หลายไฟล์ เช่น `results/pi_<array-jobid>_1.txt` เมื่อต้องแก้ task ใด ให้เปิด error log ของ task นั้นก่อน เมื่อ `sed` อ่านบรรทัดว่าง ให้เทียบช่วง `--array` กับจำนวนบรรทัดในไฟล์ config
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340186 | COMPLETED | 1 | 3 | 0.971 | 0.003333 | 5.93 |
+| 6340187 | COMPLETED | 4 | 12 | 3.127 | 0.013333 | 0.84 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/lanta-experience-02-cpu-array.png)
+<!-- performance-rerun:end -->

@@ -792,3 +792,17 @@ sed -n '1,80p' notes/ai_perf_review_prompt.md
 2. ถ้า 4 ranks เร็วกว่า 2 ranks เพียงเล็กน้อย ผู้ใช้ควรตรวจ halo exchange, Allreduce หรือ load balance ด้วยหลักฐานใด
 3. ถ้า `torch_import` ใช้เวลาสูงเมื่อเทียบกับภาระงานขนาดเล็ก ผู้ใช้จะรวบสถานการณ์ทดลองเป็น batch หรือย้ายงานไป CPU/MPI อย่างไร
 4. ถ้าต้องสอนผู้บริหารด้วยรูปเดียว ผู้ใช้จะเลือกกราฟ speedup, efficiency หรือ roofline signal เพราะเหตุใด
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340198 | COMPLETED | 1 | 7 | 4.291 | 0.007778 | 0.85 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-enhanced-seir-performance-workshop-th.png)
+<!-- performance-rerun:end -->

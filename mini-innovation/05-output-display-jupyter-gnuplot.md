@@ -466,3 +466,17 @@ sacct -j "$job_id" --format=JobID,JobName,Partition,State,Elapsed,MaxRSS,ExitCod
 การแสดงผลของ Twin-B MicroCosim ใช้ scatter ของ `mean_energy_kwh` กับ `mean_discomfort_c` เพื่ออ่านความสัมพันธ์แลกเปลี่ยนระหว่างพลังงานและความสบาย จุดที่เหมาะสมขึ้นกับโจทย์ของผู้ใช้ เช่น ลดความอึดอัด จำกัดงบพลังงาน หรือสำรวจความไวของนโยบายต่ออุณหภูมิภายนอกและ seed
 
 Jupyter เหมาะกับการอธิบายผลทีละ cell และถามตอบในห้องเรียน ส่วน gnuplot เหมาะกับกระบวนการที่ต้องสร้างรูปซ้ำจาก TSV ในงานชุด การเตรียมตารางกลางทำให้ทั้งสองเครื่องมืออ่านข้อมูลเดียวกัน และลดความคลาดเคลื่อนระหว่างกราฟที่สร้างคนละวิธี
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340259 | COMPLETED | 1 | 4 | 1.929 | 0.001111 | 0.50 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-05-output-display-jupyter-gnuplot.png)
+<!-- performance-rerun:end -->

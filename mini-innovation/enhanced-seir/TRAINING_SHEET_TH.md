@@ -517,3 +517,18 @@ ls -lh logs notes results | sed -n '1,80p'
 - ถ้าเพิ่มสถานการณ์ทดลองจาก 6 เป็น 600 งาน CPU/MPI หรือ GPU/DDP ควรเปลี่ยนอย่างไร
 - ควรเปลี่ยนทรัพยากรทีละปัจจัยใดก่อน เช่น `--ntasks`, `--gpus-per-node`, จำนวนวัน หรือจำนวนสถานการณ์ทดลอง
 - หลักฐานใดบอกว่าคอขวดอยู่ที่การเริ่มงานของตัวจัดคิว การคำนวณบน CPU การเริ่มงานบน GPU หน่วยความจำ หรือ I/O
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340199 | COMPLETED | 1 | 4 | 2.133 | 0.004444 | 3.17 |
+| 6340200 | COMPLETED | 1 | 17 | 7.109 | 0.037778 | 36.13 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-enhanced-seir-training-sheet-th.png)
+<!-- performance-rerun:end -->

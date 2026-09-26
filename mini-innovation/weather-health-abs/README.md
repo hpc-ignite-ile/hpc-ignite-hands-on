@@ -120,3 +120,17 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 4. รายงาน Dask ระบุจำนวนงานย่อยและจำนวน worker
 5. ตารางสรุปเชิงนโยบายแสดงการแลกเปลี่ยนระหว่างการสัมผัสความร้อน การทำความเย็น และตัวแทนความเสี่ยง
 6. ตารางสรุปการแบ่งกราฟชี้ให้เห็นสมดุลภาระงานและน้ำหนักขอบที่ถูกตัดจากกราฟการเดินทาง
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340226 | COMPLETED | 1 | 7 | 7.619 | 0.007778 | 1.14 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-weather-health-abs-readme.png)
+<!-- performance-rerun:end -->

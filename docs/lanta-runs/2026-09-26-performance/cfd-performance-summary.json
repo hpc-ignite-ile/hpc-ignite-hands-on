@@ -1,0 +1,56 @@
+[
+  {
+    "cells": 400,
+    "ranks": 1,
+    "repeats": 3,
+    "median_elapsed_s": 0.814881196944043,
+    "stdev_s": 0.010586603551799127,
+    "observed_runtime_ratio": 1.0,
+    "note": "Includes container startup, excludes meshing; numerical field equivalence not yet checked."
+  },
+  {
+    "cells": 400,
+    "ranks": 2,
+    "repeats": 3,
+    "median_elapsed_s": 1.053600647021085,
+    "stdev_s": 0.01305108848920582,
+    "observed_runtime_ratio": 0.773425110593858,
+    "note": "Includes container startup, excludes meshing; numerical field equivalence not yet checked."
+  },
+  {
+    "cells": 1600,
+    "ranks": 1,
+    "repeats": 3,
+    "median_elapsed_s": 0.9869625298306346,
+    "stdev_s": 0.012908132322537442,
+    "observed_runtime_ratio": 1.0,
+    "note": "Includes container startup, excludes meshing; numerical field equivalence not yet checked."
+  },
+  {
+    "cells": 1600,
+    "ranks": 2,
+    "repeats": 3,
+    "median_elapsed_s": 1.205247564939782,
+    "stdev_s": 0.011628021703902348,
+    "observed_runtime_ratio": 0.8188878024241819,
+    "note": "Includes container startup, excludes meshing; numerical field equivalence not yet checked."
+  },
+  {
+    "cells": 6400,
+    "ranks": 1,
+    "repeats": 3,
+    "median_elapsed_s": 3.3697676761075854,
+    "stdev_s": 0.01354976865927569,
+    "observed_runtime_ratio": 1.0,
+    "note": "Includes container startup, excludes meshing; numerical field equivalence not yet checked."
+  },
+  {
+    "cells": 6400,
+    "ranks": 2,
+    "repeats": 3,
+    "median_elapsed_s": 2.5483037100639194,
+    "stdev_s": 0.009415458220224271,
+    "observed_runtime_ratio": 1.3223571675540438,
+    "note": "Includes container startup, excludes meshing; numerical field equivalence not yet checked."
+  }
+]

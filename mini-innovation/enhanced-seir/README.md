@@ -163,3 +163,19 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 - `results/*summary_<jobid>.csv`
 
 หลักฐานชุดนี้ใช้ถามคำถามตาม booklet หน้า 15-17 ได้ตรงประเด็น: โจทย์วิทยาศาสตร์คืออะไร ขอทรัพยากรแบบใด คอขวดอยู่ที่ CPU, GPU, หน่วยความจำ, scheduler หรือ I/O และการรันถัดไปควรเปลี่ยนทีละปัจจัยตรงไหน
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340222 | COMPLETED | 1 | 6 | 3.593 | 0.006667 | 2.71 |
+| 6340223 | COMPLETED | 1 | 6 | 4.407 | 0.006667 | 0.44 |
+| 6340224 | COMPLETED | 1 | 11 | 6.729 | 0.024444 | 1.76 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-enhanced-seir-readme.png)
+<!-- performance-rerun:end -->

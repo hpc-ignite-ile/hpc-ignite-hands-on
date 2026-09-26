@@ -1,5 +1,7 @@
 # CFD, climate and ocean: scientific experiment tracks
 
+**Execution update:** a separate [OpenFOAM v2512 transient cavity pilot](lanta-runs/2026-09-26-performance/README.md#real-cfd-meshrankrepeat-experiment) now has 18 measured mesh/rank/repeat trials on LANTA. This uses the existing qualified OpenCFD container, not the Foundation v10 branch below. Full field-equivalence, steady-state and mesh-convergence validation remain outstanding. Other proposed tracks below remain unexecuted.
+
 Research and read-only LANTA module check: **2026-09-26**. These are proposed
 experiments, **not completed runs**. Budgets are initial allocation ceilings,
 not measured requirements or promises of completion. Follow the

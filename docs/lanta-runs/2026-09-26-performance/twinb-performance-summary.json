@@ -1,0 +1,74 @@
+[
+  {
+    "case": "6340240/fivezone",
+    "job_id": "6340240",
+    "agents": 50,
+    "steps": 288,
+    "median_process_wall_seconds": 2.1029389719478786,
+    "median_simulation_seconds": 0.8158581189345568,
+    "median_callback_seconds": 0.3460049876011908,
+    "max_process_RSS_KiB": 300544,
+    "facility_electricity_kWh": {
+      "baseline": 593.7218827361916,
+      "readonly": 593.7218827361916,
+      "reset": 593.7218827361916,
+      "fixed": 584.9252416953141,
+      "mesa-0": 606.8916474709711
+    },
+    "warnings": 0,
+    "qualification_passed": true,
+    "mesa_actuator_tracks_all_three_repeats": [
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "case": "6340240/fivezone-lampang",
+    "job_id": "6340240",
+    "agents": 50,
+    "steps": 288,
+    "median_process_wall_seconds": 1.9794355181511492,
+    "median_simulation_seconds": 0.7914193901233375,
+    "median_callback_seconds": 0.33835836267098784,
+    "max_process_RSS_KiB": 299348,
+    "facility_electricity_kWh": {
+      "baseline": 631.2761170995577,
+      "readonly": 631.2761170995577,
+      "reset": 631.2761170995577,
+      "fixed": 623.359797858778,
+      "mesa-0": 644.2480724534398
+    },
+    "warnings": 1,
+    "qualification_passed": true,
+    "mesa_actuator_tracks_all_three_repeats": [
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "case": "6340240/school",
+    "job_id": "6340240",
+    "agents": 1875,
+    "steps": 288,
+    "median_process_wall_seconds": 6.89256690395996,
+    "median_simulation_seconds": 5.839094701921567,
+    "median_callback_seconds": 0.8422988860402256,
+    "max_process_RSS_KiB": 368200,
+    "facility_electricity_kWh": {
+      "baseline": 17453.318750236518,
+      "readonly": 17453.318750236518,
+      "reset": 17453.318750236518,
+      "fixed": 17255.78434479097,
+      "mesa-0": 18505.777552269905
+    },
+    "warnings": 84,
+    "qualification_passed": true,
+    "mesa_actuator_tracks_all_three_repeats": [
+      true,
+      true,
+      true
+    ]
+  }
+]

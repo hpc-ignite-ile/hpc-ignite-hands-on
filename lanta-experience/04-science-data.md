@@ -284,3 +284,17 @@ sha256sum input/sensor.csv results/sensor_summary.csv > notes/sensor-checksums.t
 ตัวอย่างนี้รันบน login node ได้เพราะข้อมูลมีขนาดเล็กมาก ใช้เพื่อฝึก format เท่านั้น หากข้อมูลใหญ่ขึ้นหรือใช้เวลานาน ให้ย้ายขั้นตอนนี้เข้า Slurm job ทันที
 
 เมื่อสำเร็จ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` และมีไฟล์ checksum ใน `notes/sensor-checksums.txt` เมื่อพบ `python: command not found` ให้โหลด `cray-python` เมื่อพบ `FileNotFoundError` ให้ตรวจว่าอยู่ใน `$HOME/lanta-experience` และรัน script สร้างข้อมูลก่อน
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340190 | COMPLETED | 1 | 3 | 0.683 | 0.000833 | 0.57 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/lanta-experience-04-science-data.png)
+<!-- performance-rerun:end -->

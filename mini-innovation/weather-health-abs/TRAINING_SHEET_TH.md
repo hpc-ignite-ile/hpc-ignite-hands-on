@@ -605,3 +605,17 @@ sed -n '1,120p' notes/ai_hpds_review_prompt.md
 - `max_heat_index_c`, `peak_indoor_c`, `cooling_kwh`, `exposure_agent_hours` เป็นค่าจำนวนจริง
 - นโยบายที่เพิ่มการทำความเย็นลดภาระความร้อนในอาคาร พร้อมแลกด้วยค่าตัวแทนพลังงานทำความเย็นที่สูงขึ้น
 - การแบ่งกราฟที่ลดน้ำหนักขอบที่ถูกตัดมีเหตุผลด้านการสื่อสาร และต้องตรวจสมดุลภาระงานร่วมกัน
+
+<!-- performance-rerun:start -->
+## Fresh measured rerun — 26 September 2026
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6340201 | COMPLETED | 1 | 14 | 8.610 | 0.015556 | 26.18 |
+
+These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
+
+[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
+
+![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-weather-health-abs-training-sheet-th.png)
+<!-- performance-rerun:end -->
