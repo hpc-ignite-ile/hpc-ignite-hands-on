@@ -9,6 +9,13 @@ Use the [resource worksheet](RESOURCE_ESTIMATION_WORKBOOK.md) and
 
 ## Recommended first wave
 
+**Additional domain tracks:** [CFD, weather/climate and ocean science](CFD_CLIMATE_OCEAN_EXPERIMENTS.md)
+cover OpenFOAM, WRF, climlab, CMIP6, MITgcm and Oceananigans.
+[Space and astronomical science](SPACE_ASTRONOMY_EXPERIMENTS.md) covers REBOUND,
+Athena++, Astropy and SunPy. Each has input sources, a pilot ceiling, scaling
+questions, scientific validation and a post-run image checklist. These are
+proposed experiments; they do not add new completed runs to the evidence archive.
+
 | Priority | Application | What replaces a toy result | Initial ceiling per pilot, not measured need |
 |---|---|---|---|
 | 1 | GROMACS benchMEM | Version check → actual biomolecular trajectory | 1 node, 8 CPU, 16 GiB, 1 GPU, 15 min |

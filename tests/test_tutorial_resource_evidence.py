@@ -13,6 +13,25 @@ import build_tutorial_evidence as evidence
 
 
 class TutorialEvidenceTests(unittest.TestCase):
+    def test_new_domain_protocols_are_linked_and_not_claimed_as_runs(self):
+        tracks = {
+            'CFD_CLIMATE_OCEAN_EXPERIMENTS.md': ['OpenFOAM', 'WRF', 'climlab', 'CMIP6', 'MITgcm', 'Oceananigans'],
+            'SPACE_ASTRONOMY_EXPERIMENTS.md': ['REBOUND', 'Athena++', 'Astropy', 'SunPy'],
+        }
+        catalog = (ROOT/'docs/REAL_APPLICATION_EXPERIMENTS.md').read_text()
+        for name, applications in tracks.items():
+            page = ROOT/'docs'/name
+            text = page.read_text()
+            self.assertIn(name, catalog)
+            self.assertIn('not completed runs', text)
+            self.assertIn('pv915002', text)
+            self.assertIn('GiB', text)
+            for application in applications:
+                self.assertIn(application, text)
+            for target in re.findall(r'\]\(([^)]+)\)', text):
+                if not target.startswith(('https:', 'http:', '#')):
+                    self.assertTrue((page.parent/target.split('#')[0]).is_file(), target)
+
     def test_all_tutorials_have_scoped_panels_and_valid_local_links(self):
         manifest = json.loads((evidence.OUT/'manifest.json').read_text())
         expected = {str(p.relative_to(ROOT)) for root in evidence.ROOTS for p in (ROOT/root).rglob('*.md')}

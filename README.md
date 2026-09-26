@@ -15,6 +15,11 @@ Follow the original [LANTA Experience handbook](docs/lanta-hpc-experience-handbo
 
 ## เริ่มแบบ Standalone บน LANTA
 
+Beyond the introductory labs, follow the domain experiment tracks:
+[CFD, climate and ocean](docs/CFD_CLIMATE_OCEAN_EXPERIMENTS.md) ·
+[space and astronomy](docs/SPACE_ASTRONOMY_EXPERIMENTS.md).
+These are researched pilot protocols awaiting execution, not new measured results.
+
 ผู้ใช้ที่ต้องการตั้งค่า private key หรือ alias `ssh lanta` สามารถเริ่มจาก [docs/SSH_PRIVATE_KEY_LANTA_TH.md](docs/SSH_PRIVATE_KEY_LANTA_TH.md)
 
 ```bash

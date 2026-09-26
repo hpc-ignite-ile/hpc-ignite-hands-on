@@ -1,5 +1,10 @@
 # บทที่ 22: การจำลองภูมิอากาศ
 
+**Beyond this synthetic grid:** follow the [weather, climate and ocean experiment track](../../docs/CFD_CLIMATE_OCEAN_EXPERIMENTS.md)
+for miniWeather thermal/density-current cases, WRF baroclinic waves, climlab energy
+balance, CMIP6 analysis, MITgcm gyres/channels and Oceananigans CPU/GPU dynamics.
+The new protocols are proposed pilots, not measurements from the grid exercise below.
+
 <!-- resource-learning:start -->
 ## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
 
