@@ -1,0 +1,10 @@
+{
+  "building": [
+    "\nBuilding,\n    Building 1,               !- Name\n    ,                         !- North Axis {deg}\n    ,                         !- Terrain\n    ,                         !- Loads Convergence Tolerance Value {W}\n    ,                         !- Temperature Convergence Tolerance Value {deltaC}\n    ,                         !- Solar Distribution\n    ,                         !- Maximum Number of Warmup Days\n    ;                         !- Minimum Number of Warmup Days\n"
+  ],
+  "zones": {
+    "F2-3_LOBBY": [],
+    "F4_LOBBY": [],
+    "F5_LOBBY": []
+  }
+}

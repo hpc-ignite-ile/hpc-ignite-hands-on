@@ -12,6 +12,11 @@
 
 คำสั่ง Bash, Git, `rsync` และ Slurm อธิบายไว้ใน [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) ส่วนวิธีออกแบบ baseline, repeats, speedup และ efficiency อยู่ใน [../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
+การแก้ full integration เริ่มแล้ว แต่ยังไม่ผ่าน baseline: งาน `6339887` และ
+`6339889` พบ severe errors 3 รายการ และ lobby spaces ไม่มี floor surfaces.
+อ่าน [ผล gate, geometry audit, resource usage และขั้นตอนที่ยังรอ](../docs/lanta-runs/2026-09-26-twinb-fix/README.md).
+ต้องตรวจแก้ฟิสิกส์อาคารก่อนประกาศว่า EnergyPlus/Mesa ใช้งานร่วมกันได้ครบถ้วน
+
 ## สิ่งที่ต้องแยกให้ออก
 
 | ชั้น | หน้าที่ | รันเมื่อใด |
