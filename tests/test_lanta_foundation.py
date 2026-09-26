@@ -251,6 +251,9 @@ class LantaFoundationTests(unittest.TestCase):
         setup = (REPO_ROOT / "mini-innovation" / "01-custom-python-env-module.md").read_text(encoding="utf-8")
         notebook = (REPO_ROOT / "mini-innovation" / "02-jupyter-notebook.md").read_text(encoding="utf-8")
         for marker in [
+            'EPI_MODULE_VERSION="${EPI_MODULE_VERSION:-3.5.1}"',
+            'python=3.12',
+            'from mesa.agent import AgentSet',
             '"jupyterlab>=4,<5"',
             '"notebook>=7,<8"',
             "ipykernel",
@@ -262,6 +265,17 @@ class LantaFoundationTests(unittest.TestCase):
         self.assertIn("jupyter lab --no-browser", notebook)
         self.assertIn('JUPYTER_SERVER_SOURCE:-hpc-mesa', notebook)
         self.assertIn("LANTA_JUPYTER_MODULE", notebook)
+
+    def test_mesa_three_tutorials_use_agentset(self) -> None:
+        paths = [
+            REPO_ROOT / "mini-innovation" / "03-epidemic-abs-examples.md",
+            REPO_ROOT / "mini-innovation" / "04-building-cosimulation-twinb.md",
+        ]
+        combined = "\n".join(path.read_text(encoding="utf-8") for path in paths)
+        self.assertIn('self.agents.shuffle_do("step")', combined)
+        self.assertNotIn("from mesa.time import RandomActivation", combined)
+        self.assertNotIn("module load hpc-mesa/2.3.4", combined)
+        self.assertIn("module load hpc-mesa/3.5.1", combined)
 
     def test_epidemic_tutorial_uses_model_rng_and_small_training_load(self) -> None:
         text = (REPO_ROOT / "mini-innovation" / "03-epidemic-abs-examples.md").read_text(encoding="utf-8")
@@ -284,6 +298,72 @@ class LantaFoundationTests(unittest.TestCase):
             "twinb_policy_compare",
         ]:
             self.assertIn(marker, text)
+
+    def test_twinb_repository_heatlab_tutorial_exists(self) -> None:
+        path = REPO_ROOT / "mini-innovation" / "06-twinb-heatlab-repository.md"
+        text = path.read_text(encoding="utf-8")
+        index = (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8")
+        self.assertIn(path.name, index)
+        for marker in [
+            "/home/ubuntu/lanta/ghq/github.com/wdiazcarballo/hpcignite-twinb",
+            "https://github.com/wdiazcarballo/hpcignite-twinb.git",
+            "scripts/migrate_twinb_mesa3.py",
+            "hpc-mesa/3.5.1",
+            "EnergyPlus",
+            "CPU-array",
+            "GPU-4",
+            "communication overhead",
+        ]:
+            self.assertIn(marker, text)
+
+    def test_cross_lab_performance_tutorial_exists(self) -> None:
+        tutorial = REPO_ROOT / "docs" / "PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md"
+        script = REPO_ROOT / "scripts" / "summarize_performance.py"
+        text = tutorial.read_text(encoding="utf-8")
+        self.assertTrue(script.exists())
+        self.assertIn("PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md", (REPO_ROOT / "README.md").read_text(encoding="utf-8"))
+        for marker in [
+            "Strong scaling",
+            "Weak scaling",
+            "parallel efficiency",
+            "sacct",
+            "nvidia-smi",
+            "GROMACS",
+            "Quantum ESPRESSO",
+            "EpiSprint/Mesa",
+            "Twin-B MicroCosim",
+            "result_consistent",
+        ]:
+            self.assertIn(marker, text)
+
+    def test_lanta_run_evidence_and_expected_result_images_exist(self) -> None:
+        evidence = REPO_ROOT / "docs" / "lanta-runs" / "2026-09-25-pv915002" / "README.md"
+        text = evidence.read_text(encoding="utf-8")
+        for marker in [
+            "6338432",
+            "6338471",
+            "pv915002",
+            "22572K",
+            "114080K",
+            "mesa 3.5.1",
+            "api MultiGrid AgentSet",
+        ]:
+            self.assertIn(marker, text)
+
+        expected_images = [
+            REPO_ROOT / "docs" / "images" / "expected-foundation-smoke.png",
+            REPO_ROOT / "docs" / "images" / "expected-hpc-mesa-smoke.png",
+        ]
+        for image in expected_images:
+            self.assertTrue(image.exists(), f"missing expected-result image: {image}")
+            self.assertGreater(image.stat().st_size, 10_000, f"unexpectedly small image: {image}")
+
+        foundation_tutorial = (FOUNDATION / "README.md").read_text(encoding="utf-8")
+        mesa_tutorial = (REPO_ROOT / "mini-innovation" / "01-custom-python-env-module.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("expected-foundation-smoke.png", foundation_tutorial)
+        self.assertIn("expected-hpc-mesa-smoke.png", mesa_tutorial)
 
     def test_mini_innovation_output_display_declares_notebook_and_gnuplot(self) -> None:
         readme = (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8")

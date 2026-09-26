@@ -73,12 +73,12 @@ export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 
 ### ขั้นที่ 2: ตรวจสภาพแวดล้อม
 
-คำสั่งชุดนี้โหลด `hpc-mesa/2.3.4` และตรวจแพ็กเกจที่ใช้สร้างการจำลองร่วม
+คำสั่งชุดนี้โหลด `hpc-mesa/3.5.1` และตรวจแพ็กเกจที่ใช้สร้างการจำลองร่วม
 
 ```bash
 module purge
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 python - <<'PY'
 import mesa, pandas, yaml
 print("mesa", mesa.__version__)
@@ -221,13 +221,12 @@ PY
 ```bash
 cat > src/twinb_agents.py <<'PY'
 from mesa import Agent, Model
-from mesa.time import RandomActivation
 from thermal_surrogate import ThermalSurrogate
 
 
 class OccupantAgent(Agent):
-    def __init__(self, unique_id, model, agent_type, preferred_temp, tolerance):
-        super().__init__(unique_id, model)
+    def __init__(self, model, agent_type, preferred_temp, tolerance):
+        super().__init__(model)
         self.agent_type = agent_type
         self.preferred_temp = preferred_temp
         self.tolerance = tolerance
@@ -256,16 +255,14 @@ cat >> src/twinb_agents.py <<'PY'
 
 class TwinBCosim(Model):
     def __init__(self, config, occupants):
-        super().__init__()
+        super().__init__(rng=int(config["simulation"]["seed"]))
         self.config = config
-        self.random.seed(int(config["simulation"]["seed"]))
         self.science = ThermalSurrogate(config)
         self.zone_names = list(self.science.temps)
         self.zone_temps = dict(self.science.temps)
         self.policy_name = config["simulation"]["policy"]
         self.policy = config["policies"][self.policy_name]
         self.current_step = 0
-        self.schedule = RandomActivation(self)
         self.agent_records = []
         self.zone_records = []
         self._create_agents(occupants)
@@ -274,16 +271,13 @@ class TwinBCosim(Model):
         return self.random.uniform(float(cfg["min"]), float(cfg["max"]))
 
     def _create_agents(self, occupants):
-        uid = 0
         for agent_type, cfg in occupants["agent_types"].items():
             for _ in range(int(cfg["count"])):
-                agent = OccupantAgent(
-                    uid, self, agent_type,
+                OccupantAgent(
+                    self, agent_type,
                     self.sample_range(cfg["preferred_temp"]),
                     self.sample_range(cfg["comfort_tolerance"]),
                 )
-                self.schedule.add(agent)
-                uid += 1
 PY
 ```
 
@@ -309,7 +303,7 @@ cat >> src/twinb_agents.py <<'PY'
 
     def aggregate_setpoints(self):
         per_zone = {zone: [] for zone in self.zone_names}
-        for agent in self.schedule.agents:
+        for agent in self.agents:
             if agent.requested_setpoint is not None:
                 per_zone[agent.room].append(agent.requested_setpoint)
         out = {}
@@ -332,9 +326,9 @@ cat >> src/twinb_agents.py <<'PY'
 
     def step(self):
         self.zone_temps = dict(self.science.temps)
-        self.schedule.step()
+        self.agents.shuffle_do("step")
         occupancy = {zone: 0 for zone in self.zone_names}
-        for agent in self.schedule.agents:
+        for agent in self.agents:
             if self.is_present(agent.agent_type):
                 occupancy[agent.room] += 1
             self.agent_records.append({
@@ -409,7 +403,7 @@ summary = {
     "policy": config["simulation"]["policy"],
     "seed": config["simulation"]["seed"],
     "steps": config["simulation"]["steps"],
-    "agents": len(model.schedule.agents),
+    "agents": len(model.agents),
     "zones": len(model.zone_names),
     "total_energy_kwh": round(float(zone_df["energy_kwh"].sum()), 6),
     "mean_discomfort_c": round(float(agent_df["discomfort_c"].mean()), 6),
@@ -508,7 +502,7 @@ cat > jobs/twinb_single.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 cd "$SLURM_SUBMIT_DIR"
 
 python src/run_twinb_cosim.py \
@@ -568,7 +562,7 @@ cat > jobs/twinb_array.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 cd "$SLURM_SUBMIT_DIR"
 
 line_number=$((SLURM_ARRAY_TASK_ID + 1))
@@ -608,7 +602,7 @@ echo "Monitor: squeue -j $job_id"
 
 ```bash
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 python src/merge_twinb_results.py \
     --pattern "results/twinb_summary_${job_id}_*.csv" \
     --output "results/twinb_policy_compare_${job_id}.csv"

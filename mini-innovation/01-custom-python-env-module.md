@@ -8,6 +8,8 @@
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `mamba create`, `conda run`, `python -m pip`, heredoc, Lua modulefile, `chmod`, `module use` และ `module load`
 
+รุ่นที่ใช้คือ Mesa 3.5.1 ซึ่งเป็น stable release ล่าสุดเมื่อ 2026-09-25 ดู [Mesa บน PyPI](https://pypi.org/project/Mesa/) และ [Mesa migration guide](https://mesa.readthedocs.io/stable/migration_guide.html) สำหรับข้อกำหนด Python 3.12+ และการเปลี่ยนจาก scheduler ไปใช้ `AgentSet`
+
 ## Copy-Paste จากเครื่องผู้ใช้
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
@@ -44,10 +46,10 @@ fi
 คำสั่งชุดนี้กำหนดเส้นทางแบบใช้ซ้ำ เพื่อให้สมาชิกกลุ่มโหลดโมดูลเดียวกันและใช้แคชในพื้นที่โครงการร่วมกัน
 
 ```bash
-export EPI_ENV_NAME="${EPI_ENV_NAME:-hpc-mesa}"
+export EPI_ENV_NAME="${EPI_ENV_NAME:-hpc-mesa-3.5.1}"
 export EPI_ENV_PREFIX="${EPI_ENV_PREFIX:-$LANTA_PROJECT/envs/$EPI_ENV_NAME}"
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
-export EPI_MODULE_VERSION="${EPI_MODULE_VERSION:-2.3.4}"
+export EPI_MODULE_VERSION="${EPI_MODULE_VERSION:-3.5.1}"
 export CONDA_PKGS_DIRS="${CONDA_PKGS_DIRS:-$LANTA_PROJECT/conda-pkgs}"
 export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$LANTA_PROJECT/pip-cache}"
 ```
@@ -75,15 +77,16 @@ mamba --version
 
 ### ขั้นที่ 5: สร้างสภาพแวดล้อมเมื่อเส้นทางยังว่าง
 
-คำสั่งชุดนี้สร้างสภาพแวดล้อมด้วย Python 3.10 และชุดโปรแกรมวิทยาศาสตร์หลัก เมื่อเส้นทางมีสภาพแวดล้อมเดิมอยู่ คำสั่งจะแสดงเส้นทางเดิมเพื่อให้ตรวจต่อ
+คำสั่งชุดนี้สร้างสภาพแวดล้อมด้วย Python 3.12 และชุดโปรแกรมวิทยาศาสตร์หลัก เพราะ Mesa 3.5.1 ต้องการ Python 3.12 ขึ้นไป เมื่อเส้นทางมีสภาพแวดล้อมเดิมอยู่ คำสั่งจะหยุดถ้า Python หรือ Mesa ไม่ตรงรุ่น เพื่อป้องกันการผสม environment เก่ากับ tutorial ใหม่
 
 ```bash
 if [ ! -x "$EPI_ENV_PREFIX/bin/python" ]; then
     mamba create -y -p "$EPI_ENV_PREFIX" \
         --override-channels -c conda-forge \
-        python=3.10 pip numpy pandas scipy matplotlib pyyaml networkx tqdm
+        python=3.12 pip numpy pandas scipy matplotlib pyyaml networkx tqdm
 else
     echo "Environment exists: $EPI_ENV_PREFIX"
+    "$EPI_ENV_PREFIX/bin/python" -c 'import sys; assert sys.version_info[:2] == (3, 12), sys.version'
 fi
 ```
 
@@ -101,7 +104,7 @@ conda run -p "$EPI_ENV_PREFIX" python -m pip install --no-cache-dir \
 
 ### ขั้นที่ 7: สร้าง Modulefile
 
-คำสั่งชุดนี้สร้างไฟล์โมดูล Lua ชื่อ `hpc-mesa/2.3.4` เพื่อให้ผู้ใช้เรียกสภาพแวดล้อมด้วย `module load`
+คำสั่งชุดนี้สร้างไฟล์โมดูล Lua ชื่อ `hpc-mesa/3.5.1` เพื่อให้ผู้ใช้เรียกสภาพแวดล้อมด้วย `module load` รุ่นนี้เป็น Mesa stable ล่าสุดที่ตรวจจาก PyPI เมื่อ 2026-09-25 และหลีกเลี่ยง Mesa 4.0 alpha ซึ่งยังเป็น pre-release
 
 ```bash
 cat > "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" <<'LUA'
@@ -171,7 +174,7 @@ import scipy
 import matplotlib
 import yaml
 import networkx
-from mesa.time import RandomActivation
+from mesa.agent import AgentSet
 from mesa.space import MultiGrid
 
 print("python", sys.version.split()[0])
@@ -183,7 +186,7 @@ print("matplotlib", matplotlib.__version__)
 print("pyyaml", yaml.__version__)
 print("networkx", networkx.__version__)
 print("jupyterlab_ready", "ok")
-print("mesa_api", RandomActivation.__name__, MultiGrid.__name__)
+print("mesa_api", AgentSet.__name__, MultiGrid.__name__)
 PY
 ```
 
@@ -254,17 +257,42 @@ fi
 ```bash
 module purge
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 which python
 jupyter lab --version
 jupyter kernelspec list
-python -c "import mesa; from mesa.time import RandomActivation; print('mesa', mesa.__version__, 'ok')"
+python -c "import mesa; from mesa.agent import AgentSet; print('mesa', mesa.__version__, AgentSet.__name__, 'ok')"
 ```
 
 ## คำอธิบาย
 
 ทีมสร้างสภาพแวดล้อมแบบ `--prefix` ในพื้นที่โครงการเพื่อให้ใช้ร่วมกันได้ทั้งกลุ่มและอ้างอิงเส้นทางกลางของโครงการ การแยกขั้นสร้างสภาพแวดล้อมออกจากขั้นเติมแพ็กเกจช่วยให้สภาพแวดล้อมเดิมที่มีอยู่แล้วได้รับ `jupyterlab`, `notebook`, `ipykernel` และ `mesa` ตามรุ่นที่บทเรียนใช้จริง
 
-หลักฐานที่ใช้ตัดสินความพร้อมมีสี่ส่วน: `which python` ต้องชี้เข้า `$LANTA_PROJECT/envs/hpc-mesa`, `jupyter lab --version` ต้องแสดงเลขรุ่นเมื่อใช้สภาพแวดล้อมนี้เป็นเซิร์ฟเวอร์, `jupyter kernelspec list` ต้องมี `hpc-mesa`, และการนำเข้าแพ็กเกจใน Python ต้องรายงาน `mesa 2.3.4` พร้อม API `RandomActivation` กับ `MultiGrid` เมื่อครบสี่ส่วนนี้ บท Jupyter และบท ABS โรคระบาดจะใช้รันไทม์เดียวกันทั้งแบบโต้ตอบและแบบงานชุด
+หลักฐานที่ใช้ตัดสินความพร้อมมีสี่ส่วน: `which python` ต้องชี้เข้า `$LANTA_PROJECT/envs/hpc-mesa-3.5.1`, `jupyter lab --version` ต้องแสดงเลขรุ่นเมื่อใช้สภาพแวดล้อมนี้เป็นเซิร์ฟเวอร์, `jupyter kernelspec list` ต้องมี `hpc-mesa`, และการนำเข้าแพ็กเกจใน Python ต้องรายงาน `mesa 3.5.1` พร้อม API `AgentSet` กับ `MultiGrid` เมื่อครบสี่ส่วนนี้ บท Jupyter และบท ABS โรคระบาดจะใช้รันไทม์เดียวกันทั้งแบบโต้ตอบและแบบงานชุด
 
-ผลตรวจด้วยบัญชี `tn642` เมื่อ 2026-08-02 พบว่า `jupyter lab` พร้อมใช้งานใน `hpc-mesa` หลังเติมแพ็กเกจตามขั้นที่ 6 ส่วน PATH เริ่มต้น, `cray-python/3.10.10`, และ `Mamba/23.11.0-0` ยังขาด executable `jupyter lab` ในรอบตรวจนั้น ดังนั้นเส้นทางหลักของการอบรมใช้ `hpc-mesa` เป็นทั้งเซิร์ฟเวอร์และเคอร์เนล ส่วน JupyterLab กลางของระบบใช้เป็นทางสำรองเมื่อผู้ดูแลเปิดให้ผ่านโมดูลหรือ PATH ของรอบอบรมนั้น
+ผลตรวจสดด้วยบัญชี `wdiazcar` เมื่อ 2026-09-25 พบว่า LANTA มี `Mamba/23.11.0-0` แต่ไม่เห็นโมดูลส่วนตัว `hpc-mesa/2.3.4` ใน `MODULEPATH` เริ่มต้น ดังนั้น tutorial นี้สร้าง `hpc-mesa/3.5.1` ใหม่ใต้ project space และกำหนดให้ทุกงานเรียก `module use "$EPI_MODULE_ROOT"` ก่อน `module load` เสมอ JupyterLab กลางยังเป็นทางสำรองเมื่อผู้ดูแลเปิดให้ผ่านโมดูลหรือ PATH ของรอบอบรมนั้น
+
+งานทดสอบจริง `6338471` ใช้บัญชี `pv915002` และจบ `COMPLETED (0:0)` บน `compute-devel` ด้วย Python 3.12.14, Mesa 3.5.1 และ API `MultiGrid`/`AgentSet` เวลารวม 22 วินาที, `TotalCPU=2.227` วินาที และ `MaxRSS=114080K` ที่ขั้น `.batch` ดู [stdout และสถิติฉบับเต็ม](../docs/lanta-runs/2026-09-25-pv915002/README.md#hpc-mesa-smoke-job-6338471)
+
+ภาพนี้เป็นภาพประกอบ expected result จากค่าที่สังเกตจริง ไม่ใช่หลักฐานแทน `sacct` และ raw log:
+
+![Expected result ของ hpc-mesa smoke](../docs/images/expected-hpc-mesa-smoke.png)
+
+## การย้ายจาก Mesa 2 ไป Mesa 3
+
+Mesa 3 ให้ `Model` จัดทะเบียน agent อัตโนมัติและใช้ `AgentSet` แทน scheduler ใน `mesa.time` แนวแปลงที่ใช้ในบทถัดไปคือ:
+
+```python
+# Mesa 2
+# super().__init__(unique_id, model)
+# self.schedule = RandomActivation(self)
+# self.schedule.add(agent)
+# self.schedule.step()
+
+# Mesa 3.5.1
+super().__init__(model)
+# agent ถูกเพิ่มเข้า model.agents อัตโนมัติ
+self.agents.shuffle_do("step")
+```
+
+เมื่ออ่าน tutorial เก่าหรือโครงการ Twin-B ให้ค้นหา `mesa.time`, `RandomActivation`, `schedule.add`, `schedule.agents` และ `schedule.step` ก่อนรันกับ `hpc-mesa/3.5.1` เพราะเป็นจุดที่ต้องย้าย API

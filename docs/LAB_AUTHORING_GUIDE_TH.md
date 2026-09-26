@@ -4,6 +4,8 @@
 
 ดูคำอธิบายคำสั่ง Bash, Slurm และ syntax ที่ใช้ใน template ได้ที่ [BASH_COMMAND_REFERENCE_TH.md](BASH_COMMAND_REFERENCE_TH.md)
 
+ทุก lab ที่มี workload ต้องเชื่อมกับ [PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md](PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) และระบุอย่างน้อย baseline, input/problem size, metric หลัก, correctness check, ตัวแปร resource ที่จะทดลอง และ stop condition ห้ามใช้เพียง wall time รอบเดียวหรือสรุปว่าเร็วขึ้นโดยไม่ตรวจผลลัพธ์
+
 ## หลักการเขียน
 
 1. หนึ่ง code block ทำหนึ่ง semantic task เช่น เตรียม workspace, สร้าง source, สร้าง config, สร้าง Slurm script, ส่งงาน, หรืออ่านผล
@@ -12,6 +14,7 @@
 4. ส่งงานด้วย `sbatch` จาก `jobs/*.sbatch` ที่สร้างในหน้า hand-on นั้นโดยตรง
 5. ใช้ `compute-devel` หรือ `gpu-devel` สำหรับ smoke test ก่อนขยายขนาดงาน
 6. เก็บ job id, log, result, config และ version ให้ใช้ตรวจซ้ำได้
+7. หลัง smoke test ผ่าน ให้มี performance card ที่บอก baseline, repeats, metric, optimization hypothesis และเงื่อนไขหยุดขยายทรัพยากร
 
 ## Template แบบ Block สั้น
 

@@ -47,6 +47,7 @@ hpc-ignite-hands-on/
 ├── ai-applications/         # Reference AI chapters
 ├── domain-science/          # Reference science/domain chapters
 ├── mini-innovation/         # Scaffolded epidemic ABS innovation labs
+├── docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md # Performance tutorial for every lab
 ├── environments/            # Optional Conda/Mamba environment files
 ├── slurm/                   # Reusable Slurm templates and module-load snippets
 ├── docs/                    # Authoring guide and copy-paste conventions
@@ -72,6 +73,10 @@ hpc-ignite-hands-on/
 ## Audit สำหรับปรับ Repo
 
 ถ้าต้องการดูเหตุผลของการปรับตัวอย่างให้เป็น workflow จิ๋วที่ใช้ module จริงบน LANTA ให้เปิด [docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md](docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md)
+
+## ประเมินและปรับสมรรถนะทุก Hands-On
+
+หลัง workflow รันถูกต้องแล้ว ให้ใช้ [docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md](docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) เพื่อสร้าง baseline, ทำ repeats, เก็บ `sacct`/CPU/GPU evidence, คำนวณ speedup และ parallel efficiency และเลือก optimization ที่เหมาะกับแต่ละบทตั้งแต่ Slurm แรก, MPI/OpenMP, AI/GPU, containers, domain science จนถึง mini innovation
 
 ## แผนที่ Lab Standalone ที่ใช้ Module จริง
 

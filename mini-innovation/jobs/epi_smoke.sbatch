@@ -20,15 +20,15 @@ cd "$REPO_ROOT"
 EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-/project/tn999996-north/modules}"
 module purge
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 
 OUT="results/epi_smoke_${SLURM_JOB_ID}"
 mkdir -p "$OUT"
 python - <<'PY' | tee "$OUT/mesa_check.txt"
 import mesa
 from mesa.space import MultiGrid
-from mesa.time import RandomActivation
+from mesa.agent import AgentSet
 
 print("mesa", mesa.__version__)
-print("api", MultiGrid.__name__, RandomActivation.__name__)
+print("api", MultiGrid.__name__, AgentSet.__name__)
 PY

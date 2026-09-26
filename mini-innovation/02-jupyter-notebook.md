@@ -24,7 +24,7 @@
 
 | วิธี | เซิร์ฟเวอร์ JupyterLab | เคอร์เนล Python | เหมาะกับสถานการณ์ |
 |---|---|---|---|
-| เส้นทางหลักของการอบรม | `hpc-mesa/2.3.4` | `Python (hpc-mesa)` | ใช้แพ็กเกจชุดเดียวกันทั้งเซิร์ฟเวอร์และเคอร์เนล |
+| เส้นทางหลักของการอบรม | `hpc-mesa/3.5.1` | `Python (hpc-mesa)` | ใช้แพ็กเกจชุดเดียวกันทั้งเซิร์ฟเวอร์และเคอร์เนล |
 | ทางสำรองของระบบกลาง | site/default JupyterLab | `Python (hpc-mesa)` | ใช้เมื่อรอบใช้งานของ LANTA มี JupyterLab จากโมดูลหรือ PATH กลาง |
 
 ก่อนใช้ทางสำรองของระบบกลาง ให้รันหน้า [01-custom-python-env-module.md](01-custom-python-env-module.md) ถึงขั้น `python -m ipykernel install --user --name hpc-mesa ...` เพื่อให้เซิร์ฟเวอร์กลางเห็นเคอร์เนลของกิจกรรม
@@ -70,7 +70,7 @@ fi
 
 ### ขั้นที่ 3: ตั้งค่า Account และ Project
 
-คำสั่งชุดนี้รับค่าบัญชี Slurm และเส้นทางพื้นที่โครงการที่ใช้หาโมดูล `hpc-mesa/2.3.4`
+คำสั่งชุดนี้รับค่าบัญชี Slurm และเส้นทางพื้นที่โครงการที่ใช้หาโมดูล `hpc-mesa/3.5.1`
 
 ```bash
 if [ -z "${LANTA_ACCOUNT:-}" ]; then
@@ -92,7 +92,7 @@ export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 ```bash
 module purge
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 which python
 python --version
 which jupyter
@@ -124,7 +124,7 @@ module -t avail 2>&1 | grep -Ei 'jupyter|notebook|lab' | head -20 || true
 ```bash
 module purge
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 jupyter kernelspec list
 ```
 
@@ -213,7 +213,7 @@ if [ "${JUPYTER_SERVER_SOURCE:-hpc-mesa}" = "site" ]; then
     fi
 else
     module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-    module load hpc-mesa/2.3.4
+    module load hpc-mesa/3.5.1
 fi
 cd "$SLURM_SUBMIT_DIR"
 command -v jupyter
@@ -355,7 +355,7 @@ sacct -j <jobid> --format=JobID,JobName,Partition,State,Elapsed,AllocCPUS,ReqMem
 | เบราว์เซอร์เชื่อมต่อขัดข้อง | `squeue -j <jobid>` | งานยังเป็น `R` |
 | Tunnel ใช้ค่าคนละรอบงาน | `tail -80 logs/jupyter_<jobid>.out` | node และ port ตรงกับ tunnel |
 | Token ขาด | `grep -E 'token=' logs/jupyter_<jobid>.out` | URL มี `?token=` ครบ |
-| โมดูลหา JupyterLab ขาด | `module use "$EPI_MODULE_ROOT"; module load hpc-mesa/2.3.4; which jupyter` | path ชี้เข้าสภาพแวดล้อมที่สร้างไว้ |
+| โมดูลหา JupyterLab ขาด | `module use "$EPI_MODULE_ROOT"; module load hpc-mesa/3.5.1; which jupyter` | path ชี้เข้าสภาพแวดล้อมที่สร้างไว้ |
 | ทางสำรองของระบบกลางหาเคอร์เนลขาด | `jupyter kernelspec list` | มี `hpc-mesa` หรือ `Python (hpc-mesa)` |
 | งานรอคิวนาน | `squeue -j <jobid> -o "%.18i %.9P %.20j %.8u %.2t %.10M %.6D %R"` | reason อธิบายคิว บัญชี หรือพาร์ทิชัน |
 | เคอร์เนลเปิดขัดข้อง | `tail -100 logs/jupyter_<jobid>.err` | error ชี้รันไทม์ แพ็กเกจ หรือโควตา |

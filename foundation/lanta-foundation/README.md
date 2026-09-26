@@ -125,6 +125,22 @@ tail -80 logs/foundation-visible_*.out
 2. `logs/` มี stdout/stderr ของ job id นั้น
 3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
 
+เก็บสถิติทรัพยากรพร้อม step `.batch` ซึ่งเป็นแถวที่มี `MaxRSS`:
+
+```bash
+job_id=<jobid>
+sacct -j "$job_id" -P \
+  -o JobID,JobName,Account,Partition,State,ExitCode,Elapsed,TotalCPU,UserCPU,SystemCPU,AllocCPUS,ReqCPUS,ReqMem,MaxRSS,MaxVMSize,AveCPU,NodeList
+```
+
+## ตัวอย่างผลที่ตรวจบน LANTA
+
+งาน repo smoke `6338432` รันจริงเมื่อ 2026-09-25 ด้วยบัญชี `pv915002` บน `compute-devel` และจบ `COMPLETED (0:0)` ใน 5 วินาที ขั้น `batch` ใช้ `MaxRSS=22572K` ค่า workload คือ `pi estimate=3.141592654564`, `abs error=9.742940e-10` และเวลาที่โปรแกรมวัดได้ 0.0632 วินาที ดู stdout และสถิติฉบับเต็มใน [run evidence](../../docs/lanta-runs/2026-09-25-pv915002/README.md#foundation-smoke-job-6338432)
+
+ภาพต่อไปนี้เป็นภาพประกอบ expected result ที่สร้างจาก log จริง ไม่ใช่ภาพหลักฐานแทน raw log:
+
+![Expected result ของ LANTA foundation smoke](../../docs/images/expected-foundation-smoke.png)
+
 ## ใช้ Repo เป็น Reference
 
 ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

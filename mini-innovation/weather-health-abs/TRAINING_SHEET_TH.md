@@ -79,7 +79,7 @@ pwd
 ```bash
 module purge
 module use /project/tn999996-north/modules 2>/dev/null || true
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 
 if [ ! -x "$HPDS_ENV_PREFIX/bin/python" ]; then
     python -m venv --system-site-packages "$HPDS_ENV_PREFIX"
@@ -449,7 +449,7 @@ cd "$SLURM_SUBMIT_DIR"
 mkdir -p logs notes results figures
 module purge
 module use /project/tn999996-north/modules 2>/dev/null || true
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 . "${HPDS_ENV_PREFIX:?set HPDS_ENV_PREFIX before sbatch}/bin/activate"
 {
     echo "job_id=$SLURM_JOB_ID"

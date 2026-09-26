@@ -142,13 +142,13 @@ sed -n '1,120p' lanta-experience/README.md
 | `module list` | แสดง module ที่โหลดอยู่ | เก็บใน log เพื่อยืนยัน runtime |
 | `module avail NAME` | ดู module ที่มีชื่อใกล้เคียง | ใช้สำรวจว่าระบบมี package ใด |
 | `module spider NAME` | ค้น module แบบละเอียด | ใช้หา version และ dependency |
-| `module use PATH` | เพิ่ม path ของ module ส่วนตัว | ใช้กับ `EPI_MODULE_ROOT` สำหรับ `hpc-mesa/2.3.4` |
+| `module use PATH` | เพิ่ม path ของ module ส่วนตัว | ใช้กับ `EPI_MODULE_ROOT` สำหรับ `hpc-mesa/3.5.1` |
 
 ผลที่ถูกต้องคือ `module list` แสดง software version ที่ lab ต้องใช้ และ `command -v <tool>` หรือ `which python` ชี้ไปยัง executable ที่สอดคล้องกับ module นั้น
 
 ## Lua Modulefile Syntax
 
-ไฟล์ `mini-innovation/01-custom-python-env-module.md` สร้าง modulefile ชื่อ `hpc-mesa/2.3.4.lua` เพื่อให้ Lmod โหลด environment ของ Mesa ได้เหมือน software module อื่นบน LANTA
+ไฟล์ `mini-innovation/01-custom-python-env-module.md` สร้าง modulefile ชื่อ `hpc-mesa/3.5.1.lua` เพื่อให้ Lmod โหลด environment ของ Mesa ได้เหมือน software module อื่นบน LANTA
 
 | Syntax | ความหมาย | ผลที่ควรตรวจ |
 |---|---|---|

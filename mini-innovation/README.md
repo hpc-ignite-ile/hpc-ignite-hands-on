@@ -39,6 +39,7 @@ Twin-B MicroCosim ย่อแนวคิดจากแฝดดิจิท�
 | [03-epidemic-abs-examples.md](03-epidemic-abs-examples.md) | สร้างและรันแบบจำลองโรคระบาดเชิงตัวแทน 3 วิธี | บทเรียนหลักของนวัตกรรมย่อย |
 | [04-building-cosimulation-twinb.md](04-building-cosimulation-twinb.md) | สร้างการจำลองร่วมแบบ Twin-B MicroCosim | แสดงการทำงานร่วมกันของแบบจำลองวิทยาศาสตร์และแบบจำลองตัวแทน |
 | [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) | แสดงผล EpiSprint และ Twin-B ด้วย Jupyter, Matplotlib และ gnuplot | แปลงหลักฐานจาก CSV เป็นรูปและสมุดบันทึก |
+| [06-twinb-heatlab-repository.md](06-twinb-heatlab-repository.md) | ใช้ source จริง `hpcignite-twinb` เป็น Twin-B HeatLab | snapshot งานที่ยังไม่ commit, migrate Mesa 3, รัน EnergyPlus/Mesa และเปรียบเทียบ CPU/GPU |
 | [enhanced-seir/README.md](enhanced-seir/README.md) | แบบจำลอง SEIR ขั้นสูงด้วย C++/MPI และ PyTorch GPU/DDP | เอกสารอ้างอิงสำหรับการเลือกทรัพยากรและหลักฐานการรัน |
 | [enhanced-seir/TRAINING_SHEET_TH.md](enhanced-seir/TRAINING_SHEET_TH.md) | แผ่นงานคัดลอกคำสั่งสำหรับสร้าง enhanced SEIR บน LANTA ด้วย heredoc | คลินิกสมรรถนะที่ผู้ใช้รันได้จากหน้าเดียว |
 | [enhanced-seir/PERFORMANCE_WORKSHOP_TH.md](enhanced-seir/PERFORMANCE_WORKSHOP_TH.md) | เวิร์กช็อปประเมินสมรรถนะจาก enhanced SEIR ด้วย roofline, Amdahl, Gustafson, MPI solver และ Python overhead | ใช้ฝึกอ่านคอขวดและตัดสินใจรันครั้งถัดไปจากหลักฐานจริง |
@@ -71,6 +72,7 @@ Twin-B MicroCosim ย่อแนวคิดจากแฝดดิจิท�
 - การแสดงผลจากตารางกลางด้วย Jupyter, Matplotlib และ gnuplot
 - การเปรียบเทียบสมรรถนะของกลุ่มสถานการณ์ระหว่าง MPI บน CPU และ GPU/DDP
 - การใช้ AI เป็นนั่งร้านการเรียนรู้สำหรับตั้งคำถาม ออกแบบสถานการณ์ ตรวจไฟล์ Slurm และอธิบายผลโดยอ้างอิงโค้ด ค่าตั้งต้น บันทึกการรัน และ CSV
+- การประเมินสมรรถนะของทุกเส้นทางด้วย [tutorial กลาง](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) โดยตรวจ correctness ก่อน speedup และรายงานผลต่อ SHr
 
 ## งานทดสอบสั้นแบบจบในหน้าเดียว
 
@@ -111,15 +113,15 @@ cat > jobs/epi_smoke.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 python - <<'PY' | tee "results/${SLURM_JOB_ID}/mesa_check.txt"
 import mesa
 from mesa.space import MultiGrid
-from mesa.time import RandomActivation
+from mesa.agent import AgentSet
 print("mesa", mesa.__version__)
-print("api", "RandomActivation MultiGrid")
+print("api", AgentSet.__name__, MultiGrid.__name__)
 PY
 SLURM
 ```
@@ -138,9 +140,24 @@ echo "Submitted smoke job: $job_id"
 echo "Read: tail -50 logs/epi-smoke_${job_id}.out"
 ```
 
+### ขั้นที่ 4: เก็บ output และการใช้ทรัพยากร
+
+คำสั่งนี้แสดงทั้งแถว job และ `.batch`; อ่าน `MaxRSS` จาก `.batch` และเก็บ stdout/stderr ของ job id เดียวกันเสมอ
+
+```bash
+sacct -j "$job_id" -P \
+  -o JobID,JobName,Account,Partition,State,ExitCode,Elapsed,TotalCPU,UserCPU,SystemCPU,AllocCPUS,ReqCPUS,ReqMem,MaxRSS,MaxVMSize,AveCPU,NodeList
+cat "logs/epi-smoke_${job_id}.out"
+cat "logs/epi-smoke_${job_id}.err"
+```
+
 ถ้าโมดูลอยู่คนละโครงการ ให้ตั้ง `EPI_MODULE_ROOT=/project/<project>/modules` ก่อน `sbatch`.
 
-เมื่อสำเร็จ บันทึกการรันจะแสดง `mesa 2.3.4` และชื่อ API ที่ใช้ในบทเรียน
+เมื่อสำเร็จ บันทึกการรันจะแสดง `mesa 3.5.1` และชื่อ API `AgentSet` กับ `MultiGrid` ที่ใช้ในบทเรียน
+
+ผลตรวจจริงวันที่ 2026-09-25 คือ job `6338471`, บัญชี `pv915002`, สถานะ `COMPLETED (0:0)`, elapsed 22 วินาที, `TotalCPU=2.227` วินาที และ `MaxRSS=114080K`; stdout คือ `mesa 3.5.1` กับ `api MultiGrid AgentSet` และ stderr ว่าง ดู [หลักฐานครบ](../docs/lanta-runs/2026-09-25-pv915002/README.md#hpc-mesa-smoke-job-6338471)
+
+![ภาพประกอบ expected result ของ hpc-mesa smoke](../docs/images/expected-hpc-mesa-smoke.png)
 
 ## ขอบเขตความปลอดภัย
 

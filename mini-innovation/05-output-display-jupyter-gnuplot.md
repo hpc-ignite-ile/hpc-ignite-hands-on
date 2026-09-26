@@ -12,7 +12,7 @@
 | Matplotlib แบบไร้หน้าจอ | สคริปต์ Python | PNG จากงานชุด | รันบนเครื่องคำนวณแล้วเปิดไฟล์ทีหลัง |
 | Gnuplot | `gnuplot` | PNG จาก TSV | เครื่องเบา อ่านสคริปต์วาดกราฟง่าย |
 
-ผลตรวจด้วยบัญชี `tn642` เมื่อ 2026-08-03 พบว่า `hpc-mesa/2.3.4` มี Matplotlib พร้อมใช้ ส่วน `gnuplot` ยังว่างจาก PATH เริ่มต้นและรายการโมดูลของรอบตรวจนั้น ดังนั้นหน้านี้ใช้ Matplotlib เป็นเส้นทางหลัก และให้ gnuplot เป็นทางเลือกเมื่อผู้ดูแลเปิด executable หรือโมดูลให้ในรอบอบรม
+สภาพแวดล้อม `hpc-mesa/3.5.1` ที่สร้างจากหน้า 01 ติดตั้ง Matplotlib ไว้โดยตรง ส่วน `gnuplot` อาจไม่อยู่ใน PATH หรือรายการโมดูลของแต่ละรอบใช้งาน ดังนั้นหน้านี้ใช้ Matplotlib เป็นเส้นทางหลัก และให้ gnuplot เป็นทางเลือกเมื่อ executable หรือโมดูลพร้อมใช้
 
 ## Copy-Paste จากเครื่องผู้ใช้
 
@@ -45,7 +45,7 @@ pwd
 
 ### ขั้นที่ 2: โหลดสภาพแวดล้อม
 
-คำสั่งชุดนี้โหลด `hpc-mesa/2.3.4` และตรวจแพ็กเกจที่ใช้วาดกราฟ
+คำสั่งชุดนี้โหลด `hpc-mesa/3.5.1` และตรวจแพ็กเกจที่ใช้วาดกราฟ
 
 ```bash
 if [ -f "$HOME/lanta-episprint/notes/session-env.sh" ]; then
@@ -58,7 +58,7 @@ fi
 export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 module purge
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 ```
 
 ### ขั้นที่ 3: ตรวจชุดเครื่องมือวาดกราฟของ Python
@@ -340,7 +340,7 @@ cat > jobs/display_plots.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 cd "$SLURM_SUBMIT_DIR"
 
 python src/prepare_display_tables.py

@@ -49,7 +49,7 @@ export EPI_MODULE_ROOT="${EPI_MODULE_ROOT:-$LANTA_PROJECT/modules}"
 ```bash
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 python - <<'PY'
 import mesa, pandas
 print("mesa", mesa.__version__)
@@ -68,7 +68,6 @@ from dataclasses import dataclass
 
 from mesa import Agent, Model
 from mesa.space import MultiGrid
-from mesa.time import RandomActivation
 
 S, E, I, R = "S", "E", "I", "R"
 
@@ -83,8 +82,8 @@ class Scenario:
     days: int
 
 class Person(Agent):
-    def __init__(self, unique_id, model, compliance):
-        super().__init__(unique_id, model)
+    def __init__(self, model, compliance):
+        super().__init__(model)
         self.compliance = compliance
         self.state = S
         self.days = 0
@@ -116,22 +115,19 @@ cat >> src/epi_model.py <<'PY'
 
 class EpiModel(Model):
     def __init__(self, scenario, width=70, height=70):
-        super().__init__()
-        self.random.seed(scenario.seed)
+        super().__init__(rng=scenario.seed)
         self.scenario = scenario
         self.policy = scenario.policy
         self.beta = scenario.beta
         self.width, self.height = width, height
         self.incubation_days, self.recovery_days = 3, 7
         self.grid = MultiGrid(width, height, torus=True)
-        self.schedule = RandomActivation(self)
         self.new_exposures = 0
-        for i in range(scenario.agents):
+        for _ in range(scenario.agents):
             compliance = min(1.0, max(0.0, self.random.gauss(scenario.compliance, 0.12)))
-            person = Person(i, self, compliance)
-            self.schedule.add(person)
+            person = Person(self, compliance)
             self.grid.place_agent(person, (self.random.randrange(width), self.random.randrange(height)))
-        for person in self.random.sample(self.schedule.agents, max(1, scenario.agents // 100)):
+        for person in self.random.sample(list(self.agents), max(1, scenario.agents // 100)):
             person.state = I
 
     def effective_beta(self):
@@ -143,7 +139,7 @@ class EpiModel(Model):
 
     def spread(self):
         exposed = []
-        for source in self.schedule.agents:
+        for source in self.agents:
             if source.state == I:
                 for other in self.grid.get_neighbors(source.pos, moore=True, include_center=True):
                     if other.state == S and self.random.random() < self.effective_beta():
@@ -155,10 +151,10 @@ class EpiModel(Model):
 
     def step(self):
         self.spread()
-        self.schedule.step()
+        self.agents.shuffle_do("step")
 
     def counts(self, day):
-        c = Counter(person.state for person in self.schedule.agents)
+        c = Counter(person.state for person in self.agents)
         return {"day": day, "S": c[S], "E": c[E], "I": c[I], "R": c[R], "new_exposures": self.new_exposures}
 
 def run_scenario(scenario):
@@ -313,12 +309,12 @@ EOF
 
 ### ขั้นที่ 10: ตรวจ syntax ก่อนส่งงาน
 
-ขั้นนี้ใช้การตรวจคอมไพล์ของ Python เพื่อจับข้อผิดพลาดด้านไวยากรณ์ตั้งแต่บนเครื่องเข้าใช้งาน และยืนยันว่าโมดูลที่ใช้คือ `hpc-mesa/2.3.4`
+ขั้นนี้ใช้การตรวจคอมไพล์ของ Python เพื่อจับข้อผิดพลาดด้านไวยากรณ์ตั้งแต่บนเครื่องเข้าใช้งาน และยืนยันว่าโมดูลที่ใช้คือ `hpc-mesa/3.5.1`
 
 ```bash
 module purge
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 python -m py_compile src/epi_model.py src/run_scenario.py src/merge_results.py src/run_many.py
 head -5 configs/epi_scenarios.csv
 echo "source, scenario, prompt พร้อมสำหรับ Slurm"
@@ -355,7 +351,7 @@ cat > jobs/epi_single.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 cd "$SLURM_SUBMIT_DIR"
 
 python src/run_scenario.py \
@@ -413,7 +409,7 @@ cat > jobs/epi_array.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 cd "$SLURM_SUBMIT_DIR"
 
 line_number=$((SLURM_ARRAY_TASK_ID + 1))
@@ -449,7 +445,7 @@ echo "Results: ls results/epi_summary_${job_id}_*.csv"
 ```bash
 cd "$HOME/lanta-episprint"
 module use "$EPI_MODULE_ROOT"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 python src/merge_results.py \
     --pattern "results/epi_summary_${job_id}_*.csv" \
     --output-prefix "results/epi_array_${job_id}" \
@@ -488,7 +484,7 @@ cat > jobs/epi_multicore.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module use "${EPI_MODULE_ROOT:?set EPI_MODULE_ROOT before sbatch}"
-module load hpc-mesa/2.3.4
+module load hpc-mesa/3.5.1
 cd "$SLURM_SUBMIT_DIR"
 export OMP_NUM_THREADS=1
 
@@ -530,6 +526,6 @@ cat notes/job-history.tsv 2>/dev/null || true
 cat notes/epi-policy-compare.txt 2>/dev/null || true
 ```
 
-เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ จำนวนวันตรงกับค่า `days` ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวนเอเจนต์ และตารางเปรียบเทียบนโยบายอ้างอิงหลายสถานการณ์ทดลองหรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิดบันทึกข้อผิดพลาดเฉพาะงานหรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/2.3.4`
+เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ จำนวนวันตรงกับค่า `days` ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวนเอเจนต์ และตารางเปรียบเทียบนโยบายอ้างอิงหลายสถานการณ์ทดลองหรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิดบันทึกข้อผิดพลาดเฉพาะงานหรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/3.5.1`
 
 เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อแปลง CSV สรุปเป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG
