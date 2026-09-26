@@ -1,0 +1,25 @@
+ExpandObjects Started.
+ Begin reading Energy+.idd file.
+ Done reading Energy+.idd file.
+ExpandObjects Finished. Time:     0.201
+EnergyPlus Starting
+EnergyPlus, Version 25.1.0-68a4a7c774, YMD=2026.09.26 09:03
+Adjusting Air System Sizing
+Adjusting Standard 62.1 Ventilation Sizing
+Initializing Simulation
+Reporting Surfaces
+Beginning Primary Simulation
+Initializing New Environment Parameters
+Warming up {1}
+Warming up {2}
+Warming up {3}
+Warming up {4}
+Warming up {5}
+Warming up {6}
+Warming up {7}
+Starting Simulation at 01/01/2023 for RUN PERIOD 1
+Writing tabular output file results using comma format.
+Computing Life Cycle Costs and Reporting
+Writing final SQL reports
+EnergyPlus Run Time=00hr 00min  1.86sec
+EnergyPlus Completed Successfully.
