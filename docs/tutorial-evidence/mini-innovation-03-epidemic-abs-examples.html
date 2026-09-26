@@ -1,0 +1,72 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>LANTA archived run evidence</title><style>body{font:16px/1.5 system-ui,sans-serif;background:#edf2f7;color:#162838;margin:0;padding:32px}
+main{max-width:1150px;margin:auto;background:white;padding:32px;border-top:8px solid #147d92;border-radius:12px}
+h1{font-size:26px;overflow-wrap:anywhere}h2{font-size:21px;margin-bottom:8px}.eyebrow{color:#12657a;font-weight:700}
+.notice{padding:14px;background:#fff4d6;border-left:4px solid #b88715}.metrics{display:flex;flex-wrap:wrap;gap:12px}
+.metrics div{background:#e8f3f6;padding:12px;min-width:150px;border-radius:8px}small,strong{display:block}strong{font-size:23px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:16px}td,th{padding:8px;border-bottom:1px solid #ccd8df;text-align:left;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#142838;color:#e7f8ed;padding:18px;font:13px/1.6 monospace}
+.workflow,.footnote{font-size:13px;overflow-wrap:anywhere;color:#425b6a}a{color:#075d91}section{margin:24px 0}</style><main><p class="eyebrow">LANTA · pv915002 · archived runs 2026-09-26</p><h1>mini-innovation/03-epidemic-abs-examples.md</h1>
+<p class="notice">Evidence viewer — captured after the run from archived accounting and logs. Not a live terminal, not a new rerun, and not an illustration of expected numbers.</p>
+<p>Synthetic epidemic/agent ensemble; performance evidence does not validate epidemiological predictions.</p>
+<section><h2>Job 6339754 · COMPLETED</h2>
+<p class="workflow">tutorial:mini-innovation/03-epidemic-abs-examples.md:jobs/epi_array.sbatch</p><div class="metrics">
+<div><small>Elapsed sum</small><strong>28 s</strong></div>
+<div><small>CPU actually used</small><strong>12.834 s</strong></div>
+<div><small>CPU reserved</small><strong>0.007778 h</strong></div>
+<div><small>CPU efficiency</small><strong>45.84%</strong></div>
+<div><small>Max step/task RSS</small><strong>1.47 MiB</strong></div>
+</div><table><tr><th>Allocation/array element</th><th>Partition</th><th>CPUs</th><th>ReqMem</th><th>AllocTRES</th></tr>
+<tr><td>6339754_1</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+<tr><td>6339754_2</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+<tr><td>6339754_3</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+<tr><td>6339754_4</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+<tr><td>6339754_5</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+<tr><td>6339754_6</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+<tr><td>6339754_7</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+<tr><td>6339754_8</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+</table></section>
+<section><h2>Job 6339755 · COMPLETED</h2>
+<p class="workflow">tutorial:mini-innovation/03-epidemic-abs-examples.md:jobs/epi_multicore.sbatch</p><div class="metrics">
+<div><small>Elapsed sum</small><strong>7 s</strong></div>
+<div><small>CPU actually used</small><strong>9.106 s</strong></div>
+<div><small>CPU reserved</small><strong>0.003889 h</strong></div>
+<div><small>CPU efficiency</small><strong>65.04%</strong></div>
+<div><small>Max step/task RSS</small><strong>0.40 MiB</strong></div>
+</div><table><tr><th>Allocation/array element</th><th>Partition</th><th>CPUs</th><th>ReqMem</th><th>AllocTRES</th></tr>
+<tr><td>6339755</td><td>compute-devel</td><td>2</td><td>2G</td><td>billing=2,cpu=2,mem=2G,node=1</td></tr>
+</table></section>
+<section><h2>Job 6339756 · COMPLETED</h2>
+<p class="workflow">tutorial:mini-innovation/03-epidemic-abs-examples.md:jobs/epi_single.sbatch</p><div class="metrics">
+<div><small>Elapsed sum</small><strong>3 s</strong></div>
+<div><small>CPU actually used</small><strong>1.654 s</strong></div>
+<div><small>CPU reserved</small><strong>0.000833 h</strong></div>
+<div><small>CPU efficiency</small><strong>55.13%</strong></div>
+<div><small>Max step/task RSS</small><strong>0.18 MiB</strong></div>
+</div><table><tr><th>Allocation/array element</th><th>Partition</th><th>CPUs</th><th>ReqMem</th><th>AllocTRES</th></tr>
+<tr><td>6339756</td><td>compute-devel</td><td>1</td><td>1G</td><td>billing=1,cpu=1,mem=1G,node=1</td></tr>
+</table></section>
+<p class="footnote">Elapsed sum adds array-element runtimes; it is not array makespan. CPU-hours are reserved capacity, not billed SHr. MaxRSS is a sampled task/step maximum, not summed node RAM. GPU utilization/peak VRAM and energy were not systematically recorded in this campaign.</p>
+<h2>Recorded output excerpt · 6339754</h2><p class="workflow">tutorials/mini-innovation/03-epidemic-abs-examples/logs/epi_array_6339754_1.out</p><pre>summary=results/epi_summary_6339754_1_baseline_1.csv
+daily=results/epi_daily_6339754_1_baseline_1.csv
+peak_I=91 attack_rate=0.305833</pre>
+<h2>Recorded output excerpt · 6339755</h2><p class="workflow">tutorials/mini-innovation/03-epidemic-abs-examples/logs/epi_multicore_6339755.out</p><pre>running 8 scenarios with workers=2
+summary=results/epi_summary_6339755_0_baseline_1.csv
+daily=results/epi_daily_6339755_0_baseline_1.csv
+peak_I=91 attack_rate=0.305833
+summary=results/epi_summary_6339755_0_baseline_2.csv
+daily=results/epi_daily_6339755_0_baseline_2.csv
+peak_I=93 attack_rate=0.323333
+summary=results/epi_summary_6339755_0_mask_1.csv
+[... excerpt; full log in archive ...]
+done isolation_1
+done combined_1
+done combined_2
+   policy  runs  mean_peak_I  mean_attack_rate
+ combined     2         17.0          0.046667
+     mask     2         39.5          0.145417
+isolation     2         41.5          0.141667
+ baseline     2         92.0          0.314583</pre>
+<h2>Recorded output excerpt · 6339756</h2><p class="workflow">tutorials/mini-innovation/03-epidemic-abs-examples/logs/epi_single_6339756.out</p><pre>summary=results/epi_summary_6339756_0_single_baseline.csv
+daily=results/epi_daily_6339756_0_single_baseline.csv
+peak_I=162 attack_rate=0.528</pre>
+<p>Source: <a href="../lanta-runs/2026-09-26-pv915002/accounting.psv">raw accounting</a> · <a href="../lanta-runs/2026-09-26-pv915002/artifacts.tar.gz">archived logs/results</a> · <a href="../RESOURCE_ESTIMATION_WORKBOOK.md">interpretation and next-run worksheet</a></p></main></html>

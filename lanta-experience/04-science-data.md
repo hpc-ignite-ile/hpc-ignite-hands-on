@@ -1,5 +1,62 @@
 # 04 Science And Data Workflow
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **33–36** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: diffusion](../docs/images/booklet/Part5-ScientificWorkload.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+Explicit 1-D diffusion in serial Python; a real numerical update on a small synthetic problem.
+
+Work is O(N×steps), memory O(N) for two fields (Python lists use more than 16N raw bytes). Pilot N=200, steps=500; grow N to 2000 and then steps to 5000 separately. Estimate from measured cell-updates/second.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339665 | COMPLETED | 1 | 2 | 0.586 | 0.000556 | 2.55 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/lanta-experience-04-science-data.png)
+
+Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/lanta-experience-04-science-data.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339665` used 0.586 CPU-seconds over 2 summed elapsed seconds: about **0.29 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339665` · archive member `tutorials/lanta-experience/04-science-data/logs/diffusion_6339665.out`
+
+```text
+output=results/diffusion_6339665.csv elapsed=0.051
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Compare a vectorized two-buffer implementation to the serial loop at identical N, steps and alpha. For this stencil alpha is the nondimensional diffusion coefficient; keep it between 0 and 0.5. Refining a fixed physical domain/time requires adjusting dt/steps, not just N.
+
+**Correctness gate:** Check finite values, fixed endpoints, symmetry and agreement to a reference within tolerance. Distinguish code speedup from changing the physical simulation.
+
+[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 ใช้รูปแบบงานวิทยาศาสตร์ใน booklet: input, parameter, model script, result, evidence.

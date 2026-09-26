@@ -1,5 +1,67 @@
 # Weather-Health ABS: วิทยาการข้อมูลสมรรถนะสูงบน LANTA
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: weather](../../docs/images/booklet/Part5-ScientificWorkload.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+Weather-data preparation and synthetic health-agent modelling; downloaded data and model validity are different checks.
+
+Budget source archive + extracted data + intermediate tables + outputs. Model cost scales with agents, steps and seeds; preprocessing cost scales with input records and parsing. Record both phases separately.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339790 | COMPLETED | 1 | 9 | 8.258 | 0.010000 | 4.28 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/mini-innovation-weather-health-abs-readme.png)
+
+Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/mini-innovation-weather-health-abs-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339790` used 8.258 CPU-seconds over 9 summed elapsed seconds: about **0.92 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339790` · archive member `repo/mini-innovation/weather-health-abs/logs/hpds-weather_6339790.out`
+
+```text
+tasks=12
+workers=4
+wrote=results/hpds_weather_abs_summary.csv
+wrote=figures/hpds_weather_abs_summary.png
+wrote=results/hpds_policy_summary.csv
+wrote=results/mobility_partition_summary.csv
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Pilot one weather file and one seed, then 10 files or seeds with bounded array concurrency. Compare chunk sizes without changing missing-value handling, dates or units. Do not silently replace failed data downloads with synthetic input.
+
+**Correctness gate:** Verify source manifest/checksums, timestamp coverage, units, missing values and population invariants. Successful download is not validated health prediction.
+
+[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#earth-observation) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 โฟลเดอร์นี้เป็นนวัตกรรมย่อยสำหรับสอน High Performance Data Science หรือ HPDS ผ่านกระบวนการข้อมูลอากาศจริง แบบจำลองอาคารเชิงวิทยาศาสตร์ แบบจำลองเชิงตัวแทน และชุดหลักฐานที่รันบน LANTA

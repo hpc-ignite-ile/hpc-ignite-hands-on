@@ -1,5 +1,78 @@
 # LANTA Foundation Lab: งานแรกที่รันได้จริง
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **19–23** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: hello](../../docs/images/booklet/Part2-RunningJobs.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+Small Slurm/environment smoke test; startup dominates its elapsed time.
+
+One task and one CPU are sufficient for printing context and writing a small file. A 1 GiB / 5 minute initial ceiling is a teaching budget, not measured need. Reserved capacity at that ceiling is 1 × 300 / 3600 = 0.0833 CPU-hours.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339637 | COMPLETED | 1 | 4 | 1.120 | 0.001111 | 4.34 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/foundation-lanta-foundation-readme.png)
+
+Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/foundation-lanta-foundation-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339637` used 1.120 CPU-seconds over 4 summed elapsed seconds: about **0.28 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339637` · archive member `tutorials/foundation/lanta-foundation/README/logs/foundation-visible_6339637.out`
+
+```text
+{
+  "commands": {
+    "cc": "/usr/bin/cc",
+    "python": "/opt/cray/pe/python/3.10.10/bin/python",
+    "sbatch": "/usr/bin/sbatch",
+    "srun": "/usr/bin/srun"
+  },
+  "cwd": "/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/tutorials/foundation/lanta-foundation/README",
+[... excerpt; full log in archive ...]
+    "SLURM_CPUS_PER_TASK": "1",
+    "SLURM_JOB_ID": "6339637",
+    "SLURM_JOB_NAME": "foundation-visible",
+    "SLURM_SUBMIT_DIR": "/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/tutorials/foundation/lanta-foundation/README"
+  }
+}
+result=results/environment_6339637.json
+results/pi.txt
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Run the unchanged job three times. Compare queue wait, job elapsed and program time separately; do not infer parallel speedup from a hello-world job.
+
+**Correctness gate:** Match the job ID and compute hostname in the log and result. COMPLETED alone does not prove the intended program ran.
+
+[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ![เส้นทางคำสั่งและข้อมูลก่อนรันงานแรกบน LANTA](../../docs/images/beginners/lanta-job-workflow.png)
 
 ภาพแนวคิด: laptop เป็นจุดเริ่มต้น ส่วนงานหนักรันบน compute node ที่ได้รับจาก Slurm ไฟล์ผลลัพธ์ต้องอยู่ในพื้นที่ที่คุณหาและตรวจได้. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น

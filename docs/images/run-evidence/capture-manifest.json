@@ -1,0 +1,356 @@
+{
+  "captured_date_utc": "2026-09-26",
+  "method": "Playwright Chromium browser screenshot of generated local HTML; full page; viewport 1280x1000",
+  "source_campaign": "docs/lanta-runs/2026-09-26-pv915002",
+  "not_a_new_lanta_run": true,
+  "files": [
+    {
+      "path": "docs/images/run-evidence/ai-applications-chapter-11-containers-readme.png",
+      "sha256": "c0fa70ae87a4ed678412fc4f5995617eb98f36a9b22d0894f165d726ac63e086"
+    },
+    {
+      "path": "docs/images/run-evidence/ai-applications-chapter-12-ai-development-readme.png",
+      "sha256": "cd1e9595322714b6fe7086867decf46b55e9f4513bcd3d22d81ed6a0c28bf681"
+    },
+    {
+      "path": "docs/images/run-evidence/ai-applications-chapter-13-prompts-readme.png",
+      "sha256": "aea4719cd3807d512ae21bdf29dc53b0685bcd6740222e5c4818c81a02412dbf"
+    },
+    {
+      "path": "docs/images/run-evidence/ai-applications-chapter-28-llm-finetuning-readme.png",
+      "sha256": "368ca5c97591a7b80be8d82e6ed16578fd9ecd0014a4066c617249dfb361d7bd"
+    },
+    {
+      "path": "docs/images/run-evidence/ai-applications-chapter-30-carbon-readme.png",
+      "sha256": "67278be2989dff1494eba5237fcce7ba43202d4507d3efe07c3f9974fa0ca1ce"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-02-environment-readme.png",
+      "sha256": "66d250bf840d371a217be242bb35c2e4c05171da41545d04e3c85d6ee97d0862"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-03-parallel-readme.png",
+      "sha256": "8ee33e85711003fc098cf7fed1467508bd6d0fe019cfca2a6407d8b14933c1f9"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-04-deep-learning-readme.png",
+      "sha256": "0a0bf11618443e3b5eb1a140b0f9b7f9f8372f9c66ab6b9e0a293b06e9ecd68f"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-05-big-data-readme.png",
+      "sha256": "d7b5ea22dede9482d592f6093b448c70692e3a4cf209e04b13faf41d9eecefa7"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-06-visualization-readme.png",
+      "sha256": "01afeaa7946cf9350cc606216db734e56a92bf63d9e85e92c7a98da0e1bc906c"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-07-dask-readme.png",
+      "sha256": "fe05f585db0e12831f85a4e8151f8391e0344024ea241427c019b9491ea60020"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-08-mpi-readme.png",
+      "sha256": "9a6ec1148d6b4db13cc0555d6b76d587fab22d4af9f083e9604b9b9d4713c6f6"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-09-spark-readme.png",
+      "sha256": "750ed63879ce43885e3a71268a9757537d5c7c81b620ab8a164380423858a1f3"
+    },
+    {
+      "path": "docs/images/run-evidence/core-hpc-chapter-10-gpu-readme.png",
+      "sha256": "e7c6d2a79659b7c2afb2445380707e465112fd94c30dc65925b40dec9977cd2c"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-20-computational-chemistry-readme.png",
+      "sha256": "e4b0449031864b55b403250de2066804bd8588964a053ad1aca2396db9946146"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-21-molecular-dynamics-readme.png",
+      "sha256": "35ceebbad9f9b1e1c80cb7dad108777201eeb01963b8c5e1dd9f6678d0d45020"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-22-climate-modeling-readme.png",
+      "sha256": "793fcb2fba23bb86feadb96b3f805079efc32acdbf3b9f23c75f22f61129e2ce"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-23-materials-science-readme.png",
+      "sha256": "3ddbd927387fd88943f8bb303f7e0b82995045d03ca66337a1a5c0da9600ca6d"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-24-ai-forest-readme.png",
+      "sha256": "8c65d7d1f915450dbdbf64d0c3967e4f0df13540292648554a13aee4256fd2e5"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-25-bioinformatics-readme.png",
+      "sha256": "cee2e502c32216917d4be2b6b90c12c6102cd12de14f789644e299e66c6b3346"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-26-smart-agriculture-readme.png",
+      "sha256": "656ed845db787263cfa5e2d6a42a8f44150dc4be8024336447e913cfb97e0c70"
+    },
+    {
+      "path": "docs/images/run-evidence/domain-science-chapter-27-disaster-prevention-readme.png",
+      "sha256": "2137be42bd1b17dd7bfe1a552489f66d88ea4208eab0a2e0bb2d5a23b7a3b076"
+    },
+    {
+      "path": "docs/images/run-evidence/foundation-chapter-00-readme.png",
+      "sha256": "073cad124916758309f875b7076f204249e5142639e4ad2a15b2154e90ac9e6c"
+    },
+    {
+      "path": "docs/images/run-evidence/foundation-lanta-foundation-readme.png",
+      "sha256": "742fd548d02d69cdf3447b94976d04d8d4e92c649e879a4f7db125205db369f9"
+    },
+    {
+      "path": "docs/images/run-evidence/lanta-experience-01-first-slurm-job.png",
+      "sha256": "01808b7ab48a9816e966ef22c91d4106813608f560ed3c647a2874a34d97ed74"
+    },
+    {
+      "path": "docs/images/run-evidence/lanta-experience-02-cpu-array.png",
+      "sha256": "4f5cca225e471e9520adf84c3c8415211ffd3e31698bd74d7e071492c5e72df5"
+    },
+    {
+      "path": "docs/images/run-evidence/lanta-experience-03-openmp-mpi.png",
+      "sha256": "6883803fa2515044daac6ddc0ff9c0de4583ec7e63c0e910cea3ebfde6c695c3"
+    },
+    {
+      "path": "docs/images/run-evidence/lanta-experience-04-science-data.png",
+      "sha256": "d969720dad5f1596bf31d5ffa787deaa120e991a8179913df549c915ce777a3d"
+    },
+    {
+      "path": "docs/images/run-evidence/lanta-experience-05-ai-gpu.png",
+      "sha256": "372b966cdc03afa69909008108e698e0778b7a05efe3601893d3ac105c79a18f"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-02-jupyter-notebook.png",
+      "sha256": "7d02b60f6835da3a67c4b096eee4852307e153106cc3dcdcd829ebc3afccc3ec"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-03-epidemic-abs-examples.png",
+      "sha256": "1bf9edee522d6c1cca7eec77943d917bd67ddae40858d35224ec08d4b031d6af"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-04-building-cosimulation-twinb.png",
+      "sha256": "a051f8fb68d8652fadc9a35cedb7142724f39c4f4f49396c90024828e37d1d2b"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-05-output-display-jupyter-gnuplot.png",
+      "sha256": "ed71839a851ab7bbb6ec678b7fcadb4c0c117eecc1845280fa53b3963f23510c"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-06-twinb-heatlab-repository.png",
+      "sha256": "ea3f2bb8f7a0fd1f1e7cd2770709cbc2b7039db1ceaa6d909e74cc83cd9ef51c"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-enhanced-seir-performance-workshop-th.png",
+      "sha256": "8f74933d806d0df9e869dd5a7bbdcf67f5c3f8022c290fff78733644f8ba0e55"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-enhanced-seir-readme.png",
+      "sha256": "37ecf8fb9cd50860d4aa2dfd69107a0e445f803cb94b8a588be1a658a2abdbbc"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-enhanced-seir-training-sheet-th.png",
+      "sha256": "5404f8b3448a16b48afcd9847cbb0ceb9962c936307e73fd695e08df990927eb"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-readme.png",
+      "sha256": "50b376070d3b546a7ea130bf8b5493ae356179ee91ba42275c51a3849eb1abd0"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-weather-health-abs-readme.png",
+      "sha256": "75bf3e6fb9bbf64b90538f915dafd75ecb29fd14292a7a2ad6179f84f0bc3c1f"
+    },
+    {
+      "path": "docs/images/run-evidence/mini-innovation-weather-health-abs-training-sheet-th.png",
+      "sha256": "6ae8fcaea6affe1fc2b3786f34b8b7df038b9beb1749343e53d6c316b5ea1795"
+    },
+    {
+      "path": "docs/tutorial-evidence/ai-applications-chapter-11-containers-readme.html",
+      "sha256": "4aac15b5611ccc9719b02bdfad38e963cf306f3f86128d72fc8721afd7e8ad3e"
+    },
+    {
+      "path": "docs/tutorial-evidence/ai-applications-chapter-12-ai-development-readme.html",
+      "sha256": "6b53e4adeb8db4ce9d17bb36b93ec53d08bf72a45f1317bc17bb93b0c025636d"
+    },
+    {
+      "path": "docs/tutorial-evidence/ai-applications-chapter-13-prompts-readme.html",
+      "sha256": "0de221535257d4251cbf860660e00d3d33feb01429c6141235a9a08afcf9e6b6"
+    },
+    {
+      "path": "docs/tutorial-evidence/ai-applications-chapter-28-llm-finetuning-readme.html",
+      "sha256": "3ee395829c01c168ae07a05c375bbef83231af1b3e36079f7e13450b9ca28278"
+    },
+    {
+      "path": "docs/tutorial-evidence/ai-applications-chapter-29-security-readme.html",
+      "sha256": "78c57aaaa7f2a5bfac6bd4217fd191f2544b1ce2ce0108efb2c1f58744e666a7"
+    },
+    {
+      "path": "docs/tutorial-evidence/ai-applications-chapter-30-carbon-readme.html",
+      "sha256": "301912869d4e8a57eff9fdb0236a3148a5a18a2a851a92d9967954e628cd73fe"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-02-environment-readme.html",
+      "sha256": "26fa7f8f1db6d0c9d02004e9ca5811d3023c3faff427b7b31f4f2e28e9339160"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-03-parallel-readme.html",
+      "sha256": "890f0ed646542b37e91bf568581f3c3cb4fa029efde47fcf2dd39070e2674adf"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-04-deep-learning-readme.html",
+      "sha256": "b604f52498a6430c3a85116e4a88746cb808d93f0565d1cbf5848788f40efde5"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-05-big-data-readme.html",
+      "sha256": "875dc8fdd74dba2846faa5dd373b0832c7d6ba1ef73f4b7cc1c82f646d458841"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-06-visualization-readme.html",
+      "sha256": "505c7e49f3fdbd7c8b81ece6e5c7d9a8be742c4a88504f1377163d27ed1a74ec"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-07-dask-readme.html",
+      "sha256": "10dcc93f463cc0c4eec29b68fca9fce29e293ac354deecd1a15b0fed4e08318b"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-08-mpi-readme.html",
+      "sha256": "3468d1167dd3956ac2aaa2523d444e2b83616b30c34e43211ebb7ba501a7f397"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-09-spark-readme.html",
+      "sha256": "6e4c21ecbbfcfd3ce8fff6fdb7b12f8f277ec21495dd82a2e188c8a781d9f6b6"
+    },
+    {
+      "path": "docs/tutorial-evidence/core-hpc-chapter-10-gpu-readme.html",
+      "sha256": "07f58f8b3bb1dcc53b069d47088ce4c73ecb81b2197297da686df733300637e5"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-20-computational-chemistry-readme.html",
+      "sha256": "5f8b4a2e0ff947bfdbcddf351f46fd4c31e80ef8e1239d9ff7ee653863e25e53"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-21-molecular-dynamics-readme.html",
+      "sha256": "748b5a0539338d22e32f9715a8deb350c1fe191db4a6d5d986190aceb279b1a1"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-22-climate-modeling-readme.html",
+      "sha256": "44e0d62995c126e9bc996969de3c7d05ae210a429bc5be762990acf3aa6b3d1c"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-23-materials-science-readme.html",
+      "sha256": "aa0f7a0b64378d664b4a46edea06f0bbb20e4db6a88a013839bdac518784a1bb"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-24-ai-forest-readme.html",
+      "sha256": "3524264381ca6b3e86d23022f9a5812c4dae876ba9cee0306d2b031bd5987a62"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-25-bioinformatics-readme.html",
+      "sha256": "cad8bcbc9f5f7f5db2ccea35146d5addb8bf0b79376e918d0ba044d0a1fe7043"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-26-smart-agriculture-readme.html",
+      "sha256": "48327a5d8f7e38fd702c55ebbcecfac8a483a18fd2466eb570dc6cf490dcd109"
+    },
+    {
+      "path": "docs/tutorial-evidence/domain-science-chapter-27-disaster-prevention-readme.html",
+      "sha256": "cfb52818b9f1a35fe0bf8e16cd0a2873a4dbe7ef986adb655200deba6c744266"
+    },
+    {
+      "path": "docs/tutorial-evidence/foundation-chapter-00-readme.html",
+      "sha256": "73330433a0d2ce0aaaebba7f4119802a306efc64e3c786585b9ba4ac62ab70ca"
+    },
+    {
+      "path": "docs/tutorial-evidence/foundation-lanta-foundation-readme.html",
+      "sha256": "9dd681f06cbde6f7b11d584743879da9b85506243e30d05d33b9d19f67f65fc1"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-00-readiness.html",
+      "sha256": "877aec21ce790c2d60c3d9c9e1bcc41fdc6d6debf0e6d205cd85b4f7fc40e519"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-01-first-slurm-job.html",
+      "sha256": "fcf0e985d179197ba27ae04d1f777d39645e971fc49005d2cc1a127d597c902b"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-02-cpu-array.html",
+      "sha256": "35e617d998d5a19091a50eefa34ca0cfff200f113d9f84ad60c3ad4779fc8e3b"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-03-openmp-mpi.html",
+      "sha256": "4969af570cbd09b9b9f6866625854cc51dd12cc74d864dd34b223c39d68ca173"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-04-science-data.html",
+      "sha256": "f7808396de191fb930275d3d6dc26dc6f0fc621d42b3e2109076688af9185670"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-05-ai-gpu.html",
+      "sha256": "1b8c43b140136b797a36c18b530f0b06ca6bff7a5d1d986c078470b263b9b8d6"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-06-run-logs.html",
+      "sha256": "a539d7c4547bd06000ffda1ad7e26abe083fe4fb7d3e0a93da3f3a0bdef920d6"
+    },
+    {
+      "path": "docs/tutorial-evidence/lanta-experience-readme.html",
+      "sha256": "4f86bd30d56233ef8ace08fc1435a14f8f2f6fde1f29c7414d2c95a88621ffca"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-00-connect-to-lanta.html",
+      "sha256": "4c84b7249aebb9e4414fb6057f6ccda30ab82cb3cd1932e290e68bda9d9d028f"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-01-custom-python-env-module.html",
+      "sha256": "4923f1b1679964bcb08ff5eea150377abe6e3514605fbaae98df1fbe4395d6ad"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-02-jupyter-notebook.html",
+      "sha256": "19a2d13768b9a51f7a6c3966391db617c1502a296b02d9fef45f872e6df45b32"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-03-epidemic-abs-examples.html",
+      "sha256": "50c31f12802a6863bde37dc61d6373658800c445d9558a0d2ebd96c80a5c37cf"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-04-building-cosimulation-twinb.html",
+      "sha256": "ae82e0d51bcfb05d73506ab2d4ca7cc2f7659a37898d4b38613c29b2b4e28bc5"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-05-output-display-jupyter-gnuplot.html",
+      "sha256": "a5a4201c054cf7a1b81de32a3fbe8c27803643697cf050b099370a3731d22608"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-06-twinb-heatlab-repository.html",
+      "sha256": "b155576839a9f00c58786d15db8e02346d769687a0b7ef5a463d225fb83f26eb"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-enhanced-seir-performance-workshop-th.html",
+      "sha256": "5fd240741c7aea86717203770b27deceb039e2fba23acaafbf143c8dbea83e24"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-enhanced-seir-readme.html",
+      "sha256": "3eb5e8f4ed10361c4ec3b92b51a0f310b3c625a227ffaeed4273ce9ae2beee11"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-enhanced-seir-training-sheet-th.html",
+      "sha256": "eacc6f650788f3573795217cf40a0fa64278d9fcb4bb2b170408cfcbd25813ee"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-readme.html",
+      "sha256": "796e2cee5bdb7d3a64921b2c8308888f5d369aec044974eab628cd12b651891a"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-weather-health-abs-data-rescue-cadc-th.html",
+      "sha256": "4f9e1f6808a1b87b77467a9d086772f5cd919824dc9f8ea67c685dda7efb49ac"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-weather-health-abs-readme.html",
+      "sha256": "cfa8ed9d6331ea2b216766997b00adc4437ec42fb5abdd0885b289f6291ac981"
+    },
+    {
+      "path": "docs/tutorial-evidence/mini-innovation-weather-health-abs-training-sheet-th.html",
+      "sha256": "ebdad5141daf743e1989fe45cd9435d05e80e7d1599cc160fdc24a338cdcfce1"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>LANTA archived run evidence</title><style>body{font:16px/1.5 system-ui,sans-serif;background:#edf2f7;color:#162838;margin:0;padding:32px}
+main{max-width:1150px;margin:auto;background:white;padding:32px;border-top:8px solid #147d92;border-radius:12px}
+h1{font-size:26px;overflow-wrap:anywhere}h2{font-size:21px;margin-bottom:8px}.eyebrow{color:#12657a;font-weight:700}
+.notice{padding:14px;background:#fff4d6;border-left:4px solid #b88715}.metrics{display:flex;flex-wrap:wrap;gap:12px}
+.metrics div{background:#e8f3f6;padding:12px;min-width:150px;border-radius:8px}small,strong{display:block}strong{font-size:23px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:16px}td,th{padding:8px;border-bottom:1px solid #ccd8df;text-align:left;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#142838;color:#e7f8ed;padding:18px;font:13px/1.6 monospace}
+.workflow,.footnote{font-size:13px;overflow-wrap:anywhere;color:#425b6a}a{color:#075d91}section{margin:24px 0}</style><main><p class="eyebrow">LANTA · pv915002 · archived runs 2026-09-26</p><h1>mini-innovation/06-twinb-heatlab-repository.md</h1>
+<p class="notice">Evidence viewer — captured after the run from archived accounting and logs. Not a live terminal, not a new rerun, and not an illustration of expected numbers.</p>
+<p>Older synthetic Twin-B / Heatlab runs are distinct from the later real EnergyPlus + Mesa reference-building benchmarks. Original student geometry failures remain recorded.</p>
+<section><h2>Job 6339794 · COMPLETED</h2>
+<p class="workflow">tutorial:mini-innovation/06-twinb-heatlab-repository.md:jobs/twinb_cpu_baseline.sbatch</p><div class="metrics">
+<div><small>Elapsed sum</small><strong>22 s</strong></div>
+<div><small>CPU actually used</small><strong>8.979 s</strong></div>
+<div><small>CPU reserved</small><strong>0.048889 h</strong></div>
+<div><small>CPU efficiency</small><strong>5.1%</strong></div>
+<div><small>Max step/task RSS</small><strong>187.41 MiB</strong></div>
+</div><table><tr><th>Allocation/array element</th><th>Partition</th><th>CPUs</th><th>ReqMem</th><th>AllocTRES</th></tr>
+<tr><td>6339794</td><td>compute-devel</td><td>8</td><td>16G</td><td>billing=8,cpu=8,mem=16G,node=1</td></tr>
+</table></section>
+<section><h2>Job 6339812 · FAILED</h2>
+<p class="workflow">tutorial:mini-innovation/06-twinb-heatlab-repository.md:jobs/twinb_cpu_baseline.sbatch@energyplus-coupled</p><div class="metrics">
+<div><small>Elapsed sum</small><strong>122 s</strong></div>
+<div><small>CPU actually used</small><strong>4.793 s</strong></div>
+<div><small>CPU reserved</small><strong>0.271111 h</strong></div>
+<div><small>CPU efficiency</small><strong>0.49%</strong></div>
+<div><small>Max step/task RSS</small><strong>545.65 MiB</strong></div>
+</div><table><tr><th>Allocation/array element</th><th>Partition</th><th>CPUs</th><th>ReqMem</th><th>AllocTRES</th></tr>
+<tr><td>6339812</td><td>compute-devel</td><td>8</td><td>16G</td><td>billing=8,cpu=8,mem=16G,node=1</td></tr>
+</table></section>
+<section><h2>Job 6339819 · FAILED</h2>
+<p class="workflow">tutorial:mini-innovation/06-twinb-heatlab-repository.md:jobs/twinb_cpu_baseline.sbatch@energyplus-day-smoke</p><div class="metrics">
+<div><small>Elapsed sum</small><strong>112 s</strong></div>
+<div><small>CPU actually used</small><strong>112.429 s</strong></div>
+<div><small>CPU reserved</small><strong>0.248889 h</strong></div>
+<div><small>CPU efficiency</small><strong>12.55%</strong></div>
+<div><small>Max step/task RSS</small><strong>640.82 MiB</strong></div>
+</div><table><tr><th>Allocation/array element</th><th>Partition</th><th>CPUs</th><th>ReqMem</th><th>AllocTRES</th></tr>
+<tr><td>6339819</td><td>compute-devel</td><td>8</td><td>16G</td><td>billing=8,cpu=8,mem=16G,node=1</td></tr>
+</table></section>
+<section><h2>Job 6339815 · FAILED</h2>
+<p class="workflow">tutorial:mini-innovation/06-twinb-heatlab-repository.md:jobs/twinb_cpu_baseline.sbatch@energyplus-expanded</p><div class="metrics">
+<div><small>Elapsed sum</small><strong>122 s</strong></div>
+<div><small>CPU actually used</small><strong>122.309 s</strong></div>
+<div><small>CPU reserved</small><strong>0.271111 h</strong></div>
+<div><small>CPU efficiency</small><strong>12.53%</strong></div>
+<div><small>Max step/task RSS</small><strong>814.06 MiB</strong></div>
+</div><table><tr><th>Allocation/array element</th><th>Partition</th><th>CPUs</th><th>ReqMem</th><th>AllocTRES</th></tr>
+<tr><td>6339815</td><td>compute-devel</td><td>8</td><td>16G</td><td>billing=8,cpu=8,mem=16G,node=1</td></tr>
+</table></section>
+<p class="footnote">Elapsed sum adds array-element runtimes; it is not array makespan. CPU-hours are reserved capacity, not billed SHr. MaxRSS is a sampled task/step maximum, not summed node RAM. GPU utilization/peak VRAM and energy were not systematically recorded in this campaign.</p>
+<h2>Recorded output excerpt · 6339794</h2><p class="workflow">twinb/logs/twinb-cpu_6339794.out</p><pre>[init_distributed] rank=0, world_size=1, local_rank=0, backend=gloo, device=cpu
+Zones: [&#x27;Zone_Fire-escape_R&#x27;, &#x27;Zone_Restroom_7503&#x27;, &#x27;Zone_Restroom_7406&#x27;, &#x27;Zone_Restroom_7304&#x27;, &#x27;Zone_Restroom_7206&#x27;, &#x27;Zone_Restroom_7112&#x27;, &#x27;Zone_Restroom_7106&#x27;, &#x27;Zone_Restroom_7116&#x27;, &#x27;Zone_Library_7117&#x27;, &#x27;Zone_ClosedOffice_7118&#x27;, &#x27;Zone_ClosedOffice_7120&#x27;, &#x27;Zone_Fire-escape_L&#x27;, &#x27;Zone_Corridor_Behide-7118-7121&#x27;, &#x27;Zone_Elec/MechRoom_7122&#x27;, &#x27;Zone_ClosedOffice_7110&#x27;, &#x27;Zone_ClosedOffice_7108&#x27;, &#x27;Zone_Auditorium_7103&#x27;, &#x27;Zone_Corridor_7101&#x27;, &#x27;Zone_Auditorium_7102&#x27;, &#x27;Zone_Auditorium_7104&#x27;, &#x27;Zone_Storage_7104_Pantry&#x27;, &#x27;Zone_Corridor_F1&#x27;, &#x27;Zone_Elevator_L&#x27;, &#x27;Zone_Classroom_7201&#x27;, &#x27;Zone_Classroom_7202&#x27;, &#x27;Zone_Classroom_7203&#x27;, &#x27;Zone_Classroom_7204&#x27;, &#x27;Zone_Classroom_7205&#x27;, &#x27;Zone_Classroom_7210&#x27;, &#x27;Zone_Office_7211&#x27;, &#x27;Zone_Office_7212&#x27;, &#x27;Zone_Corridor_F2&#x27;, &#x27;Zone_Office_7301&#x27;, &#x27;Zone_Elevator_R&#x27;, &#x27;Zone_Office_7316&#x27;, &#x27;Zone_Classroom_7302&#x27;, &#x27;Zone_Classroom_7303&#x27;, &#x27;Zone_Classroom_7315&#x27;, &#x27;Zone_Classroom_7314&#x27;, &#x27;Zone_Classroom_7308&#x27;, &#x27;Zone_Classroom_7309&#x27;, &#x27;Zone_Classroom_7310&#x27;, &#x27;Zone_Classroom_7313&#x27;, &#x27;Zone_Classroom_7312&#x27;, &#x27;Zone_Elec/MechRoom_7113&#x27;, &#x27;Zone_Classroom_7311&#x27;, &#x27;Zone_Corridor_F3&#x27;, &#x27;Zone_Classroom_7401&#x27;, &#x27;Zone_Classroom_7402&#x27;, &#x27;Zone_Classroom_7405&#x27;, &#x27;Zone_Classroom_7423&#x27;, &#x27;Zone_Classroom_7422&#x27;, &#x27;Zone_Classroom_7419&#x27;, &#x27;Zone_Classroom_7410&#x27;, &#x27;Zone_Classroom_7411&#x27;, &#x27;Zone_Elec/MechRoom_7209&#x27;, &#x27;Zone_Classroom_7412&#x27;, &#x27;Zone_Classroom_7413&#x27;, &#x27;Zone_Classroom_7414&#x27;, &#x27;Zone_Classroom_7418&#x27;, &#x27;Zone_Classroom_7415&#x27;, &#x27;Zone_Corridor_F4&#x27;, &#x27;Zone_Auditorium_7502&#x27;, &#x27;Zone_Auditorium_7501&#x27;, &#x27;Zone_Auditorium_7508&#x27;, &#x27;Zone_Corridor_F5&#x27;, &#x27;Zone_Elec/MechRoom_7307&#x27;, &#x27;Zone_Central-hall_F2-3&#x27;, &#x27;Zone_Elec/MechRoom_7409&#x27;, &#x27;Zone_Storage_7506&#x27;]
+[TwinB] config=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/config.yaml
+[TwinB] agents=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/agents.json
+[TwinB] idf=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/EnergyPlus_BP_Boonchoo/output/in.idf
+[TwinB] weather=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/weather.epw
+[TwinB] output_dir=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/energyplus/job-6339794
+[TwinB] ep_control=False
+✅ โหลด agent สำเร็จทั้งหมด: 1875 ตัว
+[Rank 0] Step 57/288
+[Rank 0] Step 114/288
+[Rank 0] Step 171/288
+[Rank 0] Step 228/288
+[Rank 0] Step 285/288
+[Single rank] Results saved.
+Agent-level results saved to mesa_out_result/mesa_agent_results.csv
+Zone-level results saved to mesa_out_result/mesa_zone_results.csv
+[Rank 0] Exported EnergyPlus + Agent results to mesa_out_result/</pre>
+<h2>Recorded output excerpt · 6339812</h2><p class="workflow">twinb/logs/twinb-cpu_6339812.out</p><pre>[init_distributed] rank=0, world_size=1, local_rank=0, backend=gloo, device=cpu
+Zones: [&#x27;Zone_Fire-escape_R&#x27;, &#x27;Zone_Restroom_7503&#x27;, &#x27;Zone_Restroom_7406&#x27;, &#x27;Zone_Restroom_7304&#x27;, &#x27;Zone_Restroom_7206&#x27;, &#x27;Zone_Restroom_7112&#x27;, &#x27;Zone_Restroom_7106&#x27;, &#x27;Zone_Restroom_7116&#x27;, &#x27;Zone_Library_7117&#x27;, &#x27;Zone_ClosedOffice_7118&#x27;, &#x27;Zone_ClosedOffice_7120&#x27;, &#x27;Zone_Fire-escape_L&#x27;, &#x27;Zone_Corridor_Behide-7118-7121&#x27;, &#x27;Zone_Elec/MechRoom_7122&#x27;, &#x27;Zone_ClosedOffice_7110&#x27;, &#x27;Zone_ClosedOffice_7108&#x27;, &#x27;Zone_Auditorium_7103&#x27;, &#x27;Zone_Corridor_7101&#x27;, &#x27;Zone_Auditorium_7102&#x27;, &#x27;Zone_Auditorium_7104&#x27;, &#x27;Zone_Storage_7104_Pantry&#x27;, &#x27;Zone_Corridor_F1&#x27;, &#x27;Zone_Elevator_L&#x27;, &#x27;Zone_Classroom_7201&#x27;, &#x27;Zone_Classroom_7202&#x27;, &#x27;Zone_Classroom_7203&#x27;, &#x27;Zone_Classroom_7204&#x27;, &#x27;Zone_Classroom_7205&#x27;, &#x27;Zone_Classroom_7210&#x27;, &#x27;Zone_Office_7211&#x27;, &#x27;Zone_Office_7212&#x27;, &#x27;Zone_Corridor_F2&#x27;, &#x27;Zone_Office_7301&#x27;, &#x27;Zone_Elevator_R&#x27;, &#x27;Zone_Office_7316&#x27;, &#x27;Zone_Classroom_7302&#x27;, &#x27;Zone_Classroom_7303&#x27;, &#x27;Zone_Classroom_7315&#x27;, &#x27;Zone_Classroom_7314&#x27;, &#x27;Zone_Classroom_7308&#x27;, &#x27;Zone_Classroom_7309&#x27;, &#x27;Zone_Classroom_7310&#x27;, &#x27;Zone_Classroom_7313&#x27;, &#x27;Zone_Classroom_7312&#x27;, &#x27;Zone_Elec/MechRoom_7113&#x27;, &#x27;Zone_Classroom_7311&#x27;, &#x27;Zone_Corridor_F3&#x27;, &#x27;Zone_Classroom_7401&#x27;, &#x27;Zone_Classroom_7402&#x27;, &#x27;Zone_Classroom_7405&#x27;, &#x27;Zone_Classroom_7423&#x27;, &#x27;Zone_Classroom_7422&#x27;, &#x27;Zone_Classroom_7419&#x27;, &#x27;Zone_Classroom_7410&#x27;, &#x27;Zone_Classroom_7411&#x27;, &#x27;Zone_Elec/MechRoom_7209&#x27;, &#x27;Zone_Classroom_7412&#x27;, &#x27;Zone_Classroom_7413&#x27;, &#x27;Zone_Classroom_7414&#x27;, &#x27;Zone_Classroom_7418&#x27;, &#x27;Zone_Classroom_7415&#x27;, &#x27;Zone_Corridor_F4&#x27;, &#x27;Zone_Auditorium_7502&#x27;, &#x27;Zone_Auditorium_7501&#x27;, &#x27;Zone_Auditorium_7508&#x27;, &#x27;Zone_Corridor_F5&#x27;, &#x27;Zone_Elec/MechRoom_7307&#x27;, &#x27;Zone_Central-hall_F2-3&#x27;, &#x27;Zone_Elec/MechRoom_7409&#x27;, &#x27;Zone_Storage_7506&#x27;]
+[TwinB] config=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/config.yaml
+[TwinB] agents=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/agents.json
+[TwinB] idf=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/EnergyPlus_BP_Boonchoo/output/in.idf
+[TwinB] weather=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/weather.epw
+[TwinB] output_dir=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/energyplus/job-6339812
+[TwinB] ep_control=True
+EnergyPlus Starting
+EnergyPlus, Version 25.1.0-68a4a7c774, YMD=2026.09.26 08:28
+**FATAL:Errors occurred on processing input file. Preceding condition(s) cause termination.
+EnergyPlus Run Time=00hr 00min  0.33sec</pre>
+<h2>Recorded output excerpt · 6339819</h2><p class="workflow">twinb/logs/twinb-cpu_6339819.out.excerpt.txt</p><pre>[init_distributed] rank=0, world_size=1, local_rank=0, backend=gloo, device=cpu
+Zones: [&#x27;Zone_Fire-escape_R&#x27;, &#x27;Zone_Restroom_7503&#x27;, &#x27;Zone_Restroom_7406&#x27;, &#x27;Zone_Restroom_7304&#x27;, &#x27;Zone_Restroom_7206&#x27;, &#x27;Zone_Restroom_7112&#x27;, &#x27;Zone_Restroom_7106&#x27;, &#x27;Zone_Restroom_7116&#x27;, &#x27;Zone_Library_7117&#x27;, &#x27;Zone_ClosedOffice_7118&#x27;, &#x27;Zone_ClosedOffice_7120&#x27;, &#x27;Zone_Fire-escape_L&#x27;, &#x27;Zone_Corridor_Behide-7118-7121&#x27;, &#x27;Zone_Elec/MechRoom_7122&#x27;, &#x27;Zone_ClosedOffice_7110&#x27;, &#x27;Zone_ClosedOffice_7108&#x27;, &#x27;Zone_Auditorium_7103&#x27;, &#x27;Zone_Corridor_7101&#x27;, &#x27;Zone_Auditorium_7102&#x27;, &#x27;Zone_Auditorium_7104&#x27;, &#x27;Zone_Storage_7104_Pantry&#x27;, &#x27;Zone_Corridor_F1&#x27;, &#x27;Zone_Elevator_L&#x27;, &#x27;Zone_Classroom_7201&#x27;, &#x27;Zone_Classroom_7202&#x27;, &#x27;Zone_Classroom_7203&#x27;, &#x27;Zone_Classroom_7204&#x27;, &#x27;Zone_Classroom_7205&#x27;, &#x27;Zone_Classroom_7210&#x27;, &#x27;Zone_Office_7211&#x27;, &#x27;Zone_Office_7212&#x27;, &#x27;Zone_Corridor_F2&#x27;, &#x27;Zone_Office_7301&#x27;, &#x27;Zone_Elevator_R&#x27;, &#x27;Zone_Office_7316&#x27;, &#x27;Zone_Classroom_7302&#x27;, &#x27;Zone_Classroom_7303&#x27;, &#x27;Zone_Classroom_7315&#x27;, &#x27;Zone_Classroom_7314&#x27;, &#x27;Zone_Classroom_7308&#x27;, &#x27;Zone_Classroom_7309&#x27;, &#x27;Zone_Classroom_7310&#x27;, &#x27;Zone_Classroom_7313&#x27;, &#x27;Zone_Classroom_7312&#x27;, &#x27;Zone_Elec/MechRoom_7113&#x27;, &#x27;Zone_Classroom_7311&#x27;, &#x27;Zone_Corridor_F3&#x27;, &#x27;Zone_Classroom_7401&#x27;, &#x27;Zone_Classroom_7402&#x27;, &#x27;Zone_Classroom_7405&#x27;, &#x27;Zone_Classroom_7423&#x27;, &#x27;Zone_Classroom_7422&#x27;, &#x27;Zone_Classroom_7419&#x27;, &#x27;Zone_Classroom_7410&#x27;, &#x27;Zone_Classroom_7411&#x27;, &#x27;Zone_Elec/MechRoom_7209&#x27;, &#x27;Zone_Classroom_7412&#x27;, &#x27;Zone_Classroom_7413&#x27;, &#x27;Zone_Classroom_7414&#x27;, &#x27;Zone_Classroom_7418&#x27;, &#x27;Zone_Classroom_7415&#x27;, &#x27;Zone_Corridor_F4&#x27;, &#x27;Zone_Auditorium_7502&#x27;, &#x27;Zone_Auditorium_7501&#x27;, &#x27;Zone_Auditorium_7508&#x27;, &#x27;Zone_Corridor_F5&#x27;, &#x27;Zone_Elec/MechRoom_7307&#x27;, &#x27;Zone_Central-hall_F2-3&#x27;, &#x27;Zone_Elec/MechRoom_7409&#x27;, &#x27;Zone_Storage_7506&#x27;]
+[TwinB] config=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/day-smoke/config.yaml
+[TwinB] agents=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/agents.json
+[TwinB] idf=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/day-smoke/day.idf
+[TwinB] weather=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/weather.epw
+[TwinB] output_dir=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/day-smoke/energyplus/job-6339819
+[TwinB] ep_control=True
+[... excerpt; full log in archive ...]
+  Zone_Elec/MechRoom_7307: 25.70852538307377
+  Zone_Central-hall_F2-3: 18.08741621612544
+  Zone_Elec/MechRoom_7409: 25.682616263487496
+  Zone_Storage_7506: 25.389300100839048
+Writing tabular output file results using comma format.
+Computing Life Cycle Costs and Reporting
+Writing final SQL reports
+EnergyPlus Run Time=00hr 01min 45.59sec</pre>
+<h2>Recorded output excerpt · 6339815</h2><p class="workflow">twinb/logs/twinb-cpu_6339815.out.excerpt.txt</p><pre>[init_distributed] rank=0, world_size=1, local_rank=0, backend=gloo, device=cpu
+Zones: [&#x27;Zone_Fire-escape_R&#x27;, &#x27;Zone_Restroom_7503&#x27;, &#x27;Zone_Restroom_7406&#x27;, &#x27;Zone_Restroom_7304&#x27;, &#x27;Zone_Restroom_7206&#x27;, &#x27;Zone_Restroom_7112&#x27;, &#x27;Zone_Restroom_7106&#x27;, &#x27;Zone_Restroom_7116&#x27;, &#x27;Zone_Library_7117&#x27;, &#x27;Zone_ClosedOffice_7118&#x27;, &#x27;Zone_ClosedOffice_7120&#x27;, &#x27;Zone_Fire-escape_L&#x27;, &#x27;Zone_Corridor_Behide-7118-7121&#x27;, &#x27;Zone_Elec/MechRoom_7122&#x27;, &#x27;Zone_ClosedOffice_7110&#x27;, &#x27;Zone_ClosedOffice_7108&#x27;, &#x27;Zone_Auditorium_7103&#x27;, &#x27;Zone_Corridor_7101&#x27;, &#x27;Zone_Auditorium_7102&#x27;, &#x27;Zone_Auditorium_7104&#x27;, &#x27;Zone_Storage_7104_Pantry&#x27;, &#x27;Zone_Corridor_F1&#x27;, &#x27;Zone_Elevator_L&#x27;, &#x27;Zone_Classroom_7201&#x27;, &#x27;Zone_Classroom_7202&#x27;, &#x27;Zone_Classroom_7203&#x27;, &#x27;Zone_Classroom_7204&#x27;, &#x27;Zone_Classroom_7205&#x27;, &#x27;Zone_Classroom_7210&#x27;, &#x27;Zone_Office_7211&#x27;, &#x27;Zone_Office_7212&#x27;, &#x27;Zone_Corridor_F2&#x27;, &#x27;Zone_Office_7301&#x27;, &#x27;Zone_Elevator_R&#x27;, &#x27;Zone_Office_7316&#x27;, &#x27;Zone_Classroom_7302&#x27;, &#x27;Zone_Classroom_7303&#x27;, &#x27;Zone_Classroom_7315&#x27;, &#x27;Zone_Classroom_7314&#x27;, &#x27;Zone_Classroom_7308&#x27;, &#x27;Zone_Classroom_7309&#x27;, &#x27;Zone_Classroom_7310&#x27;, &#x27;Zone_Classroom_7313&#x27;, &#x27;Zone_Classroom_7312&#x27;, &#x27;Zone_Elec/MechRoom_7113&#x27;, &#x27;Zone_Classroom_7311&#x27;, &#x27;Zone_Corridor_F3&#x27;, &#x27;Zone_Classroom_7401&#x27;, &#x27;Zone_Classroom_7402&#x27;, &#x27;Zone_Classroom_7405&#x27;, &#x27;Zone_Classroom_7423&#x27;, &#x27;Zone_Classroom_7422&#x27;, &#x27;Zone_Classroom_7419&#x27;, &#x27;Zone_Classroom_7410&#x27;, &#x27;Zone_Classroom_7411&#x27;, &#x27;Zone_Elec/MechRoom_7209&#x27;, &#x27;Zone_Classroom_7412&#x27;, &#x27;Zone_Classroom_7413&#x27;, &#x27;Zone_Classroom_7414&#x27;, &#x27;Zone_Classroom_7418&#x27;, &#x27;Zone_Classroom_7415&#x27;, &#x27;Zone_Corridor_F4&#x27;, &#x27;Zone_Auditorium_7502&#x27;, &#x27;Zone_Auditorium_7501&#x27;, &#x27;Zone_Auditorium_7508&#x27;, &#x27;Zone_Corridor_F5&#x27;, &#x27;Zone_Elec/MechRoom_7307&#x27;, &#x27;Zone_Central-hall_F2-3&#x27;, &#x27;Zone_Elec/MechRoom_7409&#x27;, &#x27;Zone_Storage_7506&#x27;]
+[TwinB] config=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/config.yaml
+[TwinB] agents=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/agents.json
+[TwinB] idf=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/EnergyPlus_BP_Boonchoo/output/in.idf
+[TwinB] weather=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/weather.epw
+[TwinB] output_dir=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/energyplus/job-6339815
+[TwinB] ep_control=True
+[... excerpt; full log in archive ...]
+  Zone_Auditorium_7502: 24.0
+  Zone_Auditorium_7501: 24.000000000000004
+  Zone_Auditorium_7508: 24.000000000000007
+  Zone_Corridor_F5: 32.78887230505473
+  Zone_Elec/MechRoom_7307: 33.55587931977535
+  Zone_Central-hall_F2-3: 44.70296958721834
+  Zone_Elec/MechRoom_7409: 33.602857656151
+  Zone_Storage_7506: 32.4177309208616</pre>
+<p class="notice">Later reference-building runs are documented separately: <a href="../TWINB_REFERENCE_BENCHMARKS.md">EnergyPlus + Mesa benchmarks</a>. These do not retroactively turn the failed student-geometry jobs above into successes.</p>
+<p>Source: <a href="../lanta-runs/2026-09-26-pv915002/accounting.psv">raw accounting</a> · <a href="../lanta-runs/2026-09-26-pv915002/artifacts.tar.gz">archived logs/results</a> · <a href="../RESOURCE_ESTIMATION_WORKBOOK.md">interpretation and next-run worksheet</a></p></main></html>

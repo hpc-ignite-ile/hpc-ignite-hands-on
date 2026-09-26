@@ -1,5 +1,63 @@
 # 02 CPU And Job Array
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **24–27** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: pi](../docs/images/booklet/Part3-A-ProgrammingMatrix.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+Monte Carlo CPU workers and parameter arrays; short examples emphasize scheduling, not speedup.
+
+Work is proportional to samples N; streaming samples avoids storing N points. Workers each need their own Python runtime. Pilot 0.5M samples, then 5M and 50M only if the previous budget permits. Estimate T(N)=startup + N/rate from two pilots. For K array elements, sum each element's CPU-seconds; concurrency changes makespan, not total reserved work.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339661 | COMPLETED | 1 | 3 | 0.705 | 0.003333 | 2.30 |
+| 6339662 | COMPLETED | 4 | 12 | 3.379 | 0.013333 | 2.54 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/lanta-experience-02-cpu-array.png)
+
+Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/lanta-experience-02-cpu-array.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339661` used 0.705 CPU-seconds over 3 summed elapsed seconds: about **0.23 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339661` · archive member `tutorials/lanta-experience/02-cpu-array/logs/pi_6339661.out`
+
+```text
+pi=3.140808 workers=4 result=results/pi_6339661.txt
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Hold N fixed and compare 1, 2, 4 workers with three repeats. Set workers no larger than allocated CPUs and cap array concurrency. This code changes random streams with worker count, so compare error distributions, not byte-identical pi values.
+
+**Correctness gate:** Check exact sample count, finite pi near 3.14, unique array output paths and every array exit code. Monte Carlo uncertainty decreases approximately as 1/sqrt(N).
+
+[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 ต่อจากงานแรกด้วยงาน CPU ที่ใช้หลาย worker และ job array สำหรับหลายชุดพารามิเตอร์.

@@ -55,3 +55,5 @@ tmp/
 temp/
 scratch/
 .hpc-ignite/
+.playwright-cli/
+output/playwright/

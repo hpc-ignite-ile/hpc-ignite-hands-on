@@ -4,6 +4,8 @@
 
 New to HPC? Start with the [illustrated beginner guide / คู่มือเริ่มต้นด้วยภาพ](docs/BEGINNER_VISUAL_GUIDE_TH.md). The illustrations explain concepts; [real run evidence](docs/lanta-runs/2026-09-26-pv915002/README.md) is labeled separately.
 
+Follow the original [LANTA Experience handbook](docs/lanta-hpc-experience-handbook.pdf) through the new [resource-estimation workbook](docs/RESOURCE_ESTIMATION_WORKBOOK.md). Each tutorial now distinguishes its smoke-test scope, resource model, archived usage/output and next experiment. Browse [per-tutorial evidence and screenshots](docs/tutorial-evidence/README.md), then choose a [public scientific application or NVIDIA experiment](docs/REAL_APPLICATION_EXPERIMENTS.md) to move beyond toy workloads.
+
 [![LANTA Compatible](https://img.shields.io/badge/LANTA-Compatible-blue.svg)](https://docs.lanta.nstda.or.th)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 

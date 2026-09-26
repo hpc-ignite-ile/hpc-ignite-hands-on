@@ -1,5 +1,63 @@
 # บทที่ 23: วัสดุศาสตร์
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: qe](../../docs/images/booklet/Part5-ScientificWorkload.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+Small silicon SCF/preflight path; verify that pw.x actually ran rather than stopping at input/software checks.
+
+Plane-wave memory depends on cell volume, energy cutoff, bands and k-points; doubling atoms is not a reliable linear memory estimate. Pilot the provided small system, record QE's memory estimates and iterations, then tune ranks.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339655 | COMPLETED | 1 | 4 | 2.086 | 0.004444 | 75.06 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/domain-science-chapter-23-materials-science-readme.png)
+
+Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/domain-science-chapter-23-materials-science-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339655` used 2.086 CPU-seconds over 4 summed elapsed seconds: about **0.52 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339655` · archive member `tutorials/domain-science/chapter-23-materials-science/README/logs/qe-si-preflight_6339655.out`
+
+```text
+/lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/bin/pw.x
+pseudo_status=shared_si_pseudo_pending
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Hold cell, pseudopotential hash, cutoffs and k-grid fixed for 1/2/4-rank timing. Treat cutoff/k-point convergence as a separate accuracy study. Record total energy, iterations, elapsed and per-rank memory; reject unconverged faster runs.
+
+**Correctness gate:** Require convergence and JOB DONE in the scientific output, plus energy agreement within a stated tolerance. A successful module/preflight step alone is insufficient.
+
+[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#quantum-espresso) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).

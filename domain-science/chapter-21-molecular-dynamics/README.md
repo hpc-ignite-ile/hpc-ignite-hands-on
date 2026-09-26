@@ -1,5 +1,78 @@
 # บทที่ 21: Molecular Dynamics
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: md](../../docs/images/booklet/Part5-ScientificWorkload.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+GROMACS/GPU preflight; a version/device check is not a molecular-dynamics trajectory.
+
+For the existing preflight, the requested GPU time is mostly software startup. Real MD requires atom count, timestep, steps, neighbor settings and output cadence; estimate time from a pilot's ns/day and trajectory storage from frames × atoms × bytes/coordinate.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339752 | COMPLETED | 1 | 43 | 64.239 | 0.095556 | 9051.68 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/domain-science-chapter-21-molecular-dynamics-readme.png)
+
+Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/domain-science-chapter-21-molecular-dynamics-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339752` used 64.239 CPU-seconds over 43 summed elapsed seconds: about **1.49 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339752` · archive member `tutorials/domain-science/chapter-21-molecular-dynamics/README/logs/gromacs-preflight_6339752.out`
+
+```text
+                         :-) GROMACS - gmx, 2024.6 (-:
+
+Executable:   /lustrefs/disk/modules/easybuild/software/GROMACS/2024.6-gcc13.2-cuda12.6/bin/gmx
+Data prefix:  /lustrefs/disk/modules/easybuild/software/GROMACS/2024.6-gcc13.2-cuda12.6
+Working dir:  /lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/tutorials/domain-science/chapter-21-molecular-dynamics/README
+Command line:
+  gmx --version
+
+[... excerpt; full log in archive ...]
+BLAS library:        External - detected on the system
+LAPACK library:      External - detected on the system
+CUDA compiler:       /opt/nvidia/hpc_sdk/Linux_x86_64/24.11/cuda/12.6/bin/nvcc nvcc: NVIDIA (R) Cuda compiler driver;Copyright (c) 2005-2024 NVIDIA Corporation;Built on Thu_Sep_12_02:18:05_PDT_2024;Cuda compilation tools, release 12.6, V12.6.77;Build cuda_12.6.r12.6/compiler.34841621_0
+CUDA compiler flags:-std=c++17;--generate-code=arch=compute_50,code=sm_50;--generate-code=arch=compute_52,code=sm_52;--generate-code=arch=compute_60,code=sm_60;--generate-code=arch=compute_61,code=sm_61;--generate-code=arch=compute_70,code=sm_70;--generate-code=arch=compute_75,code=sm_75;--generate-code=arch=compute_80,code=sm_80;--generate-code=arch=compute_86,code=sm_86;--generate-code=arch=compute_89,code=sm_89;--generate-code=arch=compute_90,code=sm_90;-Wno-deprecated-gpu-targets;--generate-code=arch=compute_53,code=compute_53;--generate-code=arch=compute_80,code=compute_80;-use_fast_math;-Xptxas;-warn-double-usage;-Xptxas;-Werror;-D_FORCE_INLINES;-Xcompiler;-fopenmp;-fexcess-precision=fast -funroll-all-loops -mavx2 -mfma -Wno-missing-field-initializers -Wno-cast-function-type-strict SHELL:-fopenmp -O3 -DNDEBUG
+CUDA driver:         12.70
+CUDA runtime:        12.60
+
+input_tpr=/project/common/GROMACS/INPUTs/benchPEP.tpr
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Prepare a public, documented GROMACS input as a separate extension. After equilibration, compare CPU and one-GPU runs for identical steps and output cadence; report ns/day, energy stability and CPU/GPU balance. Do not extrapolate production speed from this preflight.
+
+**Correctness gate:** Require a trajectory, mdrun performance report and physical checks before claiming MD completion. The current version output proves installation only.
+
+[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#molecular-simulation) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).

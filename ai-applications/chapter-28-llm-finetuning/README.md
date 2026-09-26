@@ -1,5 +1,67 @@
 # บทที่ 28: การ Finetune LLM
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **37–38** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: lora](../../docs/images/booklet/Part7-AIforScience.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+6×6 low-rank update arithmetic with rank 2; no language model is loaded or fine-tuned.
+
+Adapter parameters = r(d_in+d_out), versus d_in×d_out dense weights. Here 2(6+6)=24. This saving does not remove base-model, activation, gradient or optimizer memory in real training.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339650 | COMPLETED | 1 | 1 | 0.584 | 0.000278 | 1.43 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/ai-applications-chapter-28-llm-finetuning-readme.png)
+
+Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/ai-applications-chapter-28-llm-finetuning-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339650` used 0.584 CPU-seconds over 1 summed elapsed seconds: about **0.58 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339650` · archive member `tutorials/ai-applications/chapter-28-llm-finetuning/README/logs/lora-math_6339650.out`
+
+```text
+{
+  "base_dim": 6,
+  "lora_rank": 2,
+  "trainable_parameters": 24,
+  "update_frobenius_norm": 0.0012471700030834351
+}
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+For the arithmetic exercise vary dimension 6/60/600 and rank 2/4/8, recording update norm and time. A real fine-tuning extension must specify model, dataset, sequence length, precision and quality target before requesting GPUs.
+
+**Correctness gate:** Check parameter counts and finite matrix values. Do not describe this result as LLM fine-tuning throughput or accuracy.
+
+[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#nvidia-and-ai) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).

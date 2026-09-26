@@ -1,5 +1,66 @@
 # 03 พัฒนาและรัน Epidemic ABS ด้วย Mesa
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **33–36** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: agents](../docs/images/booklet/Part5-ScientificWorkload.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+Synthetic epidemic/agent ensemble; performance evidence does not validate epidemiological predictions.
+
+For local interactions, start with work proportional to agents × steps × repeats; all-pairs interactions can instead grow quadratically. Memory grows with agent state plus retained history. Pilot one seed before multiplying by scenarios.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339754 | COMPLETED | 8 | 28 | 12.834 | 0.007778 | 1.47 |
+| 6339755 | COMPLETED | 1 | 7 | 9.106 | 0.003889 | 0.40 |
+| 6339756 | COMPLETED | 1 | 3 | 1.654 | 0.000833 | 0.18 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/mini-innovation-03-epidemic-abs-examples.png)
+
+Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/mini-innovation-03-epidemic-abs-examples.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339754` used 12.834 CPU-seconds over 28 summed elapsed seconds: about **0.46 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339754` · archive member `tutorials/mini-innovation/03-epidemic-abs-examples/logs/epi_array_6339754_1.out`
+
+```text
+summary=results/epi_summary_6339754_1_baseline_1.csv
+daily=results/epi_daily_6339754_1_baseline_1.csv
+peak_I=91 attack_rate=0.305833
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Compare fixed-size 1/2/4-worker or rank runs with three repeats, preserving seeds and input. Then vary agent count 10× separately. Limit concurrent array tasks and aggregate throughput only after checking every task.
+
+**Correctness gate:** Check population conservation, finite/non-negative compartments and seed-specific output agreement. Compare stochastic distributions when implementations change random-stream ordering.
+
+[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#agent-models) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 หน้านี้สร้างแบบจำลองโรคระบาดชนิด SEIR ด้วย agent-based simulation สำหรับนวัตกรรมย่อย `LANTA EpiSprint` แล้วรัน 3 วิธีที่สอดคล้องกับบทฝึกหลักของหนังสือ: งาน Slurm เดี่ยว, job array และชุดทดลองหลายแกนภายในหนึ่งโหนด

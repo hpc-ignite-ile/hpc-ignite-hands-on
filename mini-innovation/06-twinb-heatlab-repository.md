@@ -1,5 +1,90 @@
 # 06 ใช้โครงการจริง HPC Ignite Twin-B เป็น Twin-B HeatLab
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **33–36** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: twinb](../docs/images/booklet/Part5-ScientificWorkload.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+Older synthetic Twin-B / Heatlab runs are distinct from the later real EnergyPlus + Mesa reference-building benchmarks. Original student geometry failures remain recorded.
+
+The synchronous reference adapter advances Mesa once per EnergyPlus zone interval: 96 intervals/day at four timesteps/hour. Agent-side work scales roughly with agents × intervals; EnergyPlus sizing/warmup and HVAC solves add non-linear overhead. Pilot one day before three days or a year.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339794 | COMPLETED | 1 | 22 | 8.979 | 0.048889 | 187.41 |
+| 6339812 | FAILED | 1 | 122 | 4.793 | 0.271111 | 545.65 |
+| 6339819 | FAILED | 1 | 112 | 112.429 | 0.248889 | 640.82 |
+| 6339815 | FAILED | 1 | 122 | 122.309 | 0.271111 | 814.06 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/mini-innovation-06-twinb-heatlab-repository.png)
+
+Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/mini-innovation-06-twinb-heatlab-repository.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339794` used 8.979 CPU-seconds over 22 summed elapsed seconds: about **0.41 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339794` · archive member `twinb/logs/twinb-cpu_6339794.out`
+
+```text
+[init_distributed] rank=0, world_size=1, local_rank=0, backend=gloo, device=cpu
+Zones: ['Zone_Fire-escape_R', 'Zone_Restroom_7503', 'Zone_Restroom_7406', 'Zone_Restroom_7304', 'Zone_Restroom_7206', 'Zone_Restroom_7112', 'Zone_Restroom_7106', 'Zone_Restroom_7116', 'Zone_Library_7117', 'Zone_ClosedOffice_7118', 'Zone_ClosedOffice_7120', 'Zone_Fire-escape_L', 'Zone_Corridor_Behide-7118-7121', 'Zone_Elec/MechRoom_7122', 'Zone_ClosedOffice_7110', 'Zone_ClosedOffice_7108', 'Zone_Auditorium_7103', 'Zone_Corridor_7101', 'Zone_Auditorium_7102', 'Zone_Auditorium_7104', 'Zone_Storage_7104_Pantry', 'Zone_Corridor_F1', 'Zone_Elevator_L', 'Zone_Classroom_7201', 'Zone_Classroom_7202', 'Zone_Classroom_7203', 'Zone_Classroom_7204', 'Zone_Classroom_7205', 'Zone_Classroom_7210', 'Zone_Office_7211', 'Zone_Office_7212', 'Zone_Corridor_F2', 'Zone_Office_7301', 'Zone_Elevator_R', 'Zone_Office_7316', 'Zone_Classroom_7302', 'Zone_Classroom_7303', 'Zone_Classroom_7315', 'Zone_Classroom_7314', 'Zone_Classroom_7308', 'Zone_Classroom_7309', 'Zone_Classroom_7310', 'Zone_Classroom_7313', 'Zone_Classroom_7312', 'Zone_Elec/MechRoom_7113', 'Zone_Classroom_7311', 'Zone_Corridor_F3', 'Zone_Classroom_7401', 'Zone_Classroom_7402', 'Zone_Classroom_7405', 'Zone_Classroom_7423', 'Zone_Classroom_7422', 'Zone_Classroom_7419', 'Zone_Classroom_7410', 'Zone_Classroom_7411', 'Zone_Elec/MechRoom_7209', 'Zone_Classroom_7412', 'Zone_Classroom_7413', 'Zone_Classroom_7414', 'Zone_Classroom_7418', 'Zone_Classroom_7415', 'Zone_Corridor_F4', 'Zone_Auditorium_7502', 'Zone_Auditorium_7501', 'Zone_Auditorium_7508', 'Zone_Corridor_F5', 'Zone_Elec/MechRoom_7307', 'Zone_Central-hall_F2-3', 'Zone_Elec/MechRoom_7409', 'Zone_Storage_7506']
+[TwinB] config=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/config.yaml
+[TwinB] agents=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/agents.json
+[TwinB] idf=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/EnergyPlus_BP_Boonchoo/output/in.idf
+[TwinB] weather=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/weather.epw
+[TwinB] output_dir=/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/twinb/innovation/generated/heatlab_sweep/000_baseline_lampang/energyplus/job-6339794
+[TwinB] ep_control=False
+✅ โหลด agent สำเร็จทั้งหมด: 1875 ตัว
+[Rank 0] Step 57/288
+[Rank 0] Step 114/288
+[Rank 0] Step 171/288
+[Rank 0] Step 228/288
+[Rank 0] Step 285/288
+[Single rank] Results saved.
+Agent-level results saved to mesa_out_result/mesa_agent_results.csv
+Zone-level results saved to mesa_out_result/mesa_zone_results.csv
+[Rank 0] Exported EnergyPlus + Agent results to mesa_out_result/
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Use the qualified five-zone (50 agents) and school (1875 synthetic request agents) benchmarks. Compare one versus four allocated CPUs at identical input, then one versus three days separately. The serial adapter cannot use four cores merely because Slurm reserves them. See the reference-building guide for exact commands and newer evidence.
+
+**Correctness gate:** Require zero severe/fatal EnergyPlus errors, valid handles, one Mesa step per zone interval, read-only/reset equivalence, intervention response and reproducible traces. School warnings and lack of Thai calibration remain limitations.
+
+[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#energyplus-mesa) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+**Newer real coupled evidence:** [reference-building tutorial](../docs/TWINB_REFERENCE_BENCHMARKS.md) and [measured benchmark results](../docs/lanta-runs/2026-09-26-twinb-benchmarks/README.md). Keep these separate from the original student-model failures and synthetic examples above.
+
+The later one-day qualification reserved four CPUs for 117 seconds (job `6339929`) versus one CPU for 113 seconds (job `6339935`). Reserved capacity was therefore 0.1300 versus 0.0314 CPU-hours for these observed jobs; the [comparison checks](../docs/lanta-runs/2026-09-26-twinb-benchmarks/resource-comparison.json) found equal timestep outputs and seeded trace hashes. This is evidence of avoidable over-allocation, not a reliable 3.5% speedup claim from single job timings.
+
+![Actual five-zone EnergyPlus and Mesa traces](../docs/lanta-runs/2026-09-26-twinb-benchmarks/6339935-fivezone-actual-traces.png)
+
+Actual benchmark-output plot, job `6339935`; not a booklet illustration. The school case retains documented warnings, and the reference buildings are not calibrated models of the student building.
+
+<!-- resource-learning:end -->
+
 ![intended Mesa EnergyPlus feedback loop ที่ต้องตรวจ synchronization ก่อนเชื่อผล](../docs/images/beginners/mesa-twinb-learning-map.png)
 
 ภาพแนวคิด ไม่ใช่ผลรันที่ยืนยันแล้ว: ต้องตรวจ warmup, timestamp, actuator และ synchronization ก่อนเชื่อผล coupled simulation สถานะจริงของ campaign ยังไม่ผ่านขั้นนี้. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น

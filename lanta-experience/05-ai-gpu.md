@@ -1,5 +1,78 @@
 # 05 AI And GPU Check
 
+<!-- resource-learning:start -->
+## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+
+Booklet flow: pages **37–38** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+
+<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+
+![Booklet workflow: gpu](../docs/images/booklet/Part7-AIforScience.png)
+
+Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
+
+</details>
+
+### 1. ขอบเขตและการประมาณก่อนรัน
+
+GPU/framework smoke or tiny tensor workload; device visibility is not GPU utilization or training quality.
+
+Separate host RAM from GPU VRAM. Dense float32 n×n matrices occupy 4n² bytes each; three 4096² tensors alone need 192 MiB, excluding library workspace. Start on one GPU and measure peak allocated/reserved VRAM before increasing tensor or batch size.
+
+### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
+
+Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
+
+| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
+|---|---|---:|---:|---:|---:|---:|
+| 6339666 | COMPLETED | 1 | 5 | 3.431 | 0.005556 | 0.59 |
+
+Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
+
+![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/lanta-experience-05-ai-gpu.png)
+
+Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/lanta-experience-05-ai-gpu.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
+
+**Read the numbers:** job `6339666` used 3.431 CPU-seconds over 5 summed elapsed seconds: about **0.69 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
+
+<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
+
+Job `6339666` · archive member `tutorials/lanta-experience/05-ai-gpu/logs/gpu_6339666.out`
+
+```text
+job=6339666 node=x1001c7s7b0n0
+Sat Sep 26 08:13:07 2026
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 565.57.01              Driver Version: 565.57.01      CUDA Version: 12.7     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+[... excerpt; full log in archive ...]
++-----------------------------------------------------------------------------------------+
+torch 2.2.2+cu118
+cuda_version 11.8
+cuda_available True
+gpu_count 1
+gpu_name NVIDIA A100-SXM4-40GB
+matrix_sum 90469.6796875
+status ok
+```
+
+</details>
+
+### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
+
+Warm up kernels, synchronize CUDA around timing, and measure repeated fixed-size kernels separately from imports and transfers. Compare CPU and GPU at identical precision and input. Increase problem size until compute is measurable, without exceeding measured VRAM headroom.
+
+**Correctness gate:** Require CUDA availability, the expected device and a numerical comparison with CPU output. nvidia-smi showing a device does not demonstrate sustained utilization.
+
+[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#nvidia-and-ai) provide the next workload. Proposed resource budgets there are not measured requirements.
+
+Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
+
+<!-- resource-learning:end -->
+
 ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 ใช้ตรวจว่า job ได้ GPU จริงก่อนเริ่มงาน AI ที่กินทรัพยากรมาก.
