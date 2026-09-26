@@ -1,101 +1,83 @@
-# จาก booklet สู่การทดลองจริง: estimate → run → measure → improve
+# งานนี้ต้องใช้เครื่องเท่าไร?
 
-เริ่มจากคำถามที่ตรวจได้ ไม่ใช่จำนวน CPU ที่มากที่สุด: งานเล็กใช้ตรวจระบบ ส่วนงาน benchmark ใช้วัดประสิทธิภาพ และงานวิจัยต้องตรวจความถูกต้องของโมเดลด้วย.
+ก่อนขอ CPU หรือ GPU ให้ตอบสามคำถาม: **มีข้อมูลเท่าไร ต้องการคำตอบแบบไหน และยอมรอได้นานเท่าไร** เริ่มเล็กแล้ววัดจริง จะช่วยลดทั้งเวลารอและการใช้ทรัพยากรเกินจำเป็น
 
-This workbook follows the uploaded [40-page LANTA handbook](lanta-hpc-experience-handbook.pdf), with original [booklet images and provenance](images/booklet/README.md). The source booklet is a teaching artifact: illustrative commands, module names and numerical labels in its pictures are not current system policy. Use the executable tutorial text and live LANTA checks instead.
+หน้านี้ใช้ควบคู่กับ [คู่มือกิจกรรม LANTA](lanta-hpc-experience-handbook.pdf) และ [คำอธิบายคำสั่ง Bash](BASH_COMMAND_REFERENCE_TH.md)
 
-## Learning sequence
+## เรียนตามลำดับ
 
-| Booklet pages | Question before proceeding | Tutorial |
+| ช่วงในคู่มือ | คำถามที่ควรตอบได้ | บทเรียน |
 |---|---|---|
-| 5–11: Linux, files, shell, modules | Can I locate input, code, environment and output? | [Readiness](../lanta-experience/00-readiness.md), [environment](../core-hpc/chapter-02-environment/README.md) |
-| 12–18: HPC, access, resource choice, evidence | What is the scientific question and first bounded pilot? | [Foundation](../foundation/lanta-foundation/README.md), this worksheet |
-| 19–23: first Slurm job and output checks | Did my program run on a compute node and create the right output? | [First job](../lanta-experience/01-first-slurm-job.md) |
-| 24–26: CPU and arrays | Does concurrency improve total throughput at acceptable cost? | [CPU/arrays](../lanta-experience/02-cpu-array.md) |
-| 27–32: OpenMP and MPI | Is my input decomposed, and where is communication time spent? | [Parallel programming](../lanta-experience/03-openmp-mpi.md) |
-| 33–36: scientific workflows and reproducibility | Is the numerical/scientific result correct at this scale? | [Diffusion](../lanta-experience/04-science-data.md), [reference-building co-simulation](TWINB_REFERENCE_BENCHMARKS.md) |
-| 37–38: AI/GPU | Is the GPU doing useful work, at the same accuracy? | [GPU](../lanta-experience/05-ai-gpu.md), [real application experiments](REAL_APPLICATION_EXPERIMENTS.md) |
+| หน้า 5–18 | ไฟล์อยู่ไหน และจะใช้โปรแกรมอะไร? | [เตรียมความพร้อม](../lanta-experience/00-readiness.md) |
+| หน้า 19–23 | ส่งงานแล้วเปิดผลได้หรือยัง? | [งานแรก](../lanta-experience/01-first-slurm-job.md) |
+| หน้า 24–26 | งานแต่ละชิ้นทำแยกกันได้หรือไม่? | [ชุดงานย่อย](../lanta-experience/02-cpu-array.md) |
+| หน้า 27–32 | หลายคอร์ช่วยกันทำงานอย่างไร? | [OpenMP และ MPI](../lanta-experience/03-openmp-mpi.md) |
+| หน้า 33–36 | รู้ได้อย่างไรว่าคำตอบถูกต้อง? | [งานวิทยาศาสตร์](../lanta-experience/04-science-data.md) |
+| หน้า 37–38 | GPU ช่วยงานนี้จริงหรือไม่? | [AI และ GPU](../lanta-experience/05-ai-gpu.md) |
 
-![The booklet's scientific workflow](images/booklet/Part5-ScientificWorkload.png)
+## จดแผนก่อนรัน
 
-Concept illustration from the booklet, not an observed output. Each tutorial now has its own scope, estimation model, archived measurements (when available), output excerpt and next experiment. Browse the [complete evidence index](tutorial-evidence/README.md).
-
-## Before running: fill in the resource worksheet
-
-| Field | Learner entry |
+| สิ่งที่ต้องคิด | ตัวอย่างคำตอบ |
 |---|---|
-| Question and correctness criterion | What result must agree, within which tolerance? |
-| Inputs | URL/license, checksum, dimensions/agents/atoms/rows, seed |
-| Software | Git commit, module versions, package lock/container digest |
-| Parallel layout | Nodes, MPI ranks, threads/rank, workers, GPUs |
-| Memory model | Input + live state + temporaries + library/runtime + safety margin |
-| Time model | Setup + compute + I/O; estimate using two small pilots |
-| Storage | Downloads + extracted inputs + checkpoints + retained output |
-| Limits | Wall-time ceiling, memory ceiling, array concurrency, maximum repeats |
-| Measurement plan | Program time, Slurm elapsed, TotalCPU, RSS, GPU telemetry, output checks |
+| ข้อมูล | ตารางหนึ่งล้านแถว มีตัวเลขสองคอลัมน์ |
+| เป้าหมาย | หาค่าเฉลี่ยที่ตรงกับวิธีคำนวณเดิม |
+| โปรแกรม | ชื่อและรุ่นที่ใช้ พร้อมค่าเริ่มสุ่มถ้ามี |
+| CPU / GPU | เริ่มจาก CPU 1 คอร์ ไม่ขอ GPU ถ้าโปรแกรมไม่ได้ใช้ |
+| หน่วยความจำ | ข้อมูลที่เก็บพร้อมกัน + ข้อมูลชั่วคราว + ส่วนเผื่อ |
+| เวลา | เตรียมข้อมูล + คำนวณ + เขียนผล |
+| พื้นที่ไฟล์ | ไฟล์ต้นฉบับ + ไฟล์แตกแล้ว + ผล + จุดบันทึกเพื่อทำต่อ |
+| เงื่อนไขหยุด | หมดเวลา หน่วยความจำไม่พอ หรือคำตอบผิด |
 
-Requests below are planning examples, not recommendations to enlarge every job. Match the actual code: more reserved cores do not parallelize serial Python. Check current partition limits, account balance and available modules before submission; the campaign used `pv915002`, not the expiring account.
+ตัวเลขในตารางเป็นตัวอย่างการวางแผน ไม่ใช่ค่าที่เหมาะกับทุกโปรแกรม
 
-### Worked estimation: separate workload growth from parallel scaling
+## ลองคำนวณเวลาและหน่วยความจำ
 
-Suppose **hypothetical** same-environment pilots at 1M and 2M samples take 12 and 22 seconds. The inferred model is 2 seconds startup plus 10 seconds per million samples. A 10M-sample forecast is 102 seconds; a 1.5× margin suggests 153 seconds, rounded up to a 3-minute ceiling. These numbers teach the calculation; they are not LANTA measurements.
+**ตัวอย่างสมมติ:** งานหนึ่งล้านรายการใช้ 12 วินาที และสองล้านรายการใช้ 22 วินาที อาจประมาณได้ว่าเริ่มโปรแกรม 2 วินาที แล้วใช้ 10 วินาทีต่อหนึ่งล้านรายการ งานสิบล้านรายการจึงประมาณ 102 วินาที
 
-For raw numeric arrays, bytes = elements × bytes/element × simultaneously live arrays. Two float64 arrays of 10M elements require at least 160 MB (about 153 MiB), before temporary arrays and runtime overhead. Python object lists are larger. Fit the observed model again after changing algorithm, precision or data structure.
+ถ้าเผื่ออีกครึ่งหนึ่ง จะได้ 153 วินาที จึงอาจตั้งเวลาสูงสุดเป็น 3 นาที ต้องลองวัดใหม่เมื่อเปลี่ยนโปรแกรมหรือวิธีคำนวณ เพราะงานจริงไม่ได้โตเป็นเส้นตรงเสมอ
 
-Use measured per-node peaks plus a justified margin when sizing RAM. For MPI, account for all ranks on each node; the largest per-task RSS is not aggregate node memory. For GPU jobs, host RAM and device VRAM are different limits.
+ข้อมูล `float64` ใช้ 8 ไบต์ต่อค่า ถ้าเก็บสองชุด ชุดละสิบล้านค่า จะใช้เฉพาะตัวเลขประมาณ 160 MB ยังไม่รวมโปรแกรมและข้อมูลชั่วคราว รายการแบบ Python อาจใช้มากกว่านี้
 
-## After running: collect evidence
+สำหรับ GPU ต้องตรวจหน่วยความจำบนการ์ดแยกจากหน่วยความจำของเครื่อง
 
-Run this on the login node **after** your job completes, from the lesson workspace. It only queries accounting and saves metadata. Read the [Bash reference](BASH_COMMAND_REFERENCE_TH.md) for shell syntax.
+## ดูสิ่งที่ใช้จริงหลังงานจบ
+
+รันคำสั่งนี้จากโฟลเดอร์บทเรียนบนเครื่องเข้าสู่ระบบ คำสั่งนี้อ่านสถิติ ไม่ได้เริ่มคำนวณใหม่
 
 ```bash
-read -rp "Completed Slurm job or array ID: " JOBID
+read -rp "หมายเลขงานที่จบแล้ว: " JOBID
 if [[ "$JOBID" =~ ^[0-9]+(_[0-9]+)?$ ]]; then
     mkdir -p "notes/$JOBID"
     sacct --array -j "$JOBID" --parsable2 \
-      --format=JobID,JobName,Account,Partition,State,ExitCode,ElapsedRaw,TotalCPU,AllocCPUS,ReqMem,AllocTRES,MaxRSS,Start,End \
+      --format=JobID,State,ExitCode,ElapsedRaw,TotalCPU,AllocCPUS,ReqMem,MaxRSS \
       > "notes/$JOBID/accounting.psv"
-    module list 2> "notes/$JOBID/modules-current.txt"
-    date -Is > "notes/$JOBID/collected-at.txt"
     cat "notes/$JOBID/accounting.psv"
 else
-    echo "Enter a numeric job ID (or one array element such as 12345_2)."
+    echo "กรอกหมายเลขงาน เช่น 12345 หรือ 12345_2"
 fi
 ```
 
-`modules-current.txt` describes the collection shell, **not necessarily the job environment**. Also save `module list`, program/package versions, input hashes and source commit inside the job log. Save the submitted script and job-specific output before starting another run; a generic `results/summary.json` can otherwise be overwritten.
-
-| Quantity | How to interpret it |
+| ชื่อที่เครื่องแสดง | อ่านว่าอย่างไร |
 |---|---|
-| Program time | Instrument the compute region; separate setup and I/O |
-| Slurm elapsed | Allocation duration, including imports and setup; excludes queue wait |
-| Reserved CPU-hours | Sum `AllocCPUS × ElapsedRaw / 3600` over allocation rows, once per array element |
-| Actual CPU seconds | Allocation-row `TotalCPU`, with day/hour/minute parsing; do not add parent and step totals together |
-| CPU efficiency | `100 × TotalCPU_seconds / (AllocCPUS × ElapsedRaw)` for one allocation; use summed numerator/denominator for arrays |
-| MaxRSS | Sampled maximum task RSS in a step; inspect step records, not only the parent; not summed node RAM |
-| Array makespan | Last element end minus first element start; not the sum of element elapsed times |
-| GPU performance | Kernel/step time, throughput, peak VRAM and utilization samples; low CPU efficiency alone is inconclusive |
-| Service charge | Site billing (`sbill`); reserved CPU-hours are not SHr |
+| `State` | งานจบ รอ หรือมีปัญหา |
+| `ElapsedRaw` | เวลาที่ได้ใช้เครื่อง หน่วยวินาที ไม่รวมเวลารอคิว |
+| `TotalCPU` | เวลาที่ CPU ทำงานรวมกันทุกคอร์ |
+| `AllocCPUS` | จำนวนคอร์ที่ระบบจัดให้ อาจต่างจากจำนวนที่โปรแกรมใช้ |
+| `ReqMem` | หน่วยความจำที่ขอ |
+| `MaxRSS` | ค่าสูงสุดที่ระบบสุ่มวัดได้ต่อกระบวนการในขั้นงาน ไม่ใช่หน่วยความจำรวมทั้งเครื่อง |
 
-Accounting availability and sampling depend on the site's collection configuration. Missing measurements are not zero usage. See the official [Slurm sacct field documentation](https://slurm.schedmd.com/sacct.html).
+อ่านแถวขั้นงาน เช่น `.batch` ด้วย เพราะสถิติหน่วยความจำอาจอยู่ที่แถวนั้น ช่องว่างไม่ได้แปลว่าใช้ศูนย์ และไม่ควรลดหน่วยความจำจนเท่ากับค่าที่เห็นพอดี
 
-For a GPU experiment, record framework peak VRAM and capture `nvidia-smi` samples **inside the GPU allocation** while the program runs, stopping the sampler when the application ends. A pre-run device listing is not a utilization time series. Do not claim measured energy from a nominal GPU power limit or carbon from CPU-hours.
+**ตัวอย่างสมมติ:** จอง 4 คอร์เป็นเวลา 60 วินาที เท่ากับ 4 × 60 ÷ 3,600 = 0.0667 ชั่วโมงคอร์ที่จอง ถ้า `TotalCPU` เท่ากับ 60 วินาที แสดงว่าเฉลี่ยใช้ CPU ประมาณหนึ่งคอร์ ไม่ใช่สี่คอร์เต็มเวลา
 
-## Interpret an actual archived run
+ชั่วโมงคอร์ไม่ใช่หน่วยค่าบริการ SHr ให้ตรวจค่าบริการจากระบบของโครงการ ไม่รวมเวลาแถวงานหลักกับแถวขั้นงานซ้ำกัน
 
-The [CPU-array evidence viewer](tutorial-evidence/lanta-experience-02-cpu-array.html) shows requested/allocated resources, measured CPU seconds, per-element accounting and stdout from the 2026-09-26 archive. The [Twin-B benchmark report](lanta-runs/2026-09-26-twinb-benchmarks/README.md) supplies a later real coupled scientific workload, including a one-versus-four-CPU comparison. Keep smoke tests, failed original geometry, and successful reference-building tests distinct.
+## รอบถัดไปควรเปลี่ยนอะไร?
 
-## Improve one variable at a time
+1. ตรวจคำตอบก่อน ถ้าผิดให้แก้ก่อนเพิ่มเครื่อง
+2. ใช้ข้อมูลเดิม เปลี่ยนเพียงจำนวนคอร์หรือขนาดชุดข้อมูลหนึ่งอย่าง
+3. ทำซ้ำอย่างน้อยสามครั้ง บันทึกค่ากลางและช่วงเวลาที่พบ
+4. เปรียบเทียบทั้งเวลา หน่วยความจำ และความถูกต้อง
+5. เก็บกราฟหรือภาพผลที่อ่านง่าย ปิดบัง token และข้อมูลส่วนตัวก่อนแบ่งปัน
 
-1. Establish correctness with the smallest complete input, not just an import check.
-2. Increase problem size at fixed resources until application time dominates startup, within the pilot ceiling.
-3. Freeze that input and compare 1/2/4 cores or one GPU versus CPU; repeat each variant three times.
-4. Report median and spread, throughput, reserved resource-hours and correctness together. Use `T1/Tp` for speedup only with the same work and quality target.
-5. Change one bottleneck: vectorization, chunk size, communication, output cadence, batching or transfer overlap. Recheck correctness.
-6. Save a screenshot showing job ID, actual accounting and result. Keep raw logs/data beside it so the screenshot is auditable.
-
-Stop escalation on OOM, timeout, non-finite output, failed correctness, unavailable data or incompatible runtime. Diagnose before doubling resources. All new application budgets in the [research-backed catalog](REAL_APPLICATION_EXPERIMENTS.md) are bounded pilot proposals, not completed runs.
-
-## Maintainer reproducibility
-
-`scripts/tutorial_resource_profiles.py` holds reviewed per-topic teaching plans. `python3 scripts/build_tutorial_evidence.py` regenerates marked panels and evidence HTML from the archived campaign, without submitting jobs. Browser screenshots are a separate capture step; recapture them when HTML changes. The source archive and failed-run records remain immutable.
+อ่านต่อที่ [วิธีวัดและปรับปรุงความเร็ว](PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) และ [ความหมายของสถิติ Slurm](https://slurm.schedmd.com/sacct.html)

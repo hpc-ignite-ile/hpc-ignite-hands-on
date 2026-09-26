@@ -1,77 +1,27 @@
-# 01 First Slurm Job
+# 01 ส่งงานแรกด้วย Slurm
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **19–23** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+ส่งงานแรกและอ่านผลที่เครื่องสร้างขึ้น
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เริ่มจาก CPU 1 คอร์ตามตัวอย่าง งานสั้นอาจเสียเวลาส่วนใหญ่ไปกับการเริ่มโปรแกรม
+- **ตรวจผลและลองปรับ:** ตรวจไฟล์ผลลัพธ์และสถานะงานก่อนเพิ่มขนาด อย่าใช้เวลาของงานทักทายมาสรุปความเร็วของเครื่อง
 
-![Booklet workflow: hello](../docs/images/booklet/Part2-RunningJobs.png)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Small Slurm/environment smoke test; startup dominates its elapsed time.
-
-One task and one CPU are sufficient for printing context and writing a small file. A 1 GiB / 5 minute initial ceiling is a teaching budget, not measured need. Reserved capacity at that ceiling is 1 × 300 / 3600 = 0.0833 CPU-hours.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339660 | COMPLETED | 1 | 3 | 0.533 | 0.000833 | 0.62 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/lanta-experience-01-first-slurm-job.png)
-
-Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/lanta-experience-01-first-slurm-job.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339660` used 0.533 CPU-seconds over 3 summed elapsed seconds: about **0.18 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339660` · archive member `tutorials/lanta-experience/01-first-slurm-job/logs/hello_6339660.out`
-
-```text
-results/hello_6339660.txt
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Run the unchanged job three times. Compare queue wait, job elapsed and program time separately; do not infer parallel speedup from a hello-world job.
-
-**Correctness gate:** Match the job ID and compute hostname in the log and result. COMPLETED alone does not prove the intended program ran.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
-
-สร้าง Python script และ Slurm job script ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง.
+สร้าง Python script และ Slurm ไฟล์งาน ด้วย heredoc แล้วส่งด้วย `sbatch` โดยตรง.
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น heredoc, `sbatch`, `squeue`, `sacct`, `tail`, `cat`, `module purge`, `module load` และ `SLURM_SUBMIT_DIR`
 
-เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน block เตรียมพื้นที่ใน [README.md](README.md) สำหรับ workspace ของกิจกรรม
+เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน ชุดคำสั่ง เตรียมพื้นที่ใน [README.md](README.md) สำหรับ พื้นที่ทำงาน ของกิจกรรม
 
-## Copy-Paste
+## ลงมือทำ
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+แปะทีละ ชุดคำสั่ง ตามลำดับ แต่ละ ชุดคำสั่ง ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียม พื้นที่ทำงาน และตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง โฟลเดอร์ มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 cd "$HOME/lanta-experience"
@@ -84,7 +34,7 @@ fi
 export LANTA_CPU_PARTITION="${LANTA_CPU_PARTITION:-compute-devel}"
 ```
 
-### ขั้นที่ 2: สร้าง source code `src/hello_lanta.py`
+### ขั้นที่ 2: สร้าง โค้ดโปรแกรม `src/hello_lanta.py`
 
 ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
 
@@ -112,9 +62,9 @@ PY
 ```
 
 
-### ขั้นที่ 3: สร้าง Slurm script `jobs/hello_lanta.sbatch`
+### ขั้นที่ 3: สร้าง ไฟล์งาน Slurm `jobs/hello_lanta.sbatch`
 
-ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, โฟลเดอร์ทำงาน และคำสั่งที่รันบน เครื่องคำนวณ
 
 ```bash
 cat > jobs/hello_lanta.sbatch <<'SLURM'
@@ -138,7 +88,7 @@ SLURM
 
 ### ขั้นที่ 4: ส่งงานเข้า Slurm
 
-ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+ขั้นนี้ส่ง ไฟล์งาน ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก หมายเลขงาน เพื่อใช้ตามคิวและอ่าน log ภายหลัง
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/hello_lanta.sbatch)
@@ -155,24 +105,10 @@ echo "  cat results/hello_${job_id}.txt"
 
 ในขั้นตอนนี้ ผู้ใช้จะสร้างไฟล์สองไฟล์ คือ `src/hello_lanta.py` สำหรับงาน Python และ `jobs/hello_lanta.sbatch` สำหรับบอก Slurm ว่าต้องใช้ทรัพยากรเท่าใด
 
-เมื่อส่งด้วย `sbatch` งานจะเข้า queue เพื่อให้ Slurm จัดไปยัง compute node ไฟล์ log จะถูกเก็บใน `logs/` และผลลัพธ์ของ Python จะถูกเก็บใน `results/`
+เมื่อส่งด้วย `sbatch` งานจะเข้า queue เพื่อให้ Slurm จัดไปยัง เครื่องคำนวณ ไฟล์ log จะถูกเก็บใน `logs/` และผลลัพธ์ของ Python จะถูกเก็บใน `results/`
 
-เมื่อสำเร็จ `sbatch` จะคืน job id ให้ผู้ใช้ จากนั้นใช้ `squeue -j <job-id>` เพื่อตรวจสถานะ และใช้ `sacct` หลังงานจบเพื่อตรวจว่าเป็น `COMPLETED` เมื่อ submit error ให้ตรวจ `LANTA_ACCOUNT` เมื่อ job ค้างให้ดู reason ใน `squeue` เมื่อ log แจ้งว่า Python หาย ให้ตรวจ `module avail python` และส่งงาน Slurm ผ่าน `sbatch`
+เมื่อสำเร็จ `sbatch` จะคืน หมายเลขงาน ให้ผู้ใช้ จากนั้นใช้ `squeue -j <job-id>` เพื่อตรวจสถานะ และใช้ `sacct` หลังงานจบเพื่อตรวจว่าเป็น `COMPLETED` เมื่อ submit error ให้ตรวจ `LANTA_ACCOUNT` เมื่อ job ค้างให้ดู reason ใน `squeue` เมื่อ log แจ้งว่า Python หาย ให้ตรวจ `module avail python` และส่งงาน Slurm ผ่าน `sbatch`
 
-## Modify
+## ลองเปลี่ยนด้วยตัวเอง
 
 เปลี่ยนข้อความที่เขียนใน `src/hello_lanta.py` หรือเปลี่ยน `--time` ใน `jobs/hello_lanta.sbatch` แล้วส่งใหม่.
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340185 | COMPLETED | 1 | 3 | 0.595 | 0.000833 | 2.56 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/lanta-experience-01-first-slurm-job.png)
-<!-- performance-rerun:end -->

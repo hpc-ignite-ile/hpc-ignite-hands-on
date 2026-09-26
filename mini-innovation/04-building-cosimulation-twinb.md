@@ -1,79 +1,18 @@
 # 04 การจำลองร่วม: แบบจำลองความร้อนเชิงวิทยาศาสตร์กับ ABS แบบ Twin-B
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+เชื่อมพฤติกรรมคนกับการใช้พลังงานของอาคาร
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เริ่มจำลองหนึ่งวันก่อนเพิ่มระยะเวลา การจอง CPU หลายคอร์ไม่ได้ทำให้โปรแกรมที่ใช้คอร์เดียวเร็วขึ้น
+- **ตรวจผลและลองปรับ:** ตรวจว่าเวลาใน Mesa และ EnergyPlus เดินตรงกัน ตรวจอุณหภูมิและพลังงาน แล้วเปรียบเทียบวิธีควบคุมด้วยอาคารและอากาศชุดเดิม
 
-![Booklet workflow: twinb](../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Older synthetic Twin-B / Heatlab runs are distinct from the later real EnergyPlus + Mesa reference-building benchmarks. Original student geometry failures remain recorded.
-
-The synchronous reference adapter advances Mesa once per EnergyPlus zone interval: 96 intervals/day at four timesteps/hour. Agent-side work scales roughly with agents × intervals; EnergyPlus sizing/warmup and HVAC solves add non-linear overhead. Pilot one day before three days or a year.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339757 | COMPLETED | 6 | 24 | 10.843 | 0.006667 | 0.78 |
-| 6339758 | COMPLETED | 1 | 3 | 1.622 | 0.000833 | 0.59 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/mini-innovation-04-building-cosimulation-twinb.png)
-
-Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/mini-innovation-04-building-cosimulation-twinb.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339757` used 10.843 CPU-seconds over 24 summed elapsed seconds: about **0.45 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339757` · archive member `tutorials/mini-innovation/04-building-cosimulation-twinb/logs/twinb_array_6339757_1.out`
-
-```text
-summary results/twinb_summary_6339757_1_comfort_101.csv
-zone results/twinb_zone_6339757_1_comfort_101.csv
-agent results/twinb_agent_6339757_1_comfort_101.csv
-{'scenario_id': 'comfort_101', 'policy': 'comfort', 'seed': 101, 'steps': 48, 'agents': 168, 'zones': 4, 'total_energy_kwh': 302.17546, 'mean_discomfort_c': 1.767191, 'ac_request_rate': 0.110119, 'peak_zone_temp_c': 28.4, 'mean_zone_temp_c': 26.925964}
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Use the qualified five-zone (50 agents) and school (1875 synthetic request agents) benchmarks. Compare one versus four allocated CPUs at identical input, then one versus three days separately. The serial adapter cannot use four cores merely because Slurm reserves them. See the reference-building guide for exact commands and newer evidence.
-
-**Correctness gate:** Require zero severe/fatal EnergyPlus errors, valid handles, one Mesa step per zone interval, read-only/reset equivalence, intervention response and reproducible traces. School warnings and lack of Thai calibration remain limitations.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#energyplus-mesa) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-**Newer real coupled evidence:** [reference-building tutorial](../docs/TWINB_REFERENCE_BENCHMARKS.md) and [measured benchmark results](../docs/lanta-runs/2026-09-26-twinb-benchmarks/README.md). Keep these separate from the original student-model failures and synthetic examples above.
-
-The later one-day qualification reserved four CPUs for 117 seconds (job `6339929`) versus one CPU for 113 seconds (job `6339935`). Reserved capacity was therefore 0.1300 versus 0.0314 CPU-hours for these observed jobs; the [comparison checks](../docs/lanta-runs/2026-09-26-twinb-benchmarks/resource-comparison.json) found equal timestep outputs and seeded trace hashes. This is evidence of avoidable over-allocation, not a reliable 3.5% speedup claim from single job timings.
-
-![Actual five-zone EnergyPlus and Mesa traces](../docs/lanta-runs/2026-09-26-twinb-benchmarks/6339935-fivezone-actual-traces.png)
-
-Actual benchmark-output plot, job `6339935`; not a booklet illustration. The school case retains documented warnings, and the reference buildings are not calibrated models of the student building.
-
-<!-- resource-learning:end -->
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 ![thermal surrogate กับ EnergyPlus เป็นตัวเลือกคนละแบบของ building model](../docs/images/beginners/mesa-twinb-learning-map.png)
 
 บทนี้ใช้ thermal surrogate เพื่อฝึก feedback loop: อาคารส่งอุณหภูมิให้ agents และ agents ส่งคำขอ setpoint กลับ ภาพรวมแสดง EnergyPlus เป็นเส้นทางขั้นสูงแยกต่างหาก. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
 
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 หน้านี้สร้างนวัตกรรมย่อยชื่อ **Twin-B MicroCosim** โดยย่อแนวคิดจาก [wdiazcarballo/hpcignite-twinb](https://github.com/wdiazcarballo/hpcignite-twinb) ให้เหมาะกับกิจกรรมสดบน LANTA สำหรับผู้ใช้ประมาณ 40 คน
 
@@ -104,7 +43,7 @@ Actual benchmark-output plot, job `6339935`; not a booklet illustration. The sch
 | EnergyPlus callback | วงรอบจำลองร่วมราย timestep | เห็นสัญญาข้อมูลชัดใน CSV |
 | การรวมคำขอจุดตั้งอุณหภูมิแบบกระจาย | Slurm array หลายสถานการณ์ทดลอง | เห็นกระบวนการ HPC และการทำซ้ำตรวจสอบได้ |
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -118,7 +57,7 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ผู้ใช้ที่ตั้ง alias ตาม [../docs/SSH_PRIVATE_KEY_LANTA_TH.md](../docs/SSH_PRIVATE_KEY_LANTA_TH.md) สามารถใช้ `ssh lanta`
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -554,7 +493,7 @@ python src/run_twinb_cosim.py
 ls -lh results/twinb_summary_manual_0_balanced_101.csv
 ```
 
-## Example 1: งาน Slurm เดี่ยว
+## ตัวอย่างที่ 1: งาน Slurm เดี่ยว
 
 งานเดี่ยวใช้ตรวจว่าการจำลองร่วม บัญชีโครงการ พาร์ทิชัน และโมดูลใช้งานพร้อมกันได้
 
@@ -597,7 +536,7 @@ echo "Submitted single job: $job_id"
 echo "Read: tail -80 logs/twinb_single_${job_id}.out"
 ```
 
-## Example 2: งาน Slurm แบบ Array
+## ตัวอย่างที่ 2: งาน Slurm แบบ Array
 
 ชุดงานแบบ array ใช้เปรียบเทียบนโยบายหลายแบบในเวลาอบรมสั้น แต่ละงานย่อยเปลี่ยนสถานการณ์ทดลองและ seed
 
@@ -684,7 +623,7 @@ python src/merge_twinb_results.py \
 cat "results/twinb_policy_compare_${job_id}.csv"
 ```
 
-## Check
+## ตรวจผล
 
 ### ขั้นที่ 1: ตรวจหลักฐานของงาน
 
@@ -729,18 +668,3 @@ Twin-B MicroCosim เป็นการจำลองร่วมแบบเ�
 ## ต่อกับ Twin-B เต็ม
 
 เมื่อทีมมี EnergyPlus, `pyenergyplus`, IDF และ EPW พร้อมใช้งาน ให้แทน `ThermalSurrogate.advance()` ด้วย callback จาก EnergyPlus แล้วคง interface เดิมไว้ ได้แก่ `zone_temp_c`, `occupants`, `setpoint_c` และ `energy_kwh` วิธีนี้ช่วยให้บทฝึกขนาดเล็กขยายไปสู่ digital twin อาคารเต็มรูปแบบตามแนวทางของ Twin-B ได้โดยรักษาโครงสร้างการทดลองเดิม
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340195 | COMPLETED | 6 | 58 | 13.084 | 0.016111 | 23.21 |
-| 6340196 | COMPLETED | 1 | 4 | 2.052 | 0.001111 | 4.55 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-04-building-cosimulation-twinb.png)
-<!-- performance-rerun:end -->

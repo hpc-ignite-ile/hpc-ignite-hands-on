@@ -1,43 +1,13 @@
 # 00 เชื่อมต่อ LANTA และเตรียมพื้นที่ทำงาน
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **5–18** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+รู้จักพื้นที่เก็บไฟล์และโปรแกรมที่ใช้ ก่อนเริ่มส่งงานคำนวณ
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** การดูไฟล์และตรวจรายชื่อโปรแกรมไม่ต้องใช้ GPU ส่วนงานคำนวณต้องส่งผ่าน Slurm
+- **ตรวจผลและลองปรับ:** ตรวจว่าอยู่ในโฟลเดอร์ที่ต้องการและเปิดไฟล์ได้ แล้วเริ่มจากงานเล็กหนึ่งงาน
 
-![Booklet workflow: orientation](../docs/images/booklet/Part1-FirstDayKnowingHPC.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Access, filesystem and environment checks; not a compute benchmark.
-
-No GPU is needed. File/module checks need no compute allocation; use the existing one-CPU Slurm smoke job to prove compute-node access. Budget storage from input + output + checkpoints, not input alone.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-No page-specific Slurm run is recorded for this setup/reading page. Do not invent usage numbers or a successful-run screenshot. Collect evidence from the next executable lesson using the worksheet.
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Record account, quota, module versions and a small job ID before moving to CPU scaling. Do not run a CPU stress test on a login node.
-
-**Correctness gate:** Confirm the compute hostname, intended account, output file and exit status. Redact tokens and private keys from evidence.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 หน้านี้เป็นหน้าอ้างอิงร่วมสำหรับทุกบทใน `mini-innovation/` เมื่อบทอื่นระบุให้เริ่มจากเครื่องผู้ใช้ ให้กลับมาใช้คำสั่งพื้นฐานจากหน้านี้ได้ทันที
 
@@ -45,7 +15,7 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 
 เมื่อต้องตั้งค่า private key หรือ alias `ssh lanta` ให้ดู [../docs/SSH_PRIVATE_KEY_LANTA_TH.md](../docs/SSH_PRIVATE_KEY_LANTA_TH.md)
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -61,7 +31,7 @@ ssh <lanta-username>@lanta.nstda.or.th
 ssh <lanta-username>@transfer.lanta.nstda.or.th
 ```
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -143,7 +113,7 @@ cd "$HOME/lanta-episprint"
 source notes/session-env.sh
 ```
 
-## Check
+## ตรวจผล
 
 ```bash
 cd "$HOME/lanta-episprint"

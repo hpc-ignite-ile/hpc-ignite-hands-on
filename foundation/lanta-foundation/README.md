@@ -1,89 +1,24 @@
 # LANTA Foundation Lab: งานแรกที่รันได้จริง
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **19–23** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+ส่งงานแรกและอ่านผลที่เครื่องสร้างขึ้น
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เริ่มจาก CPU 1 คอร์ตามตัวอย่าง งานสั้นอาจเสียเวลาส่วนใหญ่ไปกับการเริ่มโปรแกรม
+- **ตรวจผลและลองปรับ:** ตรวจไฟล์ผลลัพธ์และสถานะงานก่อนเพิ่มขนาด อย่าใช้เวลาของงานทักทายมาสรุปความเร็วของเครื่อง
 
-![Booklet workflow: hello](../../docs/images/booklet/Part2-RunningJobs.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Small Slurm/environment smoke test; startup dominates its elapsed time.
-
-One task and one CPU are sufficient for printing context and writing a small file. A 1 GiB / 5 minute initial ceiling is a teaching budget, not measured need. Reserved capacity at that ceiling is 1 × 300 / 3600 = 0.0833 CPU-hours.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339637 | COMPLETED | 1 | 4 | 1.120 | 0.001111 | 4.34 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/foundation-lanta-foundation-readme.png)
-
-Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/foundation-lanta-foundation-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339637` used 1.120 CPU-seconds over 4 summed elapsed seconds: about **0.28 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339637` · archive member `tutorials/foundation/lanta-foundation/README/logs/foundation-visible_6339637.out`
-
-```text
-{
-  "commands": {
-    "cc": "/usr/bin/cc",
-    "python": "/opt/cray/pe/python/3.10.10/bin/python",
-    "sbatch": "/usr/bin/sbatch",
-    "srun": "/usr/bin/srun"
-  },
-  "cwd": "/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/tutorials/foundation/lanta-foundation/README",
-[... excerpt; full log in archive ...]
-    "SLURM_CPUS_PER_TASK": "1",
-    "SLURM_JOB_ID": "6339637",
-    "SLURM_JOB_NAME": "foundation-visible",
-    "SLURM_SUBMIT_DIR": "/lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/tutorials/foundation/lanta-foundation/README"
-  }
-}
-result=results/environment_6339637.json
-results/pi.txt
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Run the unchanged job three times. Compare queue wait, job elapsed and program time separately; do not infer parallel speedup from a hello-world job.
-
-**Correctness gate:** Match the job ID and compute hostname in the log and result. COMPLETED alone does not prove the intended program ran.
-
-[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 ![เส้นทางคำสั่งและข้อมูลก่อนรันงานแรกบน LANTA](../../docs/images/beginners/lanta-job-workflow.png)
 
-ภาพแนวคิด: laptop เป็นจุดเริ่มต้น ส่วนงานหนักรันบน compute node ที่ได้รับจาก Slurm ไฟล์ผลลัพธ์ต้องอยู่ในพื้นที่ที่คุณหาและตรวจได้. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
+ภาพแนวคิด: laptop เป็นจุดเริ่มต้น ส่วนงานหนักรันบน เครื่องคำนวณ ที่ได้รับจาก Slurm ไฟล์ผลลัพธ์ต้องอยู่ในพื้นที่ที่คุณหาและตรวจได้. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
 
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ ชุดคำสั่ง ในหัวข้อ Copy-Paste บน LANTA
 
-หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/foundation-visible` โดยตรง
+หน้านี้เป็น บทฝึกที่ทำตามได้ในหน้าเดียว ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ พื้นที่ทำงาน, source file, ไฟล์งาน Slurm, log และ result ครบใน `$HOME/hpc-ignite-standalone/foundation-visible` โดยตรง
 
 ## เป้าหมาย
 
@@ -91,13 +26,13 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 2. ส่ง Slurm job แบบเห็น script
 3. เก็บ JSON environment และค่า pi
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+แปะทีละ ชุดคำสั่ง ตามลำดับ แต่ละ ชุดคำสั่ง ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียม พื้นที่ทำงาน และตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง โฟลเดอร์ มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/foundation-visible"
@@ -117,7 +52,7 @@ if [ -n "${LANTA_ACCOUNT:-}" ]; then
 fi
 ```
 
-### ขั้นที่ 2: สร้าง source code `src/foundation_visible.py`
+### ขั้นที่ 2: สร้าง โค้ดโปรแกรม `src/foundation_visible.py`
 
 ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
 
@@ -151,9 +86,9 @@ PYCODE
 ```
 
 
-### ขั้นที่ 3: สร้าง Slurm script `jobs/foundation-visible.sbatch`
+### ขั้นที่ 3: สร้าง ไฟล์งาน Slurm `jobs/foundation-visible.sbatch`
 
-ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, โฟลเดอร์ทำงาน และคำสั่งที่รันบน เครื่องคำนวณ
 
 ```bash
 cat > jobs/foundation-visible.sbatch <<'SLURM'
@@ -178,7 +113,7 @@ SLURM
 
 ### ขั้นที่ 4: ส่งงานเข้า Slurm
 
-ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+ขั้นนี้ส่ง ไฟล์งาน ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก หมายเลขงาน เพื่อใช้ตามคิวและอ่าน log ภายหลัง
 
 ```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/foundation-visible.sbatch)
@@ -188,7 +123,7 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: tail -80 logs/foundation-visible_${job_id}.out"
 ```
 
-## Check
+## ตรวจผล
 
 ```bash
 cd "$HOME/hpc-ignite-standalone/foundation-visible"
@@ -201,7 +136,7 @@ tail -80 logs/foundation-visible_*.out
 หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
 
 1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
-2. `logs/` มี stdout/stderr ของ job id นั้น
+2. `logs/` มี ข้อความผลและข้อผิดพลาด ของ หมายเลขงาน นั้น
 3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
 
 เก็บสถิติทรัพยากรพร้อม step `.batch` ซึ่งเป็นแถวที่มี `MaxRSS`:
@@ -212,28 +147,11 @@ sacct -j "$job_id" -P \
   -o JobID,JobName,Account,Partition,State,ExitCode,Elapsed,TotalCPU,UserCPU,SystemCPU,AllocCPUS,ReqCPUS,ReqMem,MaxRSS,MaxVMSize,AveCPU,NodeList
 ```
 
-## ตัวอย่างผลที่ตรวจบน LANTA
+## อ่านคำตอบของงานตัวเอง
 
-งาน repo smoke `6338432` รันจริงเมื่อ 2026-09-25 ด้วยบัญชี `pv915002` บน `compute-devel` และจบ `COMPLETED (0:0)` ใน 5 วินาที ขั้น `batch` ใช้ `MaxRSS=22572K` ค่า workload คือ `pi estimate=3.141592654564`, `abs error=9.742940e-10` และเวลาที่โปรแกรมวัดได้ 0.0632 วินาที ดู stdout และสถิติฉบับเต็มใน [run evidence](../../docs/lanta-runs/2026-09-25-pv915002/README.md#foundation-smoke-job-6338432)
+ค่าประมาณพายควรใกล้ 3.14159 ส่วน `abs error` คือระยะห่างจากค่าอ้างอิง ค่ายิ่งน้อยยิ่งใกล้ เวลาอาจต่างกันตามจำนวนข้อมูลและเครื่องที่ได้ใช้
 
-ภาพต่อไปนี้เป็นภาพประกอบ expected result ที่สร้างจาก log จริง ไม่ใช่ภาพหลักฐานแทน raw log:
 
-![Expected result ของ LANTA foundation smoke](../../docs/images/expected-foundation-smoke.png)
+## ดูไฟล์ตัวอย่างเพิ่มเติม
 
-## ใช้ Repo เป็น Reference
-
-ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340162 | COMPLETED | 1 | 4 | 1.053 | 0.001111 | 2.95 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/foundation-lanta-foundation-readme.png)
-<!-- performance-rerun:end -->
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ ชุดคำสั่ง ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

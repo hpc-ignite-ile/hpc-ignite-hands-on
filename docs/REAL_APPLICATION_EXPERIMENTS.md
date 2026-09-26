@@ -1,258 +1,97 @@
-# Public applications: from smoke tests to repeatable scientific experiments
+# จากแบบฝึกหัดเล็กสู่งานวิทยาศาสตร์จริง
 
-**Fresh execution evidence:** the [real-science campaign ledger](lanta-runs/2026-09-26-real-benchmarks/README.md) now records extended GROMACS, miniWeather, CFD, materials, ocean, single-cell, climate and astronomy workflows, plus full EuroSAT and PhysicsNeMo training jobs. Consult its timestamp and job states: ongoing jobs are not completed results. The earlier [tutorial performance campaign](lanta-runs/2026-09-26-performance/README.md) remains a separate archive.
+เมื่อส่งงานเล็กได้แล้ว ให้เลือกคำถามที่สนใจหนึ่งข้อ หน้านี้ช่วยเลือกโปรแกรม ข้อมูล และสิ่งที่จะตรวจ ไม่ใช่คำสั่งติดตั้งทุกโปรแกรมในครั้งเดียว
 
-Research checked **2026-09-26**. This is a selection and experiment-design catalog,
-not a claim that these new applications have run on LANTA. The existing
-[EnergyPlus + Mesa benchmark](TWINB_REFERENCE_BENCHMARKS.md) already has archived
-LANTA evidence. The entries below preserve the original **pilot designs**; the new campaign ledger specifies which protocols were actually executed and their limits.
-Use the [resource worksheet](RESOURCE_ESTIMATION_WORKBOOK.md) and
-[Bash reference](BASH_COMMAND_REFERENCE_TH.md) alongside these plans.
+ก่อนเริ่ม ใช้ [ใบงานประมาณทรัพยากร](RESOURCE_ESTIMATION_WORKBOOK.md) และเรียน [วิธีเปรียบเทียบความเร็ว](PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) งานเล็กใช้ตรวจขั้นตอน ส่วนงานจริงต้องตรวจคำตอบด้วย
 
-## Recommended first wave
+## เลือกเรื่องที่สนใจ
 
-**Additional domain tracks:** [CFD, weather/climate and ocean science](CFD_CLIMATE_OCEAN_EXPERIMENTS.md)
-cover OpenFOAM, WRF, climlab, CMIP6, MITgcm and Oceananigans.
-[Space and astronomical science](SPACE_ASTRONOMY_EXPERIMENTS.md) covers REBOUND,
-Athena++, Astropy and SunPy. Each has input sources, a pilot ceiling, scaling
-questions, scientific validation and a post-run image checklist. These are
-experiment designs; completion status and actual output are in the new campaign ledger, not inferred from these plans.
+| เรื่อง | คำถามตัวอย่าง | โปรแกรมหรือข้อมูล |
+|---|---|---|
+| โมเลกุล | โมเลกุลเคลื่อนที่อย่างไร? | GROMACS และ benchMEM |
+| วัสดุ | โครงสร้างนี้มีพลังงานเท่าไร? | Quantum ESPRESSO |
+| ชีวภาพ | เซลล์ที่มีลักษณะคล้ายกันอยู่กลุ่มไหน? | Scanpy และ PBMC3k |
+| เกษตรและสิ่งแวดล้อม | ภาพนี้เป็นป่า พื้นที่เกษตร หรือเมือง? | EuroSAT |
+| AI สำหรับวิทยาศาสตร์ | AI ประมาณคำตอบการไหลได้แม่นแค่ไหน? | PhysicsNeMo และโจทย์ Darcy |
+| อาคาร | พฤติกรรมคนเปลี่ยนการใช้พลังงานอย่างไร? | Mesa และ EnergyPlus |
 
-| Priority | Application | What replaces a toy result | Initial ceiling per pilot, not measured need |
-|---|---|---|---|
-| 1 | GROMACS benchMEM | Version check → actual biomolecular trajectory | 1 node, 8 CPU, 16 GiB, 1 GPU, 15 min |
-| 2 | miniWeather | MPI hello → conservative fluid solver | 1 node, 4 MPI ranks, 8 GiB, no GPU, 15 min |
-| 3 | NVIDIA PhysicsNeMo Darcy FNO | CUDA check → training with a PDE validation target | 1 node, 4 CPU, 16 GiB host RAM, 1 GPU, 20 min |
-| 4 | EnergyPlus + Mesa | Repeat/extend the already qualified reference-building experiment | Use the measured one-CPU baseline and its existing script |
-| 5 | Scanpy PBMC3k | Package import → complete public-data analysis | 1 node, 4 CPU, 8 GiB, no GPU, 15 min |
+เรื่องอื่น: [การไหล ภูมิอากาศ และทะเล](CFD_CLIMATE_OCEAN_EXPERIMENTS.md) · [อวกาศและดาราศาสตร์](SPACE_ASTRONOMY_EXPERIMENTS.md)
 
-These are conservative **caps chosen for pilot design**, not guarantees that setup
-or the complete scientific study fits. Start with one pilot per application, no
-unbounded arrays. Excluding the existing EnergyPlus workflow, running all four
-new pilots to their caps would reserve 5.3333 CPU-hours and 0.5833 GPU-hours; these are
-resource-unit totals, **not billed SHr**. Three repeats of every variant multiply
-the budget. Review measurements before expanding the matrix.
+## 1. โมเลกุล: GROMACS
 
-### Live LANTA compatibility check
+เริ่มจากข้อมูลสาธารณะ [benchMEM](https://www.mpinat.mpg.de/grubmueller/bench) ซึ่งเป็นระบบโมเลกุลสำหรับทดสอบความเร็ว ไม่ต้องสร้างโมเลกุลขึ้นมาเอง
 
-A read-only login/module check on 2026-09-26 found `compute-devel` and `gpu-devel`
-with two-hour limits, and these candidates:
+1. อ่านเงื่อนไขการใช้ข้อมูลและเลือกไฟล์ให้ตรงกับรุ่นโปรแกรม
+2. ทดลองช่วงสั้นให้จบ ตรวจว่าไม่มีข้อผิดพลาดร้ายแรง
+3. ใช้จำนวนขั้นและข้อมูลเดิมเปรียบเทียบ CPU กับ GPU หนึ่งตัว
+4. ทำซ้ำสามครั้งและดูค่ากลาง ไม่เลือกเฉพาะรอบเร็วที่สุด
 
-- `GROMACS/2026.3-cpeGNU-25.03-CUDA-12.6` (also 2025.3 and older versions).
-- `QuantumESPRESSO/7.3.1-libxc-6.2.2-cpu` and `QuantumESPRESSO/7.3.1-libxc-6.2.2-NV24.11-CUDA12.6`.
-- CUDA 12.6 and `CrayNVHPC/23.03` appeared in the visible module search.
-- No LAMMPS module appeared in that search; do not assume a binary is installed.
+**ประมาณทรัพยากร:** ดูจำนวนอะตอม จำนวนขั้นเวลา และจำนวนครั้งที่บันทึกผล ค่า `ns/day` คือจำนวนหน่วยเวลาจำลองที่ทำได้ต่อหนึ่งวันจริง ค่ายิ่งมากยิ่งเร็วสำหรับโจทย์เดียวกัน
 
-Module visibility is **not runtime qualification**. miniWeather still needs a
-compatible MPI/Parallel-NetCDF build. NVIDIA packages need Python/PyTorch/CUDA
-and GPU-driver compatibility checks inside an allocation. Current upstream
-PyTorch MNIST code uses `torch.accelerator`, so do not blindly run its latest
-branch in the older `pytorch-2.2.2` environment. Pin a compatible commit/environment
-or qualify an isolated newer environment; do not replace the shared working env.
+**ตรวจคำตอบ:** ดูพลังงานและอุณหภูมิประกอบความเร็ว ถ้าบันทึกพลังงานเพียงจุดเดียว จะใช้สรุปความผันผวนหรือสมดุลไม่ได้
 
-Before each pilot, record repository commit, application version, input checksum,
-license and environment lock/container digest. Fetch data/dependencies through
-the transfer host. Build/run compute work through Slurm using account `pv915002`.
-No latest-branch snapshot should silently change between repeats.
+### ตัวอย่างอ่านผลความเร็วและทรัพยากร
 
-## miniWeather
+ตัวอย่างผลวัดบน LANTA ใช้ GROMACS 2026.3, benchMEM, 50,000 ขั้นต่อรอบ และทำซ้ำสามรอบ ชุด CPU ใช้ 16 คอร์ ส่วนชุด GPU ใช้ 16 คอร์กับ NVIDIA A100 หนึ่งตัว:
 
-**Primary source:** [ORNL/NVIDIA miniWeather](https://github.com/mrnorman/miniWeather),
-including its [license](https://github.com/mrnorman/miniWeather/blob/main/LICENSE).
-It provides weather-like fluid dynamics with MPI, OpenMP and accelerator variants.
-It is a scientific mini-application, not a complete operational weather model.
+| สิ่งที่เปรียบเทียบ | CPU | CPU ร่วมกับ GPU |
+|---|---:|---:|
+| ความเร็วค่ากลางที่โปรแกรมรายงาน | 38.8 ns/day | 272.2 ns/day |
+| เวลาจองเครื่องรวมสามรอบ รวมการเริ่มโปรแกรม | 11 นาที 20 วินาที | 2 นาที 3 วินาที |
+| ชั่วโมงคอร์ที่จองรวม | 3.02 | 0.55 |
+| ชั่วโมง GPU ที่จองรวม | 0 | 0.034 |
 
-**Fits:** parallel, MPI, OpenMP, climate, diffusion, environment, containers and
-visualization tutorials. The input is generated analytically, avoiding large
-external weather datasets. The license has BSD-style source/binary notice terms;
-retain the file rather than relying on GitHub's unclassified license badge.
+ในโจทย์นี้ GPU ทำให้ค่าความเร็วจำลองสูงขึ้นประมาณเจ็ดเท่า แต่ไม่ควรนำอัตรานี้ไปใช้กับทุกโมเลกุล เวลาจองเครื่องรวมไม่ใช่เวลาเฉพาะช่วงที่ GROMACS ใช้คำนวณค่า `ns/day` และหน่วยในตารางไม่ใช่ SHr
 
-**Protocol we propose:** use the rising-thermal case with `NX=200`, `NZ=100` and
-`SIM_TIME=100`, then 400×200. Build configuration fixes these parameters; preserve
-both configurations. First compare serial and MPI fields, then hold the grid
-fixed for 1/2/4 ranks, three repeats each. Do not use the repository's old
-machine-specific launch commands unchanged on LANTA; adapt to Cray MPI and `srun`.
+ใช้ตัวเลขนี้ฝึกอ่านผล ไม่ใช้รับรองเวลาของงานคุณ การทดลองนี้บันทึกพลังงานที่ปลายช่วงเพียงจุดเดียว จึงยังไม่เพียงพอสำหรับสรุปสมดุลของระบบ
 
-**Estimate/measure:** live fluid arrays scale with cells and halos; refining the
-mesh also changes timestep count for a fixed physical duration. Measure cell
-updates/second, step count, MPI scaling, RSS, output bytes and separate NetCDF I/O.
-Require finite fields and acceptable mass/energy conservation diagnostics; compare
-field norms with a declared tolerance. Save a potential-temperature/velocity plot
-and the conservation/timing log as the post-run evidence.
+เรียนพื้นฐานที่ [บทโมเลกุล](../domain-science/chapter-21-molecular-dynamics/README.md) ข้อมูล benchMEM ใช้ CC BY 4.0 ให้ระบุที่มา Department of Theoretical and Computational Biophysics, Max Planck Institute, Göttingen
 
-## Molecular simulation
+## 2. วัสดุ: Quantum ESPRESSO
 
-**First choice:** [Max Planck GROMACS benchmark set](https://www.mpinat.mpg.de/grubmueller/bench).
-`benchMEM` contains approximately 82k atoms in a membrane-protein/water system.
-Its input files are CC-BY-4.0; retain the listed departmental attribution. The same
-page links Kutzner et al.'s GPU-performance publications, so this can repeat a
-published **benchmark system**, not reproduce their hardware-specific timings.
+ใช้ [โจทย์ทดสอบของโครงการ](https://github.com/QEF/benchmarks) เพื่อเรียนรู้การคำนวณพลังงานของวัสดุ เริ่มจากระบบเล็กก่อน
 
-**Proposed protocol:** fetch/checksum the `.tpr`, inspect compatibility with the
-selected GROMACS module, then run a bounded 2000-step pilot. Compare CPU-only
-and one-GPU modes at identical input and step count; use measured runtime to choose
-a longer timing interval. Keep warmup, output cadence and tuning policy consistent.
-Do not assume every GPU offload flag is compatible with every constraint setup.
-Record `md.log`, ns/day, step count, energy diagnostics, warning/error logs, CPU
-allocation, VRAM and GPU utilization. A 15-minute allocation is a cap, not a claim
-that a given trajectory duration will finish. Short-run trajectory differences
-need physical/statistical interpretation, not an exact coordinate hash test.
+**สิ่งที่ต้องคงเดิม:** โครงสร้างอะตอม ไฟล์แทนผลของอิเล็กตรอนชั้นใน ค่าความละเอียด และจุดตัวอย่างในปริภูมิผลึก หากเปลี่ยนสิ่งเหล่านี้ คุณกำลังเปลี่ยนความแม่นยำ ไม่ใช่แค่ทดสอบความเร็ว
 
-**Alternative without external molecular data:** [LAMMPS standard benchmarks](https://doc.lammps.org/stable/Speed_bench.html)
-and [LAMMPS source](https://github.com/lammps/lammps). The provided `bench/in.lj`
-is a Lennard-Jones fluid benchmark; default benchmark cases are 32k atoms and
-100 steps. Extend measured runtime only after that pilot. Compare fixed-atom
-1/2/4-rank performance, then size scaling separately; capture atom-steps/second,
-temperature/energy evolution and neighbor statistics. LAMMPS source is GPL-2.0;
-check notices for any additional potential files. Installation/container
-qualification is required because no LAMMPS module was found in our search.
+**ลองเปลี่ยน:** จำนวนกระบวนการ 1, 2 และ 4 ตรวจว่าพลังงานสุดท้ายใกล้กันตามเกณฑ์ที่กำหนดไว้ก่อน และพบทั้งการลู่เข้าและ `JOB DONE.`
 
-## Quantum ESPRESSO
+**ประมาณทรัพยากร:** อ่านค่าประมาณหน่วยความจำจากโปรแกรมแล้วลองวัดจริง จำนวนอะตอมเพิ่มสองเท่าไม่ได้แปลว่าเวลาเพิ่มสองเท่าเสมอ
 
-**Source:** [QEF benchmark inputs](https://github.com/QEF/benchmarks), MIT licensed,
-including `small-benchmarks`; pseudopotential provenance must also be retained.
-Prefer those small cases over the large surface benchmarks for the first pilot.
+เรียนต่อที่ [บทวัสดุศาสตร์](../domain-science/chapter-23-materials-science/README.md)
 
-**Proposed extension:** inspect the benchmark driver before adapting it; replace
-site-specific launch assumptions with the LANTA job pattern. Use a 4-rank,
-8-GiB, 15-minute CPU ceiling for one selected small case. Freeze pseudopotential,
-cell, cutoff, k-grid and convergence thresholds, then compare 1/2/4 ranks.
-Record total energy, SCF iterations, force/stress when relevant, memory estimates
-and elapsed time. Convergence studies change the scientific problem and must
-be reported separately from parallel speedup. Save the SCF convergence plot
-and `JOB DONE`/energy excerpt; failed convergence is not a valid fast result.
+## 3. ชีวภาพ: Scanpy และเซลล์เม็ดเลือด
 
-## NVIDIA and AI
+[บทเรียน PBMC3k ของ Scanpy](https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering-2017.html) ใช้ข้อมูลเซลล์สาธารณะ เริ่มจากตรวจคุณภาพ ปรับข้อมูลให้อยู่ในสเกลที่เทียบกันได้ แล้วจัดกลุ่มและวาดภาพ
 
-### PhysicsNeMo Darcy-flow Fourier Neural Operator
+![เซลล์ที่มีรูปแบบคล้ายกันถูกวางใกล้กัน สีช่วยแยกกลุ่มและแสดงยีนตัวอย่าง](images/science/cells.png)
 
-**Source:** [NVIDIA PhysicsNeMo](https://github.com/NVIDIA/physicsnemo), Apache-2.0,
-and its [single-GPU Darcy example](https://github.com/NVIDIA/physicsnemo/blob/main/examples/cfd/darcy_fno/README.md).
-The example generates training data on the fly. Its research reference is
-[Li et al., Fourier Neural Operator for Parametric Partial Differential Equations](https://arxiv.org/abs/2010.08895).
-Use the current PhysicsNeMo project rather than assuming old Modulus instructions
-still match the current code.
+ภาพนี้เป็นผลคำนวณจากข้อมูล PBMC3k หลังกรองคุณภาพ จุดแต่ละจุดแทนเซลล์ สีในภาพซ้ายเป็นกลุ่ม ส่วนสองภาพขวาแสดงยีนตัวอย่าง ตำแหน่งสองแกนเป็นภาพย่อของข้อมูล ไม่ใช่ตำแหน่งจริงในร่างกาย และสีไม่ได้ยืนยันชนิดเซลล์โดยอัตโนมัติ
 
-**Proposed bounded pilot:** inspect the pinned `config.yaml`; the inspected branch
-uses `training.resolution`, `training.batch_size`, `training.max_pseudo_epochs`
-and `training.pseudo_epoch_sample_size`. Create a recorded pilot configuration
-at resolution 64, batch 8, two pseudo-epochs, 128 samples/pseudo-epoch, with
-validation at every pseudo-epoch. The upstream default is much larger; do not
-launch it accidentally. Configuration changes must pass a startup check before
-timing. Then test batch 8/16/32 at fixed resolution and sample count, three repeats.
+**ประมาณทรัพยากร:** หน่วยความจำขึ้นกับจำนวนเซลล์และยีน รวมทั้งข้อมูลชั่วคราว เวลาเริ่มครั้งแรกอาจมากกว่าครั้งถัดไปเพราะเตรียมโปรแกรม
 
-**Evidence:** separate data generation and training time, samples/second, peak
-VRAM, loss and held-out relative L2 error. Fix validation samples and RNG seeds.
-Save reference/predicted solution and error-field images. This is a smaller
-**similar experiment**, not a reproduction of the paper's full datasets, accuracy
-or speedup claims. Main-branch package requirements need qualification on LANTA.
+**ตรวจคำตอบ:** จดจำนวนเซลล์ก่อนและหลังกรอง ใช้ค่าเริ่มสุ่มเดิมเมื่อตรวจการทำซ้ำ และพิจารณายีนสำคัญก่อนตีความกลุ่ม
 
-### NVIDIA Warp: numerical GPU simulation
+## 4. เกษตร: อ่านภาพพื้นที่ด้วย EuroSAT
 
-[NVIDIA Warp](https://github.com/NVIDIA/warp) is Apache-2.0 and provides CPU/CUDA
-simulation examples, including linked Ising and Navier–Stokes tutorials. Select
-one fixed-grid solver from the [NVIDIA Accelerated Computing Hub](https://github.com/NVIDIA/accelerated-computing-hub)
-after reviewing that notebook's code/content licenses and dependencies.
-For a first CPU/GPU comparison, propose a 128² grid and 100 steps under a
-one-GPU, 4-CPU, 8-GiB, 10-minute ceiling. Exclude first JIT compilation from
-steady-state timing, but report it separately. Preserve solver/timestep settings;
-measure updates/second and conservation/residual error. Save an actual field plot,
-not a performance number inferred from NVIDIA's demonstrations.
+[EuroSAT](https://github.com/phelber/EuroSAT) มีภาพจากดาวเทียมสำหรับจำแนกประเภทพื้นที่ รวมถึงพื้นที่เกษตร เหมาะกับการเริ่มเรียน AI ด้านสิ่งแวดล้อม แต่ไม่ใช่ข้อมูลทำนายผลผลิตพืชโดยตรง
 
-### Real labelled-data training bridge
+1. แบ่งข้อมูลฝึกกับข้อมูลทดสอบก่อนฝึกโมเดล
+2. เริ่มจาก GPU หนึ่งตัวและขนาดชุดข้อมูลเล็ก
+3. เปรียบเทียบขนาดชุด 64 กับ 128 โดยคงข้อมูลและจำนวนรอบฝึก
+4. ดูตารางว่าทายแต่ละประเภทถูกหรือสับสนกับประเภทใด
 
-[PyTorch MNIST](https://github.com/pytorch/examples/blob/main/mnist/main.py)
-(BSD-3-Clause code) is a modest labelled-data benchmark between five random-data
-updates and a scientific model. Cache the dataset before entering the compute
-job; record its source/terms separately from the code license. Start with one
-epoch, fixed seed, batch 64; compare batches 64/128 and CPU/GPU while retaining
-the same test set. Report test accuracy, examples/second, VRAM and time to a
-fixed accuracy threshold. This is not an LLM/LoRA benchmark; those lessons must
-select a model and dataset with explicit redistribution/use terms before training.
+**ข้อควรระวัง:** การสุ่มแยกภาพอาจทำให้ภาพพื้นที่ใกล้กันอยู่ทั้งสองชุด คะแนนสูงจึงไม่ได้ยืนยันว่าจะใช้ได้กับพื้นที่ใหม่ ควรแยกพื้นที่ทางภูมิศาสตร์เมื่อต้องการทดสอบการใช้งานจริง
 
-## Data analytics
+พื้นฐานข้อมูลภาพอยู่ใน [บทเกษตรอัจฉริยะ](../domain-science/chapter-26-smart-agriculture/README.md)
 
-Use [NVIDIA cuDF](https://github.com/NVIDIA/cudf), Apache-2.0, for real GPU
-DataFrame operations and its Dask integration. Compare pandas and cuDF on an
-identical fixed Parquet dataset and aggregation, initially 1M rows. A proposed
-ceiling is 4 CPU, 16 GiB host RAM, one GPU and 10 minutes. Time loading, transfer,
-compute and writing separately; compare sorted outputs and null semantics before
-scaling to 10M rows. Data must fit the measured live-memory budget, not just its
-compressed file size. Preserve CUDA/package compatibility and record any fallback.
+## 5. AI เรียนรู้การไหล: PhysicsNeMo
 
-For the Spark chapter, implement a genuine SparkSession using the
-[Apache Spark Python examples](https://github.com/apache/spark/tree/master/examples/src/main/python)
-rather than renaming Python `Counter` output. Start in single-node local mode,
-then qualify a distributed launcher separately. Measure partitions, shuffle/spill,
-executor memory and the same aggregation's correctness. Screenshot Spark's job
-metrics only after an actual Spark run; the present archived exercise has none.
+[ตัวอย่าง Darcy FNO ของ NVIDIA](https://github.com/NVIDIA/physicsnemo/tree/main/examples/cfd/darcy_fno) สร้างคู่ข้อมูลจากสมการการไหล แล้วฝึก AI ให้ประมาณคำตอบ
 
-## Earth observation
+แยกเวลาสร้างข้อมูล เวลาฝึก และเวลาทดสอบ ใช้ข้อมูลทดสอบที่ไม่อยู่ในชุดฝึก รายงานทั้งความคลาดเคลื่อนและความเร็ว เพราะโมเดลเร็วแต่ตอบผิดยังใช้แทนตัวคำนวณไม่ได้
 
-[TorchGeo](https://github.com/torchgeo/torchgeo) (MIT code) supplies geospatial
-datasets and models. A first real land-cover task is EuroSAT; consult the
-[dataset metadata and license](https://docs.torchgeo.org/en/stable/api/datasets.html)
-and [Helber et al.'s EuroSAT paper](https://arxiv.org/abs/1709.00029).
-Code license does not automatically cover imagery. Record bands, preprocessing,
-sample manifest and split; avoid geographic leakage.
+เริ่มจากตารางเล็กเพื่อดูว่าทำงานครบ จากนั้นค่อยเพิ่มความละเอียดและจำนวนรอบ ตรวจหน่วยความจำ GPU ก่อนเพิ่มขนาดชุดข้อมูล
 
-Propose a stratified 1000-chip pilot and a held-out fixed validation set on one
-GPU, 4 CPU, 16 GiB, capped at 20 minutes. Save confusion matrix, class metrics,
-chips/second, data-loader time and VRAM. Then scale sample count or batch size,
-one variable at a time. Land-cover classification is an adjacent application for
-forest/agriculture tutorials, **not** a validated fire, flood or health predictor.
-Operational hazard studies need appropriate event labels, validation and domain
-review; do not relabel EuroSAT classification as disaster prediction.
+## เลือกทดลองเพียงหนึ่งอย่างก่อน
 
-## Bioinformatics
-
-[Scanpy](https://github.com/scverse/scanpy) (BSD-3-Clause code) and the
-[official PBMC3k workflow](https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering-2017.html)
-provide a public-data path through filtering, normalization, PCA, neighbors,
-clustering and visualization. This is an adjacent complete biological analysis,
-not a replacement for BLAST's different scientific question. Pin the legacy
-workflow/environment when comparing it; do not mix it silently with newer defaults.
-
-Propose the complete PBMC3k input under 4 CPU, 8 GiB, 15 minutes. Record dataset
-terms/attribution, sparse versus dense memory, stage timings, retained cell/gene
-counts and fixed stochastic seeds. Save QC distributions, marker-gene checks and
-UMAP. A visually similar UMAP alone is not a correctness criterion; compare the
-underlying counts, PCA/neighborhood results and clustering stability.
-
-## Agent models
-
-[Mesa examples](https://github.com/mesa/mesa-examples) and its
-[Apache-2.0 license](https://github.com/mesa/mesa-examples/blob/main/LICENSE)
-provide inspectable agent-model implementations. Select a model explicitly
-compatible with the pinned Mesa version; inspect batch-run API changes before
-adapting the existing epidemic lessons.
-
-Use a fixed 100/1000-agent, 100-step pilot with a documented interaction model,
-one CPU and a 10-minute ceiling. Repeat seeds, then parallelize independent runs
-rather than duplicating one model across MPI ranks without a decomposition.
-Capture state invariants, distributions across seeds, agents×steps/second,
-history-storage cost and a trajectory plot. Model examples demonstrate mechanisms,
-not calibrated predictions about real communities.
-
-## EnergyPlus Mesa
-
-Use the already implemented [reference-building benchmark](TWINB_REFERENCE_BENCHMARKS.md)
-and [actual LANTA report](lanta-runs/2026-09-26-twinb-benchmarks/README.md):
-five-zone and secondary-school inputs, one/three-day experiments, read-only/reset
-equivalence, interventions and repeated seeded Mesa traces. Source model/runtime
-versions, weather and input provenance are recorded there. This remains the
-best ready-to-repeat real integration example in this repository.
-
-Next experiments should hold physics/input fixed while comparing allocation or
-adapter overhead. A different thermostat policy is a scientific/control change,
-not a performance-only optimization. Do not claim the reference buildings repair
-or calibrate the student's geometry.
-
-## What counts as a completed repeat?
-
-For each new application, publish a pinned manifest, adapted job script,
-submission receipt, raw accounting, stdout/stderr, quality checks, metric table
-and actual output screenshot. Include failures and warnings. Mark it **pilot
-qualified** only after those exist; mark **paper reproduced** only when the
-paper's actual method, inputs and evaluation protocol have been matched.
-Until then the entries above remain researched experiment plans.
+จดคำถาม ข้อมูลที่จะใช้ เกณฑ์ว่าถูกต้อง และเวลาสูงสุด ส่งผ่าน Slurm เมื่อผ่านจึงค่อยเพิ่มขนาด ถ้าต้องการเชื่อมคนกับอาคาร เริ่มจาก [อาคารอ้างอิงสำหรับ Mesa และ EnergyPlus](TWINB_REFERENCE_BENCHMARKS.md)

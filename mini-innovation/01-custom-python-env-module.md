@@ -1,43 +1,13 @@
 # 01 สร้างสภาพแวดล้อม Python และโมดูลสำหรับกลุ่ม
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **5–18** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+รู้จักพื้นที่เก็บไฟล์และโปรแกรมที่ใช้ ก่อนเริ่มส่งงานคำนวณ
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** การดูไฟล์และตรวจรายชื่อโปรแกรมไม่ต้องใช้ GPU ส่วนงานคำนวณต้องส่งผ่าน Slurm
+- **ตรวจผลและลองปรับ:** ตรวจว่าอยู่ในโฟลเดอร์ที่ต้องการและเปิดไฟล์ได้ แล้วเริ่มจากงานเล็กหนึ่งงาน
 
-![Booklet workflow: orientation](../docs/images/booklet/Part1-FirstDayKnowingHPC.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Access, filesystem and environment checks; not a compute benchmark.
-
-No GPU is needed. File/module checks need no compute allocation; use the existing one-CPU Slurm smoke job to prove compute-node access. Budget storage from input + output + checkpoints, not input alone.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-No page-specific Slurm run is recorded for this setup/reading page. Do not invent usage numbers or a successful-run screenshot. Collect evidence from the next executable lesson using the worksheet.
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Record account, quota, module versions and a small job ID before moving to CPU scaling. Do not run a CPU stress test on a login node.
-
-**Correctness gate:** Confirm the compute hostname, intended account, output file and exit status. Redact tokens and private keys from evidence.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 หน้านี้ใช้เตรียมสภาพแวดล้อม Python กลางสำหรับนวัตกรรมย่อยแบบโรคระบาดด้วย ABS บน LANTA โดยติดตั้ง Mesa, ชุดวิทยาศาสตร์ของ Python, ipykernel และ JupyterLab ลงในพื้นที่โครงการ แล้วสร้างโมดูล Lmod ให้ผู้ใช้โหลดซ้ำได้ทั้งบนเครื่องเข้าใช้งาน เครื่องคำนวณ และงาน Slurm
 
@@ -47,9 +17,9 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `mamba create`, `conda run`, `python -m pip`, heredoc, Lua modulefile, `chmod`, `module use` และ `module load`
 
-รุ่นที่ใช้คือ Mesa 3.5.1 ซึ่งเป็น stable release ล่าสุดเมื่อ 2026-09-25 ดู [Mesa บน PyPI](https://pypi.org/project/Mesa/) และ [Mesa migration guide](https://mesa.readthedocs.io/stable/migration_guide.html) สำหรับข้อกำหนด Python 3.12+ และการเปลี่ยนจาก scheduler ไปใช้ `AgentSet`
+บทนี้กำหนดให้ใช้ Mesa 3.5.1 และ Python 3.12 ขึ้นไป เพื่อให้คำสั่งตรงกันทั้งกลุ่ม ดูข้อมูลโปรแกรมที่ [Mesa บน PyPI](https://pypi.org/project/Mesa/) และ [คู่มือเปลี่ยนรุ่น](https://mesa.readthedocs.io/stable/migration_guide.html) หากมีโค้ดจากรุ่นเก่า
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -61,7 +31,7 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 ssh <lanta-username>@transfer.lanta.nstda.or.th
 ```
 
-## Copy-Paste บน Transfer Host
+## ลงมือทำ บน Transfer Host
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -143,7 +113,7 @@ conda run -p "$EPI_ENV_PREFIX" python -m pip install --no-cache-dir \
 
 ### ขั้นที่ 7: สร้าง Modulefile
 
-คำสั่งชุดนี้สร้างไฟล์โมดูล Lua ชื่อ `hpc-mesa/3.5.1` เพื่อให้ผู้ใช้เรียกสภาพแวดล้อมด้วย `module load` รุ่นนี้เป็น Mesa stable ล่าสุดที่ตรวจจาก PyPI เมื่อ 2026-09-25 และหลีกเลี่ยง Mesa 4.0 alpha ซึ่งยังเป็น pre-release
+คำสั่งชุดนี้สร้างไฟล์โมดูล Lua ชื่อ `hpc-mesa/3.5.1` เพื่อให้เลือกสภาพแวดล้อมด้วย `module load` ได้สะดวก ใช้รุ่นที่กำหนดในบทเรียนก่อน อย่าเปลี่ยนรุ่นระหว่างทดลอง
 
 ```bash
 cat > "$EPI_MODULE_ROOT/hpc-mesa/$EPI_MODULE_VERSION.lua" <<'LUA'
@@ -309,13 +279,6 @@ python -c "import mesa; from mesa.agent import AgentSet; print('mesa', mesa.__ve
 
 หลักฐานที่ใช้ตัดสินความพร้อมมีสี่ส่วน: `which python` ต้องชี้เข้า `$LANTA_PROJECT/envs/hpc-mesa-3.5.1`, `jupyter lab --version` ต้องแสดงเลขรุ่นเมื่อใช้สภาพแวดล้อมนี้เป็นเซิร์ฟเวอร์, `jupyter kernelspec list` ต้องมี `hpc-mesa`, และการนำเข้าแพ็กเกจใน Python ต้องรายงาน `mesa 3.5.1` พร้อม API `AgentSet` กับ `MultiGrid` เมื่อครบสี่ส่วนนี้ บท Jupyter และบท ABS โรคระบาดจะใช้รันไทม์เดียวกันทั้งแบบโต้ตอบและแบบงานชุด
 
-ผลตรวจสดด้วยบัญชี `wdiazcar` เมื่อ 2026-09-25 พบว่า LANTA มี `Mamba/23.11.0-0` แต่ไม่เห็นโมดูลส่วนตัว `hpc-mesa/2.3.4` ใน `MODULEPATH` เริ่มต้น ดังนั้น tutorial นี้สร้าง `hpc-mesa/3.5.1` ใหม่ใต้ project space และกำหนดให้ทุกงานเรียก `module use "$EPI_MODULE_ROOT"` ก่อน `module load` เสมอ JupyterLab กลางยังเป็นทางสำรองเมื่อผู้ดูแลเปิดให้ผ่านโมดูลหรือ PATH ของรอบอบรมนั้น
-
-งานทดสอบจริง `6338471` ใช้บัญชี `pv915002` และจบ `COMPLETED (0:0)` บน `compute-devel` ด้วย Python 3.12.14, Mesa 3.5.1 และ API `MultiGrid`/`AgentSet` เวลารวม 22 วินาที, `TotalCPU=2.227` วินาที และ `MaxRSS=114080K` ที่ขั้น `.batch` ดู [stdout และสถิติฉบับเต็ม](../docs/lanta-runs/2026-09-25-pv915002/README.md#hpc-mesa-smoke-job-6338471)
-
-ภาพนี้เป็นภาพประกอบ expected result จากค่าที่สังเกตจริง ไม่ใช่หลักฐานแทน `sacct` และ raw log:
-
-![Expected result ของ hpc-mesa smoke](../docs/images/expected-hpc-mesa-smoke.png)
 
 ## การย้ายจาก Mesa 2 ไป Mesa 3
 

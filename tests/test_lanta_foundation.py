@@ -114,8 +114,8 @@ class LantaFoundationTests(unittest.TestCase):
         learner_docs = [
             REPO_ROOT / "README.md",
             REPO_ROOT / "LANTA_SETUP.md",
-            REPO_ROOT / "docs" / "COPY_PASTE_ONLY_LABS_TH.md",
-            REPO_ROOT / "docs" / "LAB_AUTHORING_GUIDE_TH.md",
+            REPO_ROOT / "docs" / "RESOURCE_ESTIMATION_WORKBOOK.md",
+            REPO_ROOT / "docs" / "PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md",
             FOUNDATION / "README.md",
         ]
         forbidden = ["lanta" + "_submit_", "/tmp/hpc" + "_ignite_", "bash /tmp/hpc" + "_ignite"]
@@ -305,14 +305,13 @@ class LantaFoundationTests(unittest.TestCase):
         index = (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8")
         self.assertIn(path.name, index)
         for marker in [
-            "/home/ubuntu/lanta/ghq/github.com/wdiazcarballo/hpcignite-twinb",
-            "https://github.com/wdiazcarballo/hpcignite-twinb.git",
-            "scripts/migrate_twinb_mesa3.py",
-            "hpc-mesa/3.5.1",
+            "https://github.com/wdiazcarballo/hpcignite-twinb",
+            "TWINB_REFERENCE_BENCHMARKS.md",
+            "Mesa",
             "EnergyPlus",
-            "CPU-array",
-            "GPU-4",
-            "communication overhead",
+            "CPU 1 คอร์",
+            "เวลา",
+            "ทรัพยากร",
         ]:
             self.assertIn(marker, text)
 
@@ -323,47 +322,26 @@ class LantaFoundationTests(unittest.TestCase):
         self.assertTrue(script.exists())
         self.assertIn("PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md", (REPO_ROOT / "README.md").read_text(encoding="utf-8"))
         for marker in [
-            "Strong scaling",
-            "Weak scaling",
-            "parallel efficiency",
+            "ข้อมูลเดิม",
+            "สามครั้ง",
+            "ประสิทธิภาพ",
             "sacct",
-            "nvidia-smi",
-            "GROMACS",
-            "Quantum ESPRESSO",
-            "EpiSprint/Mesa",
-            "Twin-B MicroCosim",
-            "result_consistent",
+            "GPU",
+            "โมเลกุล",
+            "วัสดุ",
+            "Mesa",
+            "อาคาร",
+            "คำตอบ",
         ]:
             self.assertIn(marker, text)
 
-    def test_lanta_run_evidence_and_expected_result_images_exist(self) -> None:
-        evidence = REPO_ROOT / "docs" / "lanta-runs" / "2026-09-25-pv915002" / "README.md"
-        text = evidence.read_text(encoding="utf-8")
-        for marker in [
-            "6338432",
-            "6338471",
-            "pv915002",
-            "22572K",
-            "114080K",
-            "mesa 3.5.1",
-            "api MultiGrid AgentSet",
-        ]:
-            self.assertIn(marker, text)
-
-        expected_images = [
-            REPO_ROOT / "docs" / "images" / "expected-foundation-smoke.png",
-            REPO_ROOT / "docs" / "images" / "expected-hpc-mesa-smoke.png",
-        ]
-        for image in expected_images:
-            self.assertTrue(image.exists(), f"missing expected-result image: {image}")
-            self.assertGreater(image.stat().st_size, 10_000, f"unexpectedly small image: {image}")
-
-        foundation_tutorial = (FOUNDATION / "README.md").read_text(encoding="utf-8")
-        mesa_tutorial = (REPO_ROOT / "mini-innovation" / "01-custom-python-env-module.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("expected-foundation-smoke.png", foundation_tutorial)
-        self.assertIn("expected-hpc-mesa-smoke.png", mesa_tutorial)
+    def test_scientific_figures_are_kept_without_operator_reports(self) -> None:
+        for name in ("cavity", "warm-air", "ocean", "cells", "shock-wave", "horsehead"):
+            image = REPO_ROOT / "docs/images/science" / (name + ".png")
+            self.assertTrue(image.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
+        tracked = subprocess.check_output(["git", "ls-files"], cwd=REPO_ROOT, text=True)
+        self.assertNotIn("docs/lanta-runs/", tracked)
+        self.assertNotIn("docs/tutorial-evidence/", tracked)
 
     def test_mini_innovation_output_display_declares_notebook_and_gnuplot(self) -> None:
         readme = (REPO_ROOT / "mini-innovation" / "README.md").read_text(encoding="utf-8")
@@ -439,9 +417,9 @@ class LantaFoundationTests(unittest.TestCase):
             "figures/perf_summary_speedup.svg",
             "cat > jobs/roofline_solver.sbatch <<'SLURM'",
             "python -m cProfile",
-            "PerformanceEvaluationOfHPC-AI.pdf",
-            "High Performance Python",
-            "ACM_School_Barcelona_2026_Wahib.pptx",
+            "profiling",
+            "tracing",
+            "GLOSSARY_TH.md",
             "บันไดหลักฐาน",
         ]:
             self.assertIn(marker, workshop)

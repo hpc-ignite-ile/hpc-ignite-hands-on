@@ -1,80 +1,21 @@
 # แผ่นงาน: HPDS Weather-Health ABS บน LANTA
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+เตรียมข้อมูลอากาศเพื่อใช้กับแบบจำลองตัวแทน
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เผื่อพื้นที่ไฟล์ดาวน์โหลด ไฟล์แตกแล้ว และผลลัพธ์ วัดเวลาเตรียมข้อมูลแยกจากเวลาจำลอง
+- **ตรวจผลและลองปรับ:** เริ่มจากไฟล์เดียวและค่าเริ่มสุ่มเดียว ตรวจวันเวลา หน่วย และข้อมูลที่หายไปก่อนเพิ่มงาน ไม่แทนข้อมูลจริงด้วยข้อมูลสมมติโดยไม่บอก
 
-![Booklet workflow: weather](../../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Weather-data preparation and synthetic health-agent modelling; downloaded data and model validity are different checks.
-
-Budget source archive + extracted data + intermediate tables + outputs. Model cost scales with agents, steps and seeds; preprocessing cost scales with input records and parsing. Record both phases separately.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339789 | COMPLETED | 1 | 9 | 8.266 | 0.010000 | 4.72 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/mini-innovation-weather-health-abs-training-sheet-th.png)
-
-Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/mini-innovation-weather-health-abs-training-sheet-th.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339789` used 8.266 CPU-seconds over 9 summed elapsed seconds: about **0.92 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339789` · archive member `tutorials/mini-innovation/weather-health-abs/TRAINING_SHEET_TH/logs/hpds-weather_6339789.out`
-
-```text
-tasks 12
-workers 4
-wrote results/hpds_weather_abs_summary.csv
-wrote figures/hpds_weather_abs_summary.png
-wrote results/mobility_partition_summary.csv
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Pilot one weather file and one seed, then 10 files or seeds with bounded array concurrency. Compare chunk sizes without changing missing-value handling, dates or units. Do not silently replace failed data downloads with synthetic input.
-
-**Correctness gate:** Verify source manifest/checksums, timestamp coverage, units, missing values and population invariants. Successful download is not validated health prediction.
-
-[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#earth-observation) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 หน้านี้เป็นแบบฝึกปฏิบัติที่จบได้ในหน้าเดียวสำหรับผู้เรียน 40 คน ผู้ใช้เริ่มจากเครื่องของตนเอง ย้ายหรือดึงข้อมูลเข้า LANTA จัดแฟ้มรวม อ่านหลักฐานของ Lustre สร้างสภาพแวดล้อม Dask เพิ่มเติม รันแบบจำลองอากาศ-อาคาร-ตัวแทนด้วย Slurm แล้วสรุปผลเป็นชุดหลักฐาน
 
-## บทนำแบบ Verse
+## ภาพรวมกิจกรรม
 
-ย้ายข้อมูลให้มีหลักฐาน ก่อนเปิดแบบจำลอง<br>
-นับไฟล์ นับแถว นับไบต์ แล้วค่อยถามเรื่องความเร็ว<br>
-ให้ก้อนข้อมูลสัมพันธ์กับหน่วยความจำ worker และคำถามวิเคราะห์<br>
-ให้อากาศเป็นแรงขับ ให้อาคารเป็นตัวกรอง ให้ตัวแทนเป็นผู้รับผลกระทบ<br>
-เมื่อผลออกมา ให้ดูทั้งนโยบาย การสัมผัสความร้อน การทำความเย็น ความเสี่ยง และเวลาที่ใช้<br>
-AI ช่วยอ่านหลักฐานได้ดี เมื่อหลักฐานครบและขอบเขตคำถามชัดเจน
+เตรียมข้อมูลอากาศ ตรวจหน่วยและวันเวลา แล้วนำเข้าแบบจำลองตัวแทน วัดเวลาเตรียมข้อมูลแยกจากเวลาจำลอง เพื่อรู้ว่าขั้นตอนไหนควรปรับปรุง
 
 ## สิ่งที่ผู้ใช้จะฝึก
 
@@ -86,7 +27,7 @@ AI ช่วยอ่านหลักฐานได้ดี เมื่อ�
 - ตัวแปรที่คำนวณจากข้อมูลอากาศ แบบจำลองอาคารขนาดย่อ และแบบจำลองตัวแทนด้านการเดินทางกับการสัมผัสความร้อน
 - ชุดหลักฐานแบบงานประชุม SC สำหรับรันซ้ำ ตรวจทาน และอภิปรายผล
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 ### ขั้นที่ 1: เข้าสู่ LANTA
 
@@ -114,7 +55,7 @@ rsync -avP --dry-run hpds-transfer-demo/ <lanta-username>@lanta.nstda.or.th:~/in
 rsync -avP --partial hpds-transfer-demo/ <lanta-username>@lanta.nstda.or.th:~/incoming-hpds-transfer-demo/
 ```
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
 ### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
@@ -605,17 +546,3 @@ sed -n '1,120p' notes/ai_hpds_review_prompt.md
 - `max_heat_index_c`, `peak_indoor_c`, `cooling_kwh`, `exposure_agent_hours` เป็นค่าจำนวนจริง
 - นโยบายที่เพิ่มการทำความเย็นลดภาระความร้อนในอาคาร พร้อมแลกด้วยค่าตัวแทนพลังงานทำความเย็นที่สูงขึ้น
 - การแบ่งกราฟที่ลดน้ำหนักขอบที่ถูกตัดมีเหตุผลด้านการสื่อสาร และต้องตรวจสมดุลภาระงานร่วมกัน
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340201 | COMPLETED | 1 | 14 | 8.610 | 0.015556 | 26.18 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-weather-health-abs-training-sheet-th.png)
-<!-- performance-rerun:end -->

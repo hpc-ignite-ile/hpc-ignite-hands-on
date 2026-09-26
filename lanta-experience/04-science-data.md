@@ -1,77 +1,27 @@
-# 04 Science And Data Workflow
+# 04 งานวิทยาศาสตร์และข้อมูล
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+จำลองการกระจายของค่าไปยังช่องข้างเคียง
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เวลาประมาณตามจำนวนช่อง × จำนวนรอบ ส่วนหน่วยความจำขึ้นกับจำนวนช่องที่เก็บพร้อมกัน
+- **ตรวจผลและลองปรับ:** เพิ่มจำนวนช่องกับจำนวนรอบแยกกัน ตรวจว่าค่าไม่กลายเป็น NaN และผลยังสมมาตร ใช้ค่า alpha ระหว่าง 0 ถึง 0.5 สำหรับสูตรในบทนี้
 
-![Booklet workflow: diffusion](../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Explicit 1-D diffusion in serial Python; a real numerical update on a small synthetic problem.
-
-Work is O(N×steps), memory O(N) for two fields (Python lists use more than 16N raw bytes). Pilot N=200, steps=500; grow N to 2000 and then steps to 5000 separately. Estimate from measured cell-updates/second.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339665 | COMPLETED | 1 | 2 | 0.586 | 0.000556 | 2.55 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/lanta-experience-04-science-data.png)
-
-Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/lanta-experience-04-science-data.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339665` used 0.586 CPU-seconds over 2 summed elapsed seconds: about **0.29 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339665` · archive member `tutorials/lanta-experience/04-science-data/logs/diffusion_6339665.out`
-
-```text
-output=results/diffusion_6339665.csv elapsed=0.051
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Compare a vectorized two-buffer implementation to the serial loop at identical N, steps and alpha. For this stencil alpha is the nondimensional diffusion coefficient; keep it between 0 and 0.5. Refining a fixed physical domain/time requires adjusting dt/steps, not just N.
-
-**Correctness gate:** Check finite values, fixed endpoints, symmetry and agreement to a reference within tolerance. Distinguish code speedup from changing the physical simulation.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 ใช้รูปแบบงานวิทยาศาสตร์ใน booklet: input, parameter, model script, result, evidence.
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `source`, `command -v`, `python`, `head`, `sha256sum`, `module purge`, `module load` และ redirection
 
-เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน block เตรียมพื้นที่ใน [README.md](README.md) สำหรับ workspace ของกิจกรรม
+เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน ชุดคำสั่ง เตรียมพื้นที่ใน [README.md](README.md) สำหรับ พื้นที่ทำงาน ของกิจกรรม
 
-## Copy-Paste Diffusion Model
+## ลงมือจำลองการกระจาย
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+แปะทีละ ชุดคำสั่ง ตามลำดับ แต่ละ ชุดคำสั่ง ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียม พื้นที่ทำงาน และตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง โฟลเดอร์ มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 cd "$HOME/lanta-experience"
@@ -97,7 +47,7 @@ EOF
 ```
 
 
-### ขั้นที่ 3: สร้าง source code `src/diffusion_1d.py`
+### ขั้นที่ 3: สร้าง โค้ดโปรแกรม `src/diffusion_1d.py`
 
 ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
 
@@ -139,9 +89,9 @@ PY
 ```
 
 
-### ขั้นที่ 4: สร้าง Slurm script `jobs/diffusion.sbatch`
+### ขั้นที่ 4: สร้าง ไฟล์งาน Slurm `jobs/diffusion.sbatch`
 
-ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, โฟลเดอร์ทำงาน และคำสั่งที่รันบน เครื่องคำนวณ
 
 ```bash
 cat > jobs/diffusion.sbatch <<'SLURM'
@@ -178,7 +128,7 @@ SLURM
 
 ### ขั้นที่ 5: ส่งงานเข้า Slurm
 
-ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+ขั้นนี้ส่ง ไฟล์งาน ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก หมายเลขงาน เพื่อใช้ตามคิวและอ่าน log ภายหลัง
 
 ```bash
 job_id=$(sbatch -A "$LANTA_ACCOUNT" -p "$LANTA_CPU_PARTITION" --parsable jobs/diffusion.sbatch)
@@ -191,19 +141,19 @@ echo "  cat results/diffusion_${job_id}/README.txt"
 
 ### คำอธิบาย
 
-ในขั้นตอนนี้ ผู้ใช้จะรันแบบจำลอง diffusion ขนาดเล็ก โดยแยกไฟล์พารามิเตอร์ไว้ที่ `configs/diffusion-small.env`, แยก code ไว้ที่ `src/diffusion_1d.py`, และแยก job script ไว้ที่ `jobs/diffusion.sbatch`
+ในขั้นตอนนี้ ผู้ใช้จะรันแบบจำลอง diffusion ขนาดเล็ก โดยแยกไฟล์พารามิเตอร์ไว้ที่ `configs/diffusion-small.env`, แยก code ไว้ที่ `src/diffusion_1d.py`, และแยก ไฟล์งาน ไว้ที่ `jobs/diffusion.sbatch`
 
-เมื่อ job ทำงาน ระบบจะเขียนผลลัพธ์เป็น `results/diffusion_<job-id>.csv` และคัดลอก config กับ job script ไปไว้ใน `results/diffusion_<job-id>/` เพื่อให้ผู้ใช้ย้อนดูได้ว่ารอบนั้นใช้ค่าใด
+เมื่อ job ทำงาน ระบบจะเขียนผลลัพธ์เป็น `results/diffusion_<job-id>.csv` และคัดลอก config กับ ไฟล์งาน ไปไว้ใน `results/diffusion_<job-id>/` เพื่อให้ผู้ใช้ย้อนดูได้ว่ารอบนั้นใช้ค่าใด
 
 เมื่อสำเร็จ ไฟล์ CSV ต้องมี header `i,value` และจำนวนบรรทัดควรสัมพันธ์กับค่า `N` เมื่อ `source configs/diffusion-small.env` error ให้ตรวจรูปแบบ `KEY=value` โดยเขียนเครื่องหมาย `=` ติดกับชื่อและค่า เมื่องานหมดเวลา ให้ลด `STEPS` ก่อนเพิ่มเวลาใน Slurm
 
-## Copy-Paste Small Data Summary
+## ลงมือสรุปข้อมูลขนาดเล็ก
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+แปะทีละ ชุดคำสั่ง ตามลำดับ แต่ละ ชุดคำสั่ง ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียม พื้นที่ทำงาน และตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง โฟลเดอร์ มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 cd "$HOME/lanta-experience"
@@ -216,7 +166,7 @@ fi
 command -v python
 ```
 
-### ขั้นที่ 2: สร้าง source code `src/make_sensor_data.py`
+### ขั้นที่ 2: สร้าง โค้ดโปรแกรม `src/make_sensor_data.py`
 
 ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
 
@@ -240,7 +190,7 @@ PY
 ```
 
 
-### ขั้นที่ 3: สร้าง source code `src/summarize_sensor.py`
+### ขั้นที่ 3: สร้าง โค้ดโปรแกรม `src/summarize_sensor.py`
 
 ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
 
@@ -268,7 +218,7 @@ PY
 
 ### ขั้นที่ 4: ตรวจไฟล์และ log
 
-ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า ขั้นตอนการทำงาน เดินครบ
 
 ```bash
 python src/make_sensor_data.py
@@ -281,20 +231,6 @@ sha256sum input/sensor.csv results/sensor_summary.csv > notes/sensor-checksums.t
 
 ในขั้นตอนนี้ ผู้ใช้จะสร้างข้อมูล PM2.5 จำลองใน `input/sensor.csv` แล้วรัน `summarize_sensor.py` เพื่อสรุปค่าเฉลี่ยและค่าสูงสุดรายสถานี
 
-ตัวอย่างนี้รันบน login node ได้เพราะข้อมูลมีขนาดเล็กมาก ใช้เพื่อฝึก format เท่านั้น หากข้อมูลใหญ่ขึ้นหรือใช้เวลานาน ให้ย้ายขั้นตอนนี้เข้า Slurm job ทันที
+ตัวอย่างนี้รันบน เครื่องเข้าสู่ระบบ ได้เพราะข้อมูลมีขนาดเล็กมาก ใช้เพื่อฝึก format เท่านั้น หากข้อมูลใหญ่ขึ้นหรือใช้เวลานาน ให้ย้ายขั้นตอนนี้เข้า Slurm job ทันที
 
 เมื่อสำเร็จ `head results/sensor_summary.csv` จะเห็น header `station,count,mean,max` และมีไฟล์ checksum ใน `notes/sensor-checksums.txt` เมื่อพบ `python: command not found` ให้โหลด `cray-python` เมื่อพบ `FileNotFoundError` ให้ตรวจว่าอยู่ใน `$HOME/lanta-experience` และรัน script สร้างข้อมูลก่อน
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340190 | COMPLETED | 1 | 3 | 0.683 | 0.000833 | 0.57 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/lanta-experience-04-science-data.png)
-<!-- performance-rerun:end -->

@@ -1,187 +1,56 @@
-# HPC Ignite Hands-On Labs
+# HPC Ignite: เรียนรู้ซูเปอร์คอมพิวเตอร์ด้วยการลงมือทำ
 
-Latest: [fresh LANTA resource/performance campaign](docs/lanta-runs/2026-09-26-performance/README.md) — 72 completed workflows, recorded CPU/GPU/memory usage, example outputs, 40 updated tutorial evidence panels, real browser screenshots, and repeated CFD/EnergyPlus benchmarks. Proposed application tracks are distinguished from executed tutorials.
+อยากลองใช้ซูเปอร์คอมพิวเตอร์ แต่ไม่รู้จะเริ่มตรงไหน? บทเรียนนี้พาคุณตั้งแต่เชื่อมต่อ LANTA ส่งงานแรก อ่านผล ไปจนถึงทดลองงานวิทยาศาสตร์และ AI
 
-![HPC IGNITE learning journey: connect, prepare, submit, run, check and improve](docs/images/beginners/tutorial-overview.png)
+ไม่จำเป็นต้องรู้ศัพท์ทั้งหมดก่อน เริ่มจากงานเล็กหนึ่งงานให้สำเร็จ แล้วค่อยเพิ่มขนาด คำสั่งและชื่อโปรแกรมยังใช้ภาษาอังกฤษตามที่เครื่องต้องการ ส่วนคำอธิบายใช้ภาษาไทย
 
-New to HPC? Start with the [illustrated beginner guide / คู่มือเริ่มต้นด้วยภาพ](docs/BEGINNER_VISUAL_GUIDE_TH.md). The illustrations explain concepts; [real run evidence](docs/lanta-runs/2026-09-26-pv915002/README.md) is labeled separately.
+![เส้นทางการเรียน: เชื่อมต่อ เตรียมไฟล์ ส่งงาน ตรวจผล และปรับปรุง](docs/images/beginners/tutorial-overview.png)
 
-Follow the original [LANTA Experience handbook](docs/lanta-hpc-experience-handbook.pdf) through the new [resource-estimation workbook](docs/RESOURCE_ESTIMATION_WORKBOOK.md). Each tutorial now distinguishes its smoke-test scope, resource model, archived usage/output and next experiment. Browse [per-tutorial evidence and screenshots](docs/tutorial-evidence/README.md), then choose a [public scientific application or NVIDIA experiment](docs/REAL_APPLICATION_EXPERIMENTS.md) to move beyond toy workloads.
+ภาพใช้สรุปแนวคิด ไม่ใช่ภาพผลการรัน อ่านคำอธิบายภาษาไทยได้ใน [คู่มือเริ่มต้นด้วยภาพ](docs/BEGINNER_VISUAL_GUIDE_TH.md)
 
-[![LANTA Compatible](https://img.shields.io/badge/LANTA-Compatible-blue.svg)](https://docs.lanta.nstda.or.th)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+## เริ่มตรงนี้
 
-คู่มือฝึกปฏิบัติบน LANTA Supercomputer แบบ copy-paste ได้ทันที ผู้ใช้จะสร้างไฟล์จริงด้วย heredoc, ส่งงานด้วย `sbatch`, แล้วตรวจ log และผลลัพธ์ด้วยตนเอง
+1. [เตรียมบัญชีและเชื่อมต่อ LANTA](LANTA_SETUP.md)
+2. [รู้จักไฟล์ โฟลเดอร์ และคำสั่งพื้นฐาน](lanta-experience/00-readiness.md)
+3. [ส่งงานแรกและเปิดผลลัพธ์](lanta-experience/01-first-slurm-job.md)
+4. [ประมาณเวลาและหน่วยความจำที่ต้องใช้](docs/RESOURCE_ESTIMATION_WORKBOOK.md)
+5. [เปรียบเทียบความเร็วและปรับปรุงงาน](docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
-คำสั่ง Bash, Slurm และ syntax ที่ใช้ใน repo นี้อธิบายรวมไว้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `sed`, `ssh`, `module`, `sbatch`, heredoc, `#SBATCH`, pipe, redirection และตัวแปรของ shell
+หากยังไม่คุ้นกับหน้าต่างคำสั่ง ให้เปิด [คำศัพท์แบบง่าย](docs/GLOSSARY_TH.md) และ [คำอธิบาย Bash และ Slurm](docs/BASH_COMMAND_REFERENCE_TH.md) ไว้ข้างกัน
 
-## เริ่มแบบ Standalone บน LANTA
+## เลือกบทเรียนตามความสนใจ
 
-Beyond the introductory labs, follow the domain experiment tracks:
-[CFD, climate and ocean](docs/CFD_CLIMATE_OCEAN_EXPERIMENTS.md) ·
-[space and astronomy](docs/SPACE_ASTRONOMY_EXPERIMENTS.md).
-These are researched pilot protocols awaiting execution, not new measured results.
-
-ผู้ใช้ที่ต้องการตั้งค่า private key หรือ alias `ssh lanta` สามารถเริ่มจาก [docs/SSH_PRIVATE_KEY_LANTA_TH.md](docs/SSH_PRIVATE_KEY_LANTA_TH.md)
-
-```bash
-ssh <username>@lanta.nstda.or.th
-mkdir -p "$HOME/hpc-ignite-standalone"
-cd "$HOME/hpc-ignite-standalone"
-pwd
-```
-
-ทุก hand-on page ในชุดนี้มี block ที่ผู้ใช้ copy-paste ได้โดยตรงจากหน้าเอกสาร เมื่อแปะบน LANTA แล้ว block จะสร้าง workspace ของบทนั้นเอง เช่น `jobs/`, `src/`, `configs/`, `logs/`, `results/` และส่งงานด้วย `sbatch` จากไฟล์ที่เพิ่งสร้างใน workspace นั้น
-
-เริ่มจาก [lanta-experience/01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) ผู้ใช้จะสร้าง `src/hello_lanta.py`, สร้าง `jobs/hello_lanta.sbatch`, ส่งงานด้วย `sbatch`, แล้วอ่านหลักฐานใน `logs/` กับ `results/`
-
-สำหรับผู้สอนที่มีสำเนา repo เพื่ออ่าน offline หรือปรับเอกสาร ใช้คำสั่งนี้จาก root ของ repo:
-
-```bash
-# เส้นทางฝึกปฏิบัติเพื่อสัมผัสประสบการณ์การใช้ซูเปอร์คอมพิวเตอร์ LANTA
-sed -n '1,120p' lanta-experience/README.md
-```
-
-ตัวอย่าง `sed -n '1,120p' ...` ใช้เปิดดูบรรทัดที่ 1 ถึง 120 ของไฟล์ ดูคำอธิบายเต็มที่ [docs/BASH_COMMAND_REFERENCE_TH.md#sed](docs/BASH_COMMAND_REFERENCE_TH.md#sed)
-
-## โฟลเดอร์ใน Repo
-
-```text
-hpc-ignite-hands-on/
-├── lanta-experience/        # Main event path from the booklet
-│   ├── 00-readiness.md      # Linux, shell, files, quota, modules
-│   ├── 01-first-slurm-job.md
-│   ├── 02-cpu-array.md
-│   ├── 03-openmp-mpi.md
-│   ├── 04-science-data.md
-│   └── 05-ai-gpu.md
-├── foundation/              # Reusable foundation scripts and older chapter material
-├── core-hpc/                # Reference chapters: environment, parallel, data, MPI, GPU
-├── ai-applications/         # Reference AI chapters
-├── domain-science/          # Reference science/domain chapters
-├── mini-innovation/         # Scaffolded epidemic ABS innovation labs
-├── docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md # Performance tutorial for every lab
-├── environments/            # Optional Conda/Mamba environment files
-├── slurm/                   # Reusable Slurm templates and module-load snippets
-├── docs/                    # Authoring guide and copy-paste conventions
-├── requirements/            # Optional pip requirements
-└── tests/                   # Local validation
-```
-
-## ลำดับ Lab หลัก
-
-| Booklet section | Repo guide | Main activity |
-|---|---|---|
-| Linux, shell, files | [00-readiness.md](lanta-experience/00-readiness.md) | Create folders, configs, and system notes |
-| First Slurm job | [01-first-slurm-job.md](lanta-experience/01-first-slurm-job.md) | Write `hello_lanta.py` and `hello_lanta.sbatch` using heredoc |
-| CPU and arrays | [02-cpu-array.md](lanta-experience/02-cpu-array.md) | Run CPU pi baseline and a small job array |
-| OpenMP and MPI | [03-openmp-mpi.md](lanta-experience/03-openmp-mpi.md) | Compile C examples and launch with `srun` |
-| Science/data | [04-science-data.md](lanta-experience/04-science-data.md) | Run diffusion/data examples and capture evidence |
-| AI/GPU | [05-ai-gpu.md](lanta-experience/05-ai-gpu.md) | Request one GPU and verify CUDA/PyTorch |
-
-## Mini Innovation
-
-ถ้าต้องการกิจกรรม live training แบบมี scientific model, agent-based simulation และ AI scaffold ให้เปิด [mini-innovation/README.md](mini-innovation/README.md) ผู้ใช้จะได้ทำ **LANTA EpiSprint** ด้วย Mesa, custom Python environment, Jupyter on Slurm, single job, job array และ multicore ensemble
-
-## Audit สำหรับปรับ Repo
-
-ถ้าต้องการดูเหตุผลของการปรับตัวอย่างให้เป็น workflow จิ๋วที่ใช้ module จริงบน LANTA ให้เปิด [docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md](docs/LANTA_REAL_MINI_WORKFLOW_AUDIT_TH.md)
-
-## ประเมินและปรับสมรรถนะทุก Hands-On
-
-หลัง workflow รันถูกต้องแล้ว ให้ใช้ [docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md](docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) เพื่อสร้าง baseline, ทำ repeats, เก็บ `sacct`/CPU/GPU evidence, คำนวณ speedup และ parallel efficiency และเลือก optimization ที่เหมาะกับแต่ละบทตั้งแต่ Slurm แรก, MPI/OpenMP, AI/GPU, containers, domain science จนถึง mini innovation
-
-## แผนที่ Lab Standalone ที่ใช้ Module จริง
-
-ผู้ใช้เลือกหน้าเดียวตามหัวข้อที่สนใจ แล้วแปะ block ในหน้านั้นบน LANTA ได้ทันที:
-
-| Area | Standalone page |
+| อยากทำอะไร | เริ่มจากบทนี้ |
 |---|---|
-| Environment audit | [core-hpc/chapter-02-environment/README.md](core-hpc/chapter-02-environment/README.md) |
-| MPI/CPE | [core-hpc/chapter-03-parallel/README.md](core-hpc/chapter-03-parallel/README.md) |
-| PyTorch GPU | [core-hpc/chapter-04-deep-learning/README.md](core-hpc/chapter-04-deep-learning/README.md) |
-| Containers | [ai-applications/chapter-11-containers/README.md](ai-applications/chapter-11-containers/README.md) |
-| Epidemic ABS | [mini-innovation/README.md](mini-innovation/README.md) |
-| GROMACS MD | [domain-science/chapter-21-molecular-dynamics/README.md](domain-science/chapter-21-molecular-dynamics/README.md) |
-| WRF/NetCDF data | [domain-science/chapter-22-climate-modeling/README.md](domain-science/chapter-22-climate-modeling/README.md) |
-| Quantum ESPRESSO | [domain-science/chapter-23-materials-science/README.md](domain-science/chapter-23-materials-science/README.md) |
-| GDAL/geodata | [domain-science/chapter-24-ai-forest/README.md](domain-science/chapter-24-ai-forest/README.md) |
-| BLAST bioinformatics | [domain-science/chapter-25-bioinformatics/README.md](domain-science/chapter-25-bioinformatics/README.md) |
+| ส่งงานหลายชิ้นพร้อมกัน | [CPU และชุดงานย่อย](lanta-experience/02-cpu-array.md) |
+| ให้หลายคอร์ช่วยกันคำนวณ | [OpenMP และ MPI](lanta-experience/03-openmp-mpi.md) |
+| จำลองการกระจายและอ่านข้อมูล | [งานวิทยาศาสตร์เบื้องต้น](lanta-experience/04-science-data.md) |
+| ลองใช้ GPU | [เริ่มต้น AI และ GPU](lanta-experience/05-ai-gpu.md) |
+| ทำกราฟและเปิดสมุดงาน | [ภาพผลลัพธ์และ Jupyter](mini-innovation/05-output-display-jupyter-gnuplot.md) |
+| จำลองพฤติกรรมคนด้วย Mesa | [กิจกรรมจำลองโรคและนวัตกรรม](mini-innovation/README.md) |
+| จำลองคนกับพลังงานอาคาร | [Twin-B และ EnergyPlus](mini-innovation/06-twinb-heatlab-repository.md) |
+| เลือกปัญหาวิทยาศาสตร์จริง | [โมเลกุล วัสดุ ชีวภาพ และเกษตร](docs/REAL_APPLICATION_EXPERIMENTS.md) |
+| ศึกษาของไหล อากาศ และทะเล | [การไหล ภูมิอากาศ และมหาสมุทร](docs/CFD_CLIMATE_OCEAN_EXPERIMENTS.md) |
+| ศึกษาดาวและอวกาศ | [อวกาศและดาราศาสตร์](docs/SPACE_ASTRONOMY_EXPERIMENTS.md) |
 
-ไฟล์ใน `jobs/`, `slurm/`, `requirements/` และ `environments/` เป็น reference สำหรับผู้สอนและผู้ใช้ที่ต้องการดูตัวอย่างสำเร็จรูป ส่วน hand-on page จะสร้าง source และ job script ของตัวเองใน workspace ของผู้ใช้
+บทพื้นฐานมีคำสั่งให้ทำตาม ส่วนหน้ารวมงานวิทยาศาสตร์ช่วยเลือกโจทย์ ข้อมูล และวิธีตรวจผล งานต่อยอดบางชนิดต้องเตรียมโปรแกรมหรือข้อมูลเพิ่มก่อนเริ่ม
 
-```bash
-# ตัวอย่าง workspace ที่ page แต่ละบทจะสร้าง
-cd "$HOME/hpc-ignite-standalone"
-find . -maxdepth 2 -type d | sort | head
-```
+## อ่านบทเรียนอย่างไร
 
-## รูปแบบ Copy-Paste
+แต่ละบทบอกเป้าหมาย สิ่งที่ต้องเตรียม ขั้นตอน และวิธีตรวจผล แปะคำสั่งทีละชุดและดูผลก่อนทำขั้นต่อไป อย่าแปะทั้งหน้าโดยไม่อ่าน
 
-ทุก lab ควรให้ผู้ใช้เห็นไฟล์ที่สร้างจริงและเห็นรายละเอียดการส่งงานใน `.sbatch` ตัวอย่างขั้นต่ำคือ:
+- ใช้บัญชีและพื้นที่โครงการของคุณเอง
+- เครื่องที่ใช้เข้าสู่ระบบมีไว้เตรียมไฟล์และส่งงาน งานหนักต้องส่งผ่าน `sbatch`
+- `COMPLETED` แปลว่าโปรแกรมจบ แต่ยังต้องตรวจว่าคำตอบถูกต้อง
+- ลองข้อมูลเล็กก่อน เพิ่มขนาดทีละอย่าง และหยุดเมื่อพบข้อผิดพลาด
+- ไม่ใส่รหัสผ่าน กุญแจ หรือ token ในไฟล์ผลลัพธ์และภาพที่เผยแพร่
 
-```bash
-mkdir -p jobs logs results src
+## เอกสารประกอบ
 
-cat > src/main.py <<'PY'
-print("Hello from LANTA")
-PY
+- [คู่มือกิจกรรม LANTA Experience](docs/lanta-hpc-experience-handbook.pdf)
+- [ลำดับกิจกรรมตามคู่มือ](lanta-experience/README.md)
+- [ตั้งค่ากุญแจ SSH](docs/SSH_PRIVATE_KEY_LANTA_TH.md)
+- [บันทึกการใช้ทรัพยากรของงานตนเอง](lanta-experience/06-run-logs.md)
+- [ThaiSC](https://www.thaisc.io) และ [คู่มือผู้ใช้](https://thaisc.atlassian.net/wiki/)
 
-cat > jobs/main.sbatch <<'SLURM'
-#!/bin/bash
-#SBATCH --job-name=hpcig-main
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --time=00:05:00
-#SBATCH --output=logs/%x_%j.out
-#SBATCH --error=logs/%x_%j.err
-
-set -euo pipefail
-module purge
-module load cray-python/3.10.10 2>/dev/null || module load python 2>/dev/null || true
-cd "$SLURM_SUBMIT_DIR"
-python src/main.py
-SLURM
-
-sbatch -p compute-devel jobs/main.sbatch
-```
-
-✅ เมื่อสำเร็จ ผู้ใช้จะเห็น job id จาก `sbatch` และอ่าน log ได้จาก `logs/`
-
-ดู checklist สำหรับการเขียน lab เพิ่มเติมได้ที่ [docs/LAB_AUTHORING_GUIDE_TH.md](docs/LAB_AUTHORING_GUIDE_TH.md) และดูคำอธิบายคำสั่งใน block นี้ได้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md)
-
-## LANTA Notes
-
-- SSH login host: `lanta.nstda.or.th`
-- Transfer host: `transfer.lanta.nstda.or.th`
-- Use login nodes for editing, small checks, and job submission only.
-- Start with `compute-devel` or `gpu-devel` smoke tests when available, then scale after the result is correct.
-- Set `LANTA_ACCOUNT` only if your project requires explicit `sbatch -A`.
-
-## เลือกบทต่อไปตามงานของผู้ใช้
-
-หลังทำ lab หลักผ่านแล้ว ผู้ใช้สามารถเลือกบทอ้างอิงตามงานที่สนใจ:
-
-| Track | Topics |
-|---|---|
-| `foundation/` | HPC basics and first runnable scripts |
-| `core-hpc/` | Environment, parallel Python, Dask, MPI, Spark, GPU |
-| `ai-applications/` | Containers, AI development, prompts, fine-tuning, security, carbon |
-| `domain-science/` | Chemistry, MD, climate, materials, bioinformatics, agriculture, disaster |
-
-## Related Resources
-
-- LANTA User Guide: https://docs.lanta.nstda.or.th
-- ThaiSC: https://www.thaisc.io
-- Slurm: https://slurm.schedmd.com/documentation.html
-
-## Verified LANTA rerun — 2026-09-26
-
-The [rerun report](docs/lanta-runs/2026-09-26-pv915002/README.md) records 70 successful baseline workflows on `pv915002`, fixes, real outputs, resource accounting, and the remaining EnergyPlus/Mesa coupling failures. Slurm completion is not a claim that every scientific model or optional extension is validated.
-
-See the [performance evaluation and optimization tutorial](docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) for per-hands-on experiments and interpretation.
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details.
+โค้ดของคลังนี้ใช้ [สัญญาอนุญาต MIT](LICENSE) ส่วนข้อมูล โปรแกรม และภาพจากแหล่งอื่นใช้เงื่อนไขของเจ้าของแต่ละรายการ

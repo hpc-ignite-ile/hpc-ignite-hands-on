@@ -1,64 +1,13 @@
 # แผ่นงานฝึกปฏิบัติ: Enhanced SEIR Performance Clinic บน LANTA
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+จำลองคนหรือหน่วยย่อยหลายตัวที่มีพฤติกรรมต่างกัน
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เริ่มประมาณจากจำนวนตัวแทน × จำนวนรอบ × จำนวนการทดลอง และเผื่อข้อมูลประวัติ
+- **ตรวจผลและลองปรับ:** ใช้ค่าเริ่มสุ่มเดียวกันเปรียบเทียบความเร็ว ตรวจจำนวนประชากรให้คงเดิม ผลจำลองนี้ไม่ใช่คำพยากรณ์โรคสำหรับตัดสินใจจริง
 
-![Booklet workflow: agents](../../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Synthetic epidemic/agent ensemble; performance evidence does not validate epidemiological predictions.
-
-For local interactions, start with work proportional to agents × steps × repeats; all-pairs interactions can instead grow quadratically. Memory grows with agent state plus retained history. Pilot one seed before multiplying by scenarios.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339674 | COMPLETED | 1 | 4 | 1.952 | 0.004444 | 9.65 |
-| 6339675 | COMPLETED | 1 | 10 | 6.848 | 0.022222 | 18.55 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/mini-innovation-enhanced-seir-training-sheet-th.png)
-
-Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/mini-innovation-enhanced-seir-training-sheet-th.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339674` used 1.952 CPU-seconds over 4 summed elapsed seconds: about **0.49 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339674` · archive member `tutorials/mini-innovation/enhanced-seir/TRAINING_SHEET_TH/logs/seir-mpi-train_6339674.out`
-
-```text
-wrote results/seir_mpi_summary.csv rows=6
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Compare fixed-size 1/2/4-worker or rank runs with three repeats, preserving seeds and input. Then vary agent count 10× separately. Limit concurrent array tasks and aggregate throughput only after checking every task.
-
-**Correctness gate:** Check population conservation, finite/non-negative compartments and seed-specific output agreement. Compare stochastic distributions when implementations change random-stream ordering.
-
-[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#agent-models) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
@@ -66,7 +15,7 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 
 เป้าหมายคือเปรียบเทียบกระบวนการเดียวกันสองทาง: C++/MPI บน CPU และ PyTorch GPU/DDP จากนั้นอ่านหลักฐานตามแนวทาง booklet หน้า 15-17 ได้แก่ คำถามวิทยาศาสตร์ ทรัพยากรที่ขอ เวลารัน หน่วยความจำ หลักฐาน GPU ไฟล์ CSV ผลลัพธ์ และข้อสรุปสำหรับการรันถัดไป
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 ### ขั้นที่ 1: เข้าสู่ LANTA
 
@@ -76,7 +25,7 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
 ### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
@@ -517,18 +466,3 @@ ls -lh logs notes results | sed -n '1,80p'
 - ถ้าเพิ่มสถานการณ์ทดลองจาก 6 เป็น 600 งาน CPU/MPI หรือ GPU/DDP ควรเปลี่ยนอย่างไร
 - ควรเปลี่ยนทรัพยากรทีละปัจจัยใดก่อน เช่น `--ntasks`, `--gpus-per-node`, จำนวนวัน หรือจำนวนสถานการณ์ทดลอง
 - หลักฐานใดบอกว่าคอขวดอยู่ที่การเริ่มงานของตัวจัดคิว การคำนวณบน CPU การเริ่มงานบน GPU หน่วยความจำ หรือ I/O
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340199 | COMPLETED | 1 | 4 | 2.133 | 0.004444 | 3.17 |
-| 6340200 | COMPLETED | 1 | 17 | 7.109 | 0.037778 | 36.13 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-enhanced-seir-training-sheet-th.png)
-<!-- performance-rerun:end -->

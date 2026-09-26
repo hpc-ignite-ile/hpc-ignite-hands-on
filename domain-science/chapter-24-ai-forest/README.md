@@ -1,83 +1,33 @@
 # บทที่ 24: AI สำหรับป่าไม้
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+คำนวณข้อมูลที่แบ่งเป็นช่องภาพ เช่น พื้นที่ป่าหรือพื้นที่เกษตร
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** ภาพ float32 หนึ่งแถบใช้ 4 × ความกว้าง × ความสูง ไบต์ ยังไม่รวมผลและข้อมูลชั่วคราว
+- **ตรวจผลและลองปรับ:** ลองแบ่งภาพเป็นส่วนเล็ก ๆ เพื่อลดหน่วยความจำ ผลต้องตรงกับการคำนวณทั้งภาพ ข้อมูลสมมติใช้ประกาศเตือนภัยจริงไม่ได้
 
-![Booklet workflow: raster](../../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Small synthetic raster/index/risk calculation; not a validated forest, crop or disaster product.
-
-For B float32 bands, a raw H×W image needs 4BHW bytes before masks, output and temporaries. Three 4096² bands alone need 192 MiB. Tiling can bound RAM; output and nodata masks still consume storage.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339656 | COMPLETED | 1 | 5 | 1.705 | 0.001389 | 7.81 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/domain-science-chapter-24-ai-forest-readme.png)
-
-Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/domain-science-chapter-24-ai-forest-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339656` used 1.705 CPU-seconds over 5 summed elapsed seconds: about **0.34 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339656` · archive member `tutorials/domain-science/chapter-24-ai-forest/README/logs/forest-ndvi_6339656.out`
-
-```text
-result=results/ndvi_grid.csv
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Increase grid width/height 2× then 4× and compare full-grid versus tiled computation on identical data. Record cells/second, read/write bytes and peak RSS. Keep spatial resolution and thresholds fixed when comparing implementations.
-
-**Correctness gate:** Verify bounds, nodata handling, coordinate reference system for real rasters, and exact/tolerance agreement of tiled and untiled results. Synthetic risk scores are not operational warnings.
-
-[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#earth-observation) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
-เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
+เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ ชุดคำสั่ง ในหัวข้อ Copy-Paste บน LANTA
 
-หน้านี้เป็น standalone hand-on ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ workspace, source file, Slurm script, log และ result ครบใน `$HOME/hpc-ignite-standalone/forest-ndvi` โดยตรง
+หน้านี้เป็น บทฝึกที่ทำตามได้ในหน้าเดียว ผู้ใช้แปะคำสั่งบน LANTA แล้วได้ พื้นที่ทำงาน, source file, ไฟล์งาน Slurm, log และ result ครบใน `$HOME/hpc-ignite-standalone/forest-ndvi` โดยตรง
 
 ## เป้าหมาย
 
 1. สร้าง NDVI grid จำลอง
 2. จัดชั้นสภาพพืชพรรณ
-3. บันทึก CSV เพื่อใช้ต่อกับ geospatial workflow
+3. บันทึก CSV เพื่อใช้ต่อกับ geospatial ขั้นตอนการทำงาน
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+แปะทีละ ชุดคำสั่ง ตามลำดับ แต่ละ ชุดคำสั่ง ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียม พื้นที่ทำงาน และตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง โฟลเดอร์ มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 mkdir -p "$HOME/hpc-ignite-standalone/forest-ndvi"
@@ -97,7 +47,7 @@ if [ -n "${LANTA_ACCOUNT:-}" ]; then
 fi
 ```
 
-### ขั้นที่ 2: สร้าง source code `src/ndvi_grid.py`
+### ขั้นที่ 2: สร้าง โค้ดโปรแกรม `src/ndvi_grid.py`
 
 ขั้นนี้สร้างไฟล์โปรแกรมหลัก ให้ผู้ใช้อ่านส่วน import, parameter, output path และ sanity check ก่อนส่งงาน
 
@@ -117,9 +67,9 @@ PYCODE
 ```
 
 
-### ขั้นที่ 3: สร้าง Slurm script `jobs/forest-ndvi.sbatch`
+### ขั้นที่ 3: สร้าง ไฟล์งาน Slurm `jobs/forest-ndvi.sbatch`
 
-ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, working directory และคำสั่งที่รันบน compute node
+ขั้นนี้สร้างไฟล์ Slurm ที่ระบุ resource, module, โฟลเดอร์ทำงาน และคำสั่งที่รันบน เครื่องคำนวณ
 
 ```bash
 cat > jobs/forest-ndvi.sbatch <<'SLURM'
@@ -144,7 +94,7 @@ SLURM
 
 ### ขั้นที่ 4: ส่งงานเข้า Slurm
 
-ขั้นนี้ส่ง job script ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก job id เพื่อใช้ตามคิวและอ่าน log ภายหลัง
+ขั้นนี้ส่ง ไฟล์งาน ที่เพิ่งสร้างไว้ด้วย `sbatch` แล้วบันทึก หมายเลขงาน เพื่อใช้ตามคิวและอ่าน log ภายหลัง
 
 ```bash
 job_id=$(sbatch "${SBATCH_ACCOUNT[@]}" -p "$LANTA_CPU_PARTITION" --parsable jobs/forest-ndvi.sbatch)
@@ -154,7 +104,7 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: tail -80 logs/forest-ndvi_${job_id}.out"
 ```
 
-## Check
+## ตรวจผล
 
 ```bash
 cd "$HOME/hpc-ignite-standalone/forest-ndvi"
@@ -167,23 +117,9 @@ tail -50 logs/forest-ndvi_*.out
 หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
 
 1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
-2. `logs/` มี stdout/stderr ของ job id นั้น
+2. `logs/` มี ข้อความผลและข้อผิดพลาด ของ หมายเลขงาน นั้น
 3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
 
-## ใช้ Repo เป็น Reference
+## ดูไฟล์ตัวอย่างเพิ่มเติม
 
-ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ block ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340181 | COMPLETED | 1 | 5 | 1.875 | 0.001389 | 7.47 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/domain-science-chapter-24-ai-forest-readme.png)
-<!-- performance-rerun:end -->
+ถ้าผู้ใช้ clone repo แล้ว สามารถเทียบแนวคิดกับไฟล์ใน repo ได้ เช่น `slurm/`, `requirements/`, `environments/` และ `jobs/` ของแต่ละบท แต่ ชุดคำสั่ง ด้านบนออกแบบให้รันได้จากหน้า hand-on นี้โดยตรง

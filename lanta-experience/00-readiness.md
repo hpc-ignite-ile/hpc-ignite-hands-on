@@ -1,57 +1,27 @@
-# 00 Readiness
+# 00 เตรียมความพร้อม
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **5–18** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+รู้จักพื้นที่เก็บไฟล์และโปรแกรมที่ใช้ ก่อนเริ่มส่งงานคำนวณ
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** การดูไฟล์และตรวจรายชื่อโปรแกรมไม่ต้องใช้ GPU ส่วนงานคำนวณต้องส่งผ่าน Slurm
+- **ตรวจผลและลองปรับ:** ตรวจว่าอยู่ในโฟลเดอร์ที่ต้องการและเปิดไฟล์ได้ แล้วเริ่มจากงานเล็กหนึ่งงาน
 
-![Booklet workflow: orientation](../docs/images/booklet/Part1-FirstDayKnowingHPC.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Access, filesystem and environment checks; not a compute benchmark.
-
-No GPU is needed. File/module checks need no compute allocation; use the existing one-CPU Slurm smoke job to prove compute-node access. Budget storage from input + output + checkpoints, not input alone.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-No page-specific Slurm run is recorded for this setup/reading page. Do not invent usage numbers or a successful-run screenshot. Collect evidence from the next executable lesson using the worksheet.
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Record account, quota, module versions and a small job ID before moving to CPU scaling. Do not run a CPU stress test on a login node.
-
-**Correctness gate:** Confirm the compute hostname, intended account, output file and exit status. Redact tokens and private keys from evidence.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 ใช้ก่อนส่งงานจริงเพื่อให้ผู้ใช้เห็น shell, filesystem, quota, account, module และ queue ตามลำดับใน booklet.
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `mkdir -p`, `pwd`, `date`, `whoami`, `hostname`, `find`, `sort`, `myquota`, `sbalance`, `squeue`, `module`, `tee`, `cat` และ `tail`
 
-เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน block เตรียมพื้นที่ใน [README.md](README.md) สำหรับ workspace ของกิจกรรม
+เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน ชุดคำสั่ง เตรียมพื้นที่ใน [README.md](README.md) สำหรับ พื้นที่ทำงาน ของกิจกรรม
 
-## Copy-Paste
+## ลงมือทำ
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+แปะทีละ ชุดคำสั่ง ตามลำดับ แต่ละ ชุดคำสั่ง ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียม พื้นที่ทำงาน และตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง โฟลเดอร์ มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 mkdir -p "$HOME/lanta-experience"
@@ -69,7 +39,7 @@ mkdir -p configs input jobs logs notes results src
 
 ### ขั้นที่ 2: ตรวจไฟล์และ log
 
-ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า ขั้นตอนการทำงาน เดินครบ
 
 ```bash
 {
@@ -109,7 +79,7 @@ EOF
 
 ### ขั้นที่ 4: ตรวจไฟล์และ log
 
-ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า ขั้นตอนการทำงาน เดินครบ
 
 ```bash
 cat notes/readiness.txt
@@ -120,11 +90,11 @@ cat configs/run-small.env
 
 ก่อนส่งงานแรก ให้ผู้ใช้ตรวจชื่อเครื่อง โฟลเดอร์ปัจจุบัน และสถานะ quota/account คำสั่งนี้จะบันทึกข้อมูลพื้นฐานลงใน `notes/readiness.txt` และบันทึก quota, balance, queue, module ลงใน `notes/system-check.txt`
 
-จากนั้น block จะสร้าง `configs/run-small.env` เป็นไฟล์กำกับการทดลองตัวอย่าง ผู้ใช้จะเห็นรูปแบบ `KEY=value` ซึ่งใช้ซ้ำได้ในงานวิทยาศาสตร์จริง เช่น input, output, จำนวน worker และ mode ของการรัน
+จากนั้น ชุดคำสั่ง จะสร้าง `configs/run-small.env` เป็นไฟล์กำกับการทดลองตัวอย่าง ผู้ใช้จะเห็นรูปแบบ `KEY=value` ซึ่งใช้ซ้ำได้ในงานวิทยาศาสตร์จริง เช่น input, output, จำนวน worker และ mode ของการรัน
 
 เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `notes/readiness.txt`, `notes/system-check.txt`, และ `configs/run-small.env` หาก `myquota` หรือ `sbalance` แสดง error ให้เก็บข้อความนั้นไว้ก่อน แล้วตรวจต่อด้วย `df -h` หรือ `squeue -u "$USER"` เมื่อคำสั่ง `module` error ให้ logout แล้ว login ใหม่ก่อนเริ่มส่ง job
 
-## Check
+## ตรวจผล
 
 ```bash
 find notes configs -maxdepth 2 -type f | sort
@@ -133,8 +103,8 @@ tail -40 notes/system-check.txt
 
 ### คำอธิบาย
 
-หลังจากรัน block แรกแล้ว ให้ผู้ใช้ตรวจไฟล์ที่สร้างขึ้นด้วย `find` และอ่านท้ายไฟล์ `notes/system-check.txt` ด้วย `tail`
+หลังจากรัน ชุดคำสั่ง แรกแล้ว ให้ผู้ใช้ตรวจไฟล์ที่สร้างขึ้นด้วย `find` และอ่านท้ายไฟล์ `notes/system-check.txt` ด้วย `tail`
 
 จุดสำคัญคือผู้ใช้ต้องอ่านหลักฐานในไฟล์นี้ เพราะ quota, account, queue และ module มีผลต่อ job ถัดไปโดยตรง
 
-เมื่อรายการไฟล์ยังขาด ให้ตรวจ `pwd` ก่อน เพราะสาเหตุที่พบบ่อยคือแปะคำสั่งในคนละโฟลเดอร์ หาก `tail` แจ้งว่าไฟล์หาย ให้กลับไปรัน block เตรียม readiness ใหม่ให้ครบก่อนเดินต่อ
+เมื่อรายการไฟล์ยังขาด ให้ตรวจ `pwd` ก่อน เพราะสาเหตุที่พบบ่อยคือแปะคำสั่งในคนละโฟลเดอร์ หาก `tail` แจ้งว่าไฟล์หาย ให้กลับไปรัน ชุดคำสั่ง เตรียม readiness ใหม่ให้ครบก่อนเดินต่อ

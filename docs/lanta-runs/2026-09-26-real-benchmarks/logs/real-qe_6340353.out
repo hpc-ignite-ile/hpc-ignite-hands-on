@@ -1,9 +1,0 @@
-{"case": 2, "ranks": 1, "repeat": 1, "elapsed_s": 49.100262904539704, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 1, "repeat": 2, "elapsed_s": 49.13628575205803, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 1, "repeat": 3, "elapsed_s": 51.92131544277072, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 2, "repeat": 1, "elapsed_s": 33.44743700977415, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 2, "repeat": 2, "elapsed_s": 32.526870196685195, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 2, "repeat": 3, "elapsed_s": 32.39255703333765, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 4, "repeat": 1, "elapsed_s": 21.5205479580909, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 4, "repeat": 2, "elapsed_s": 21.236690145917237, "energy_Ry": -3541.13059165, "gate": "PASS"}
-{"case": 2, "ranks": 4, "repeat": 3, "elapsed_s": 21.244333183392882, "energy_Ry": -3541.13059165, "gate": "PASS"}

@@ -57,3 +57,10 @@ scratch/
 .hpc-ignite/
 .playwright-cli/
 output/playwright/
+
+# Operator records belong in the separate private repository.
+docs/lanta-runs/
+docs/tutorial-evidence/
+docs/images/run-evidence/
+benchmarks/real/
+slurm/qualification/

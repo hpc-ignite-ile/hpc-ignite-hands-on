@@ -1,9 +1,0 @@
-{"case": 1, "ranks": 1, "repeat": 1, "elapsed_s": 25.045819151215255, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 1, "repeat": 2, "elapsed_s": 25.35047923307866, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 1, "repeat": 3, "elapsed_s": 24.974869219586253, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 2, "repeat": 1, "elapsed_s": 15.189021460711956, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 2, "repeat": 2, "elapsed_s": 14.896057909354568, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 2, "repeat": 3, "elapsed_s": 15.024152109399438, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 4, "repeat": 1, "elapsed_s": 9.15565419755876, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 4, "repeat": 2, "elapsed_s": 9.481908508576453, "energy_Ry": -253.63402999, "gate": "PASS"}
-{"case": 1, "ranks": 4, "repeat": 3, "elapsed_s": 9.342183669097722, "energy_Ry": -253.63402999, "gate": "PASS"}

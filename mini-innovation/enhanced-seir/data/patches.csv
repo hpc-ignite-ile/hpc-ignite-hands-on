@@ -1,0 +1,4 @@
+patch_id,name,pop_0_19,pop_20_39,pop_40_64,pop_65_plus,initial_exposed,initial_infectious
+0,Campus,26000,42000,31000,9000,14,8
+1,City,54000,78000,72000,28000,8,4
+2,Rural,18000,23000,26000,17000,2,1

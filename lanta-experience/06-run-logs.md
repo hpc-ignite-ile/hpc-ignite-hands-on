@@ -1,57 +1,27 @@
-# 06 Data Summary And Resource Logs
+# 06 สรุปข้อมูลและทรัพยากรที่ใช้
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **5–18** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+รู้จักพื้นที่เก็บไฟล์และโปรแกรมที่ใช้ ก่อนเริ่มส่งงานคำนวณ
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** การดูไฟล์และตรวจรายชื่อโปรแกรมไม่ต้องใช้ GPU ส่วนงานคำนวณต้องส่งผ่าน Slurm
+- **ตรวจผลและลองปรับ:** ตรวจว่าอยู่ในโฟลเดอร์ที่ต้องการและเปิดไฟล์ได้ แล้วเริ่มจากงานเล็กหนึ่งงาน
 
-![Booklet workflow: orientation](../docs/images/booklet/Part1-FirstDayKnowingHPC.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Access, filesystem and environment checks; not a compute benchmark.
-
-No GPU is needed. File/module checks need no compute allocation; use the existing one-CPU Slurm smoke job to prove compute-node access. Budget storage from input + output + checkpoints, not input alone.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-No page-specific Slurm run is recorded for this setup/reading page. Do not invent usage numbers or a successful-run screenshot. Collect evidence from the next executable lesson using the worksheet.
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Record account, quota, module versions and a small job ID before moving to CPU scaling. Do not run a CPU stress test on a login node.
-
-**Correctness gate:** Confirm the compute hostname, intended account, output file and exit status. Redact tokens and private keys from evidence.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 ใช้หลังจากรัน lab ครบแล้ว เพื่อรวมหลักฐานของข้อมูล ผลลัพธ์ และทรัพยากรที่ใช้ไว้ใน `notes/`.
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `date`, `tee`, `find`, `head`, `wc`, `sha256sum`, `cut`, `paste`, `sacct`, `sbalance` และ `sbill`
 
-เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน block เตรียมพื้นที่ใน [README.md](README.md) สำหรับ workspace ของกิจกรรม
+เริ่มจาก SSH ตาม [../LANTA_SETUP.md#1-ssh-to-lanta](../LANTA_SETUP.md#1-ssh-to-lanta) แล้วรัน ชุดคำสั่ง เตรียมพื้นที่ใน [README.md](README.md) สำหรับ พื้นที่ทำงาน ของกิจกรรม
 
-## Copy-Paste
+## ลงมือทำ
 
-แปะทีละ block ตามลำดับ แต่ละ block ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
+แปะทีละ ชุดคำสั่ง ตามลำดับ แต่ละ ชุดคำสั่ง ทำหนึ่งงานหลักและมีหลักฐานให้ตรวจทันทีหลังรัน
 
-### ขั้นที่ 1: เตรียม workspace และตัวแปร
+### ขั้นที่ 1: เตรียม พื้นที่ทำงาน และตัวแปร
 
-ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง folder มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
+ขั้นนี้กำหนดพื้นที่ทำงานของบท สร้าง โฟลเดอร์ มาตรฐาน และตั้งค่า account/partition ที่ใช้ซ้ำในขั้นถัดไป
 
 ```bash
 cd "$HOME/lanta-experience"
@@ -82,7 +52,7 @@ SPENT_LOG="notes/resource-spent-${RUN_STAMP}.tsv"
 
 ### ขั้นที่ 2: ตรวจไฟล์และ log
 
-ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า ขั้นตอนการทำงาน เดินครบ
 
 ```bash
     echo
@@ -102,7 +72,7 @@ SPENT_LOG="notes/resource-spent-${RUN_STAMP}.tsv"
 
 ### ขั้นที่ 3: ตรวจไฟล์และ log
 
-ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า ขั้นตอนการทำงาน เดินครบ
 
 ```bash
 if [ -s notes/job-history.tsv ]; then
@@ -118,7 +88,7 @@ sbill 2>&1 | tee "notes/bill-${RUN_STAMP}.txt" || true
 
 ### ขั้นที่ 4: ตรวจไฟล์และ log
 
-ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า workflow เดินครบ
+ขั้นนี้อ่านหลักฐานหลังรัน เช่นรายชื่อไฟล์ ผลลัพธ์ท้าย log หรือสถานะงาน เพื่อยืนยันว่า ขั้นตอนการทำงาน เดินครบ
 
 ```bash
 echo "Data summary: $DATA_LOG"
@@ -130,6 +100,6 @@ head -30 "$SPENT_LOG"
 
 หลังจากรัน lab หลายงานแล้ว ให้ผู้ใช้รวมหลักฐานไว้ใน `notes/` คำสั่งนี้อ่าน `notes/job-history.tsv`, แสดงรายชื่อไฟล์ใน `results/`, สรุปไฟล์ sensor และ diffusion และสร้าง checksum ให้ผลลัพธ์สำคัญ
 
-จากนั้น block ใช้ `sacct` เพื่อดึงข้อมูลทรัพยากรของ job เช่น partition, state, elapsed time, CPU, memory และ exit code และบันทึก `sbalance` กับ `sbill` พร้อม timestamp
+จากนั้น ชุดคำสั่ง ใช้ `sacct` เพื่อดึงข้อมูลทรัพยากรของ job เช่น partition, state, elapsed time, CPU, memory และ exit code และบันทึก `sbalance` กับ `sbill` พร้อม timestamp
 
-เมื่อสำเร็จ ผู้ใช้จะได้ไฟล์ `notes/data-summary-<เวลา>.txt`, `notes/resource-spent-<เวลา>.tsv`, `notes/balance-<เวลา>.txt`, และ `notes/bill-<เวลา>.txt` เมื่อ resource log ว่าง ให้ตรวจว่า `notes/job-history.tsv` มี job id เมื่อ `sacct` ยังรอข้อมูล job ใหม่ ให้รอสักครู่แล้วรันซ้ำ
+เมื่อสำเร็จ ผู้ใช้จะได้ไฟล์ `notes/data-summary-<เวลา>.txt`, `notes/resource-spent-<เวลา>.tsv`, `notes/balance-<เวลา>.txt`, และ `notes/bill-<เวลา>.txt` เมื่อ resource log ว่าง ให้ตรวจว่า `notes/job-history.tsv` มี หมายเลขงาน เมื่อ `sacct` ยังรอข้อมูล job ใหม่ ให้รอสักครู่แล้วรันซ้ำ

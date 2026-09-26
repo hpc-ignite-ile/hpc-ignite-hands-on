@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/scripts/run_qe.py", line 25, in <module>
-    subprocess.run(['/usr/bin/time','-v','-o',str(run/'time.txt'),'srun','--exact','-n',str(ranks),'-c','1','pw.x','-inp',str(run/'input.in')],stdout=log,stderr=subprocess.STDOUT,check=True)
-  File "/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260925/envs/hpc-mesa-3.5.1/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/usr/bin/time', '-v', '-o', '/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/results/qe-6340338/case1-p1-r1/time.txt', 'srun', '--exact', '-n', '1', '-c', '1', 'pw.x', '-inp', '/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/results/qe-6340338/case1-p1-r1/input.in']' returned non-zero exit status 139.

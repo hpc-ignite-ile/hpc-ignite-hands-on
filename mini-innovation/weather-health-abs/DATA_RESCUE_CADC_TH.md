@@ -1,43 +1,13 @@
-# Data Rescue: กู้ข้อมูล CADC FITS และเตรียมข้อมูล HPDA บน LANTA
+# ดาวน์โหลดไฟล์ขนาดใหญ่และตรวจว่าได้ข้อมูลครบ
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+ฝึกดาวน์โหลดไฟล์ภาพดาราศาสตร์ FITS และส่งเข้า LANTA โดยไม่ต้องเริ่มดาวน์โหลดใหม่เมื่อการเชื่อมต่อขาด
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เผื่อพื้นที่ไฟล์ดาวน์โหลด ไฟล์แตกแล้ว และผลลัพธ์ วัดเวลาเตรียมข้อมูลแยกจากเวลาจำลอง
+- **ตรวจผลและลองปรับ:** เริ่มจากไฟล์เดียว ตรวจขนาดและค่า checksum ก่อนส่งเข้า LANTA แล้วเปิดไฟล์ตรวจว่าอ่านภาพได้จริง
 
-![Booklet workflow: weather](../../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Weather-data preparation and synthetic health-agent modelling; downloaded data and model validity are different checks.
-
-Budget source archive + extracted data + intermediate tables + outputs. Model cost scales with agents, steps and seeds; preprocessing cost scales with input records and parsing. Record both phases separately.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-No page-specific Slurm run is recorded for this setup/reading page. Do not invent usage numbers or a successful-run screenshot. Collect evidence from the next executable lesson using the worksheet.
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Pilot one weather file and one seed, then 10 files or seeds with bounded array concurrency. Compare chunk sizes without changing missing-value handling, dates or units. Do not silently replace failed data downloads with synthetic input.
-
-**Correctness gate:** Verify source manifest/checksums, timestamp coverage, units, missing values and population invariants. Successful download is not validated health prediction.
-
-[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#earth-observation) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
@@ -45,27 +15,13 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 
 URL อ้างอิงของผู้ให้บริการ: [CADC Direct Data Service](https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/doc/data/)
 
-## บทนำแบบ Verse
+## ภาพรวมกิจกรรม
 
-เมื่อเห็นการหมดเวลา ให้แยกชั้นการสื่อสารก่อนตัดสิน<br>
-DNS, TCP, HTTP header, ช่วงไบต์ และอัตรารับข้อมูล คือหลักฐานคนละชั้น<br>
-เมื่อคลัสเตอร์ออกไปยังปลายทางติดทาง ให้พักข้อมูลจากเครือข่ายที่เข้าถึงได้<br>
-ให้ไฟล์ทุกชิ้นเดินทางพร้อม `.part`, checksum, manifest และบันทึกการตรวจรับ<br>
-ส่งเข้า LANTA ด้วย `rsync` ที่ดาวน์โหลดต่อจากไฟล์ค้างได้ แล้วให้ Slurm อ่านข้อมูลจากพื้นที่พัก<br>
-งาน HPDS ที่ดีมีเส้นทางข้อมูลชัด มีหลักฐานขนาดไฟล์ มีรอยประทับของไฟล์ และมีการตรวจความสมเหตุสมผลก่อนแบบจำลองอ่านข้อมูล
+ดาวน์โหลดไฟล์ให้ครบ ตรวจขนาดและ checksum แล้วจึงส่งเข้า LANTA ถ้าการเชื่อมต่อขาด ให้เริ่มต่อจากไฟล์ชั่วคราวแทนเริ่มใหม่ทั้งหมด
 
-## สรุปทางแก้ที่เร็วสำหรับกรณี Chaipat
+## เมื่อดาวน์โหลดไม่ได้
 
-จากการทดสอบวันที่ 2026-08-07:
-
-| จุดทดสอบ | ผล |
-|---|---|
-| เครื่องนอก LANTA | `curl -I -L` ได้ `HTTP 200`, `content-length=1706276160` |
-| เครื่องนอก LANTA | `curl --range 0-1048575` ได้ `HTTP 206` และรับ 1 MiB สำเร็จ |
-| LANTA login/transfer endpoint | `curl` ไป CADC port 443 ได้ `curl: (28)` และ `http=000` |
-| LANTA ไป NASA POWER | `HTTP 200` |
-
-ข้อสรุปเชิงปฏิบัติ: กรณีนี้เป็นปัญหาเส้นทางจาก LANTA ไป CADC เฉพาะปลายทางหรือเฉพาะเส้นทางเครือข่าย วิธีที่ใช้เวลาน้อยสุดคือดาวน์โหลดจากเครื่องผู้ใช้ เครื่องห้องปฏิบัติการ หรือ cloud VM ที่ CADC เปิดทาง แล้วส่งเข้า LANTA ด้วย `rsync --partial --append-verify`
+ตรวจรหัสตอบกลับและสิทธิ์ก่อน ลองจากเครื่องที่คุณมีสิทธิ์ใช้งานอีกเครื่องเพื่อแยกปัญหาเครือข่าย หากดาวน์โหลดที่นั่นได้ ให้ส่งไฟล์เข้า LANTA ผ่านเครื่องรับส่งข้อมูล ไม่ปิดการตรวจความปลอดภัยเพื่อให้ดาวน์โหลดผ่าน
 
 ## หลักตัดสินใจ
 
@@ -80,7 +36,7 @@ DNS, TCP, HTTP header, ช่วงไบต์ และอัตรารั�
 
 ## แนวแก้ในโค้ดที่ใช้ `urllib.request`
 
-โค้ดตัวอย่างมีโครงดีอยู่แล้ว: มี manifest, checksum, การตรวจ FITS และวาง `src` ลง `sys.path` จากตำแหน่ง repo แต่ส่วนดาวน์โหลดพื้นฐานควรเสริม 5 เรื่อง
+ส่วนดาวน์โหลดควรทำให้ตรวจความครบถ้วนและเริ่มต่อได้ โดยคำนึงถึงห้าเรื่องต่อไปนี้
 
 1. ตั้งเวลาเชื่อมต่อและเวลาอ่านข้อมูลให้ชัดเจน
 2. ส่ง `User-Agent` ที่มีชื่อโครงการและช่องทางติดต่อ
@@ -94,7 +50,7 @@ DNS, TCP, HTTP header, ช่วงไบต์ และอัตรารั�
 import subprocess
 from pathlib import Path
 
-USER_AGENT = "m81-group-stellar-map/0.2 (contact: chaipat_ja@cmu.ac.th)"
+USER_AGENT = "hpc-learning/1.0 (contact: your-email@example.org)"
 
 def fetch_with_curl(url: str, outfile: Path) -> None:
     part = outfile.with_suffix(outfile.suffix + ".part")
@@ -115,7 +71,7 @@ def fetch_with_curl(url: str, outfile: Path) -> None:
 
 ผู้ใช้ที่คัดลอก repo ไว้อ้างอิงสามารถดูตัวช่วยขนาดเล็กได้ที่ `src/cadc_resumable_fetch.py` โค้ดนั้นใช้แนวเดียวกันคือทดสอบปลายทางก่อน ดาวน์โหลดเมื่อระบุ `--download` แล้วเขียน manifest กับ checksum หลังไฟล์เต็มผ่านการตรวจความสมเหตุสมผลของ FITS
 
-## Copy-Paste บนเครื่องผู้ใช้หรือ WSL
+## ลงมือทำ บนเครื่องผู้ใช้หรือ WSL
 
 ### ขั้นที่ 1: ตั้งค่า URL และทดสอบจากเครือข่ายของเครื่องผู้ใช้
 
@@ -124,7 +80,7 @@ def fetch_with_curl(url: str, outfile: Path) -> None:
 ```bash
 export CADC_URL='https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/data/pub/CFHTSG/G006.149.683%2B68.863.G.fits'
 export CADC_FILE='G006.149.683+68.863.G.fits'
-export CADC_USER_AGENT='m81-group-stellar-map/0.2 (contact: chaipat_ja@cmu.ac.th)'
+export CADC_USER_AGENT='hpc-learning/1.0 (contact: your-email@example.org)'
 export CADC_LOCAL_ROOT="${CADC_LOCAL_ROOT:-$HOME/cadc-rescue}"
 mkdir -p "$CADC_LOCAL_ROOT"/{raw,logs,manifest}
 cd "$CADC_LOCAL_ROOT"
@@ -205,7 +161,7 @@ rsync -avP --partial --append-verify "$CADC_LOCAL_ROOT"/ \
 
 ถ้าใช้พื้นที่โครงการ ให้เปลี่ยนปลายทางเป็นเส้นทางที่ทีมมีสิทธิ์ เช่น `/project/<project-id>/users/<username>/data/cadc-rescue/`
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
 ### ขั้นที่ 5: เข้าสู่ LANTA
 
@@ -221,7 +177,7 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ```bash
 export CADC_URL='https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/data/pub/CFHTSG/G006.149.683%2B68.863.G.fits'
-export CADC_USER_AGENT='m81-group-stellar-map/0.2 (contact: chaipat_ja@cmu.ac.th)'
+export CADC_USER_AGENT='hpc-learning/1.0 (contact: your-email@example.org)'
 export CADC_RESCUE_ROOT="${CADC_RESCUE_ROOT:-$HOME/cadc-rescue}"
 mkdir -p "$CADC_RESCUE_ROOT"/logs
 cd "$CADC_RESCUE_ROOT"

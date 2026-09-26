@@ -1,68 +1,18 @@
 # Mini Innovation: LANTA EpiSprint และ Twin-B MicroCosim
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+จำลองคนหรือหน่วยย่อยหลายตัวที่มีพฤติกรรมต่างกัน
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เริ่มประมาณจากจำนวนตัวแทน × จำนวนรอบ × จำนวนการทดลอง และเผื่อข้อมูลประวัติ
+- **ตรวจผลและลองปรับ:** ใช้ค่าเริ่มสุ่มเดียวกันเปรียบเทียบความเร็ว ตรวจจำนวนประชากรให้คงเดิม ผลจำลองนี้ไม่ใช่คำพยากรณ์โรคสำหรับตัดสินใจจริง
 
-![Booklet workflow: agents](../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Synthetic epidemic/agent ensemble; performance evidence does not validate epidemiological predictions.
-
-For local interactions, start with work proportional to agents × steps × repeats; all-pairs interactions can instead grow quadratically. Memory grows with agent state plus retained history. Pilot one seed before multiplying by scenarios.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339672 | COMPLETED | 1 | 4 | 1.415 | 0.001111 | 2.23 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/mini-innovation-readme.png)
-
-Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/mini-innovation-readme.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339672` used 1.415 CPU-seconds over 4 summed elapsed seconds: about **0.35 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339672` · archive member `tutorials/mini-innovation/README/logs/epi-smoke_6339672.out`
-
-```text
-mesa 3.5.1
-api AgentSet MultiGrid
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Compare fixed-size 1/2/4-worker or rank runs with three repeats, preserving seeds and input. Then vary agent count 10× separately. Limit concurrent array tasks and aggregate throughput only after checking every task.
-
-**Correctness gate:** Check population conservation, finite/non-negative compartments and seed-specific output agreement. Compare stochastic distributions when implementations change random-stream ordering.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#agent-models) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 ![Mesa agents แลกเปลี่ยนอุณหภูมิและ setpoint กับโมเดลอาคาร](../docs/images/beginners/mesa-twinb-learning-map.png)
 
 ภาพสถาปัตยกรรมที่ตั้งใจ: surrogate สำหรับฝึกพื้นฐานแยกจาก EnergyPlus integration ไม่ใช่หลักฐานว่าระบบ coupled ผ่านแล้ว. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
 
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
 
 แบบฝึกปฏิบัตินี้เป็นคู่มือภาษาไทยสำหรับกิจกรรมสดประมาณ 40 คน ประกอบด้วยนวัตกรรมย่อยสองแนวทางบน LANTA ได้แก่ **LANTA EpiSprint** สำหรับแบบจำลองโรคระบาดเชิงตัวแทน และ **Twin-B MicroCosim** สำหรับการจำลองร่วมระหว่างแบบจำลองอุณหภูมิของอาคารกับตัวแทนผู้อยู่อาศัยใน Mesa
 
@@ -70,18 +20,9 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 
 เริ่มจากการเข้าเครื่องด้วย SSH และเตรียมพื้นที่ทำงานตาม [00-connect-to-lanta.md](00-connect-to-lanta.md) จากนั้นเลือกหน้าถัดไปตามลำดับกิจกรรม
 
-## บทนำแบบ Verse
+## ภาพรวมกิจกรรม
 
-ตั้งสถานะประชากร กำหนดเมล็ดสุ่มให้ย้อนรอยผลได้<br>
-ให้ตัวแทนพบกันบนตารางพื้นที่ แล้วบันทึกผลทีละวัน<br>
-ส่งสถานการณ์ทดลองเป็นงานชุดสั้นให้ LANTA กระจายการคำนวณ<br>
-รวมผลเป็นตาราง เปรียบเทียบค่าสูงสุด อัตราการติดเชื้อสะสม และความไวต่อนโยบาย<br>
-ผลที่ดีต้องตรวจซ้ำได้ มีบันทึกการรัน ค่าตั้งต้น รุ่นซอฟต์แวร์ และการตรวจความสมเหตุสมผลรองรับ
-
-อ่านอุณหภูมิรายพื้นที่จากแบบจำลองอาคาร ส่งให้ตัวแทนประเมินความสบาย<br>
-รวมคำขอปรับอุณหภูมิกลับไปคำนวณภาระทำความเย็น แล้วเดินเวลาไปทีละช่วง<br>
-ให้ LANTA กระจายนโยบายและเมล็ดสุ่มเป็นงานสั้นหลายชุด<br>
-ผลที่ดีต้องอธิบายการแลกเปลี่ยนระหว่างพลังงาน ความสบาย และหลักฐานจาก CSV ได้
+กิจกรรมนี้ให้คุณสร้างตัวแทนคน ทดลองหลายสถานการณ์ และอ่านผลด้วยกราฟ เลือกแบบจำลองโรคหรือแบบจำลองอาคารเพียงเรื่องเดียวก่อน ใช้ข้อมูลสมมติและตรวจผลทุกขั้น
 
 ## คำอธิบายเชิงวิชาการ
 
@@ -206,7 +147,7 @@ echo "Read: tail -50 logs/epi-smoke_${job_id}.out"
 
 ### ขั้นที่ 4: เก็บ output และการใช้ทรัพยากร
 
-คำสั่งนี้แสดงทั้งแถว job และ `.batch`; อ่าน `MaxRSS` จาก `.batch` และเก็บ stdout/stderr ของ job id เดียวกันเสมอ
+คำสั่งนี้แสดงทั้งแถว job และ `.batch`; อ่าน `MaxRSS` จาก `.batch` และเก็บ ข้อความผลและข้อผิดพลาด ของ หมายเลขงาน เดียวกันเสมอ
 
 ```bash
 sacct -j "$job_id" -P \
@@ -219,9 +160,6 @@ cat "logs/epi-smoke_${job_id}.err"
 
 เมื่อสำเร็จ บันทึกการรันจะแสดง `mesa 3.5.1` และชื่อ API `AgentSet` กับ `MultiGrid` ที่ใช้ในบทเรียน
 
-ผลตรวจจริงวันที่ 2026-09-25 คือ job `6338471`, บัญชี `pv915002`, สถานะ `COMPLETED (0:0)`, elapsed 22 วินาที, `TotalCPU=2.227` วินาที และ `MaxRSS=114080K`; stdout คือ `mesa 3.5.1` กับ `api MultiGrid AgentSet` และ stderr ว่าง ดู [หลักฐานครบ](../docs/lanta-runs/2026-09-25-pv915002/README.md#hpc-mesa-smoke-job-6338471)
-
-![ภาพประกอบ expected result ของ hpc-mesa smoke](../docs/images/expected-hpc-mesa-smoke.png)
 
 ## ขอบเขตความปลอดภัย
 
@@ -231,17 +169,3 @@ cat "logs/epi-smoke_${job_id}.err"
 - ใช้สำหรับเรียนรู้ HPC, ABS, ความแปรปรวน และการตีความผลลัพธ์
 - ใช้ผลลัพธ์เพื่ออภิปรายเชิงวิธีวิทยา เช่น การรันซ้ำ การตรวจความไว และเส้นทางหลักฐาน
 - แยกงานฝึกออกจากการพยากรณ์โรคและการกำหนดนโยบายสาธารณสุขจริง
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340197 | COMPLETED | 1 | 4 | 1.831 | 0.001111 | 0.36 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-readme.png)
-<!-- performance-rerun:end -->

@@ -1,4 +1,0 @@
-{"latitudes": 90, "forcing_W_m2": 0, "years": 8, "elapsed_s": 0.7082342095673084, "global_temperature_C": 14.288010068281517, "toa_imbalance_W_m2": 0.00031041745561845676, "gate": "PASS"}
-{"latitudes": 90, "forcing_W_m2": 4, "years": 8, "elapsed_s": 0.6540751960128546, "global_temperature_C": 17.72937046269984, "toa_imbalance_W_m2": 0.0002614297771898974, "gate": "PASS"}
-{"latitudes": 180, "forcing_W_m2": 0, "years": 9, "elapsed_s": 0.9023003950715065, "global_temperature_C": 14.58430236585225, "toa_imbalance_W_m2": 0.0002117247636797922, "gate": "PASS"}
-{"latitudes": 180, "forcing_W_m2": 4, "years": 8, "elapsed_s": 0.7861707145348191, "global_temperature_C": 17.731873591986616, "toa_imbalance_W_m2": 0.0002475946754985187, "gate": "PASS"}

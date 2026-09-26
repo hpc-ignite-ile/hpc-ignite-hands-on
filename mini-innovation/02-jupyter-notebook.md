@@ -1,73 +1,13 @@
 # 02 ใช้ Jupyter Notebook บน LANTA ผ่าน Slurm และ SSH Tunnel
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **19–23** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+เปิดสมุดงาน Jupyter บนเครื่องคำนวณแล้วใช้ผ่านเว็บเบราว์เซอร์
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** ขอทรัพยากรตามงานในสมุด ไม่ใช่ตามเบราว์เซอร์ เปิดทิ้งไว้ก็ยังจองเครื่องอยู่
+- **ตรวจผลและลองปรับ:** ตรวจว่าใช้ Python และเครื่องคำนวณที่ต้องการ บันทึกงานและปิดการจองเมื่อเสร็จ ห้ามเผยแพร่ token
 
-![Booklet workflow: jupyter](../docs/images/booklet/Part2-RunningJobs.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Allocated notebook service and HTTP probe; service uptime is not numerical compute time.
-
-Request resources for the notebook kernels' actual workload, not the browser. An idle 4-CPU session for 30 minutes reserves 2 CPU-hours even when TotalCPU is small. Leave RAM headroom for kernels and copies of data.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339784 | COMPLETED | 1 | 38 | 3.270 | 0.021111 | 89.54 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/mini-innovation-02-jupyter-notebook.png)
-
-Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/mini-innovation-02-jupyter-notebook.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339784` used 3.270 CPU-seconds over 38 summed elapsed seconds: about **0.09 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339784` · archive member `tutorials/mini-innovation/02-jupyter-notebook/logs/jupyter_6339784.out`
-
-```text
-/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260925/envs/hpc-mesa-3.5.1/bin/jupyter
-Available kernels:
-  python3    /lustrefs/disk/home/wdiazcar/.local/share/jupyter/kernels/python3
-JupyterLab on LANTA
-Job ID: 6339784
-Compute node: x1001c3s6b1n1
-Port: 7265
-Working dir: /lustrefs/disk/project/pv915002-hpcign/wdiazcar/hpc-ignite-rerun-20260926/tutorials/mini-innovation/02-jupyter-notebook
-Local tunnel:
-ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -L 7265:x1001c3s6b1n1:7265 wdiazcar@lanta.nstda.or.th
-Browser URL appears below. Use 127.0.0.1 with the token from Jupyter.
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Compare import-only and an explicitly timed cell, record kernel RSS and service duration, then stop the allocation when done. Do not improve apparent efficiency by leaving an idle notebook running.
-
-**Correctness gate:** Verify the intended kernel and compute node, successful saved output, and tunnel connectivity. Redact notebook tokens in every captured image.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#miniweather) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 หน้านี้เปิด JupyterLab บนเครื่องคำนวณของ LANTA ผ่านการจัดสรรทรัพยากรของ Slurm แล้วส่งพอร์ตกลับมาเปิดในเบราว์เซอร์บนเครื่องผู้ใช้ด้วย SSH tunnel โดยใช้สภาพแวดล้อมและโมดูลจาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
 
@@ -98,7 +38,7 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 
 ก่อนใช้ทางสำรองของระบบกลาง ให้รันหน้า [01-custom-python-env-module.md](01-custom-python-env-module.md) ถึงขั้น `python -m ipykernel install --user --name hpc-mesa ...` เพื่อให้เซิร์ฟเวอร์กลางเห็นเคอร์เนลของกิจกรรม
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -112,7 +52,7 @@ ssh <lanta-username>@lanta.nstda.or.th
 
 ผู้ใช้ที่ตั้ง alias ตาม [../docs/SSH_PRIVATE_KEY_LANTA_TH.md](../docs/SSH_PRIVATE_KEY_LANTA_TH.md) สามารถใช้ `ssh lanta`
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -358,7 +298,7 @@ tail -80 "logs/jupyter_${job_id}.out"
 grep -E 'Compute node:|Port:|127.0.0.1|token=' "logs/jupyter_${job_id}.out" || true
 ```
 
-## Copy-Paste กลับไปที่เครื่องผู้ใช้
+## ลงมือทำ กลับไปที่เครื่องผู้ใช้
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -380,7 +320,7 @@ ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=60 -o ServerAliveCount
 http://127.0.0.1:<port>/lab?token=<token-from-log>
 ```
 
-เมื่อ JupyterLab เปิดแล้ว ให้เข้า folder `notebooks/` และเปิด `episprint_explore.ipynb`
+เมื่อ JupyterLab เปิดแล้ว ให้เข้า โฟลเดอร์ `notebooks/` และเปิด `episprint_explore.ipynb`
 
 ### กรณีพอร์ตบนเครื่องผู้ใช้ชนกัน
 
@@ -437,17 +377,3 @@ sacct -j <jobid> --format=JobID,JobName,Partition,State,Elapsed,AllocCPUS,ReqMem
 - ใช้สมุดบันทึกสำหรับสำรวจข้อมูล สร้างกราฟ และตรวจข้อผิดพลาดแบบโต้ตอบ
 - ย้ายงานที่รันยาวหรือรันซ้ำหลายสถานการณ์ไปเป็นสคริปต์ Python แล้วส่งด้วย `sbatch`
 - เก็บผลลัพธ์ขนาดใหญ่ในพื้นที่โครงการ และให้สมุดบันทึกอ่านจากเส้นทางหรือ symbolic link ที่ควบคุมได้
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340238 | COMPLETED | 1 | 33 | 3.586 | 0.018333 | 90.65 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-02-jupyter-notebook.png)
-<!-- performance-rerun:end -->

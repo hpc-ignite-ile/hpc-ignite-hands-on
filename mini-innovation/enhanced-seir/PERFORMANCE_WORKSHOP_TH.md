@@ -1,94 +1,31 @@
 # Workshop: ประเมินสมรรถนะของ Enhanced SEIR บน LANTA
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+จำลองคนหรือหน่วยย่อยหลายตัวที่มีพฤติกรรมต่างกัน
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เริ่มประมาณจากจำนวนตัวแทน × จำนวนรอบ × จำนวนการทดลอง และเผื่อข้อมูลประวัติ
+- **ตรวจผลและลองปรับ:** ใช้ค่าเริ่มสุ่มเดียวกันเปรียบเทียบความเร็ว ตรวจจำนวนประชากรให้คงเดิม ผลจำลองนี้ไม่ใช่คำพยากรณ์โรคสำหรับตัดสินใจจริง
 
-![Booklet workflow: agents](../../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Synthetic epidemic/agent ensemble; performance evidence does not validate epidemiological predictions.
-
-For local interactions, start with work proportional to agents × steps × repeats; all-pairs interactions can instead grow quadratically. Memory grows with agent state plus retained history. Pilot one seed before multiplying by scenarios.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339673 | COMPLETED | 1 | 8 | 4.751 | 0.008889 | 16.95 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../../docs/images/run-evidence/mini-innovation-enhanced-seir-performance-workshop-th.png)
-
-Browser screenshot of the [archived evidence viewer](../../docs/tutorial-evidence/mini-innovation-enhanced-seir-performance-workshop-th.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339673` used 4.751 CPU-seconds over 8 summed elapsed seconds: about **0.59 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339673` · archive member `tutorials/mini-innovation/enhanced-seir/PERFORMANCE_WORKSHOP_TH/logs/seir-roof_6339673.out`
-
-```text
-
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Compare fixed-size 1/2/4-worker or rank runs with three repeats, preserving seeds and input. Then vary agent count 10× separately. Limit concurrent array tasks and aggregate throughput only after checking every task.
-
-**Correctness gate:** Check population conservation, finite/non-negative compartments and seed-specific output agreement. Compare stochastic distributions when implementations change random-stream ordering.
-
-[Public applications and research-backed experiments](../../docs/REAL_APPLICATION_EXPERIMENTS.md#agent-models) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 หน้านี้เป็นแบบฝึกต่อจาก [TRAINING_SHEET_TH.md](TRAINING_SHEET_TH.md) สำหรับนวัตกรรมย่อยในห้องอบรม ผู้ใช้เริ่มจากเครื่องผู้ใช้ เข้า LANTA สร้างโค้ดและสคริปต์ Slurm ด้วย heredoc ส่งงานสั้น อ่านหลักฐาน และตัดสินใจจากผลจริงในพื้นที่ทำงานของตนเอง
 
-## บทนำแบบ Verse
+## ภาพรวมกิจกรรม
 
-ตั้งคำถามก่อนตั้งจำนวนแกนประมวลผล<br>
-ให้สมมติฐานเดินนำหน้า benchmark<br>
-วัดหนึ่งแกนของระบบ แล้วค่อยขยายแกนนั้น<br>
-อ่านเวลา หน่วยความจำ rank และผลวิทยาศาสตร์ในแฟ้มหลักฐานเดียวกัน<br>
-เมื่อ overhead ปรากฏ ให้จำแนกเป็นเวลาเริ่มงาน หน่วยความจำ การสื่อสาร GPU, I/O หรือ scheduler<br>
-คำตอบที่ดีคือการรันถัดไปที่มีเหตุผล ชี้ชัดว่าจะเปลี่ยนสิ่งใดและตรวจอะไร
+เริ่มจากคำถามว่าโปรแกรมช้าตรงไหน วัดทีละส่วน แล้วเปลี่ยนทีละอย่าง ตรวจว่าคำตอบยังถูกต้องก่อนสรุปว่าเร็วขึ้น
 
-## คำอธิบายเชิงวิชาการ
+## เริ่มจากหาว่าเวลาหายไปตรงไหน
 
-workshop นี้ยึดแนวคิดจาก `Booklet_LANTA-Experience.pdf` หน้า 15-17 ใน `/home/ubuntu/lanta/AI`: เริ่มจากโจทย์วิทยาศาสตร์ ระบุข้อมูลเข้าและแบบจำลอง เลือกทรัพยากรให้ตรงกับคอขวด เก็บชุดหลักฐาน แล้วใช้หลักฐานเพื่อวางการรันถัดไป
+บทนี้เป็นส่วนต่อยอด ถ้าเพิ่งเริ่ม ให้ทำ [วิธีวัดความเร็วเบื้องต้น](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) ก่อน แล้วค่อยกลับมาศึกษาการแบ่งงานหลายเครื่อง
 
-เอกสาร `PerformanceEvaluationOfHPC-AI.pdf` ชี้ให้แยก profiling กับ tracing อย่างมีลำดับ: profiling ให้ภาพรวมว่าเวลาสะสมอยู่ที่ส่วนใด ส่วน tracing ให้ลำดับเหตุการณ์ละเอียดเมื่อสมมติฐานแคบพอ ในแบบฝึกนี้ผู้ใช้ใช้เวลา บันทึกจาก Slurm การขยายจำนวน rank ของ MPI และ CSV สรุปเป็น profiling ชั้นแรก
+เริ่มจากวัดเวลารวมของแต่ละส่วน เช่น อ่านข้อมูล คำนวณ และเขียนผล เรียกว่า **profiling** เมื่อรู้แล้วว่าส่วนใดช้า จึงติดตามลำดับเหตุการณ์ละเอียด เรียกว่า **tracing** ไม่จำเป็นต้องเก็บรายละเอียดทุกอย่างตั้งแต่ครั้งแรก
 
-เอกสาร Python performance ใน `/home/ubuntu/lanta/AI` เน้นว่า overhead เกิดได้จากเวลาเริ่ม interpreter, การ import, วงรอบ pure Python, การย้ายข้อมูลในหน่วยความจำ และการเรียก subprocess ดังนั้นตัวอย่างท้ายบทจึงวัด Python stack overhead ควบคู่กับตัวแก้ปัญหา C++/MPI และหลักฐาน SEIR GPU/DDP
+สำหรับ Python ให้แยกเวลาเปิดโปรแกรมและนำเข้าแพ็กเกจออกจากเวลาคำนวณจริง งานที่เล็กมากอาจเสียเวลาเตรียมมากกว่าทำงาน
 
-## แหล่งอ้างอิงจาก `/home/ubuntu/lanta/AI`
-
-| ไฟล์ | หลักคิดที่นำมาใช้ | จุดที่ปรากฏในแบบฝึก |
-|---|---|---|
-| `Booklet_LANTA-Experience.pdf` หน้า 15-17 | เริ่มจากคำถามวิทยาศาสตร์ เลือกทรัพยากรจากลักษณะงาน และเก็บชุดหลักฐาน | `notes/perf_workshop_evidence.txt`, `sacct`, บันทึกงาน, CSV และคำถามสำหรับการรันถัดไป |
-| `PerformanceEvaluationOfHPC-AI.pdf` | แยก profiling, tracing, event-based data, sampling และ instrumentation เป็นระดับคำถาม | timing ชั้นแรก, rank scaling, overhead taxonomy และแนวทางขยายไป IPM, Score-P, Nsight Systems, NVTX |
-| `1 Understanding Performant Python  High Performance Python 3rd Edition.pdf` | มองระบบเป็นการคำนวณ หน่วยความจำ และเครือข่ายเชื่อมต่อ; ใช้ Amdahl อธิบาย serial fraction; ตรวจ GIL และการย้ายข้อมูลของ Python | `amdahl_gustafson.csv`, `solver_roofline_*.csv`, `python_stack_overhead.csv` |
-| `2 Profiling to Find Bottlenecks.pdf` | ตั้งสมมติฐาน วัดด้วยกรณีแทนงานจริง ใช้ cProfile เป็นภาพรวม ใช้ line/memory profiler เมื่อขอบเขตแคบ | ขั้น `cProfile`, CSV รายงาน และคำถามสะท้อนผล |
-| `ACM_School_Barcelona_2026_Wahib.pptx` | Scientific AI อยู่ในวงจรข้อมูล แบบจำลอง และการใช้ในวิทยาศาสตร์; การเชื่อมกับ ModSim ต้องมี provenance, correctness, UQ และ throughput | AI scaffolding prompt ใช้เฉพาะหลักฐานจากพื้นที่ทำงาน และเชื่อมผลสมรรถนะกลับสู่นวัตกรรมย่อย SEIR |
+คำที่ใช้ต่อไปนี้: **speedup** คือเร็วขึ้นกี่เท่า **overhead** คือเวลาประกอบที่ไม่ได้ใช้คำนวณคำตอบโดยตรง และ **rank** คือกระบวนการหนึ่งในกลุ่ม MPI ดู [คำศัพท์](../../docs/GLOSSARY_TH.md) เมื่อพบคำที่ไม่คุ้น
 
 ## บันไดหลักฐานสำหรับ Performance Evaluation
 
@@ -114,7 +51,7 @@ workshop นี้ยึดแนวคิดจาก `Booklet_LANTA-Experience
 | Solver pattern | stencil, sparse matrix, halo exchange, reduction และ residual มีลักษณะอย่างไร | `solver_roofline_*.csv` |
 | Scientific sanity | ผล SEIR ยังสัมพันธ์เชิงนโยบายและค่าช่วงถูกต้อง | `seir_perf_compare.csv` จาก training sheet |
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 ### ขั้นที่ 1: เข้าสู่ LANTA
 
@@ -124,7 +61,7 @@ workshop นี้ยึดแนวคิดจาก `Booklet_LANTA-Experience
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
-## Copy-Paste บน LANTA
+## ลงมือทำบน LANTA
 
 ### ขั้นที่ 1: เตรียมพื้นที่ทำงานและตัวแปร
 
@@ -209,7 +146,7 @@ print("wrote results/overhead_taxonomy.csv")
 PY
 ```
 
-### ขั้นที่ 4: รันตารางทฤษฎีบน login node
+### ขั้นที่ 4: รันตารางทฤษฎีบน เครื่องเข้าสู่ระบบ
 
 คำสั่งชุดนี้ใช้ Python ที่ระบบมีอยู่เพื่อสร้าง CSV ขนาดเล็ก แล้วเปิดอ่านหัวตาราง
 
@@ -614,7 +551,7 @@ ls -lh figures/perf_summary_*.svg
 
 ### ขั้นที่ 19: สร้าง gnuplot dashboard รวมทุกการวิเคราะห์ส่วนที่ 1
 
-คำสั่งชุดนี้สร้างส่วนตั้งค่าของ gnuplot dashboard และ panel ชุดแรกสำหรับ speedup, efficiency, overhead และ roofline signal ผู้ใช้เปิดอ่าน syntax ได้ทันที ส่วนการรันจริงเกิดในขั้นถัดไปเมื่อสภาพแวดล้อมมี `gnuplot`
+คำสั่งชุดนี้สร้างส่วนตั้งค่าของ gnuplot dashboard และ panel ชุดแรกสำหรับ speedup, efficiency, overhead และ roofline signal ผู้ใช้เปิดอ่าน รูปแบบคำสั่ง ได้ทันที ส่วนการรันจริงเกิดในขั้นถัดไปเมื่อสภาพแวดล้อมมี `gnuplot`
 
 ```bash
 cat > performance/plot_perf_dashboard.gp <<'GP'
@@ -792,17 +729,3 @@ sed -n '1,80p' notes/ai_perf_review_prompt.md
 2. ถ้า 4 ranks เร็วกว่า 2 ranks เพียงเล็กน้อย ผู้ใช้ควรตรวจ halo exchange, Allreduce หรือ load balance ด้วยหลักฐานใด
 3. ถ้า `torch_import` ใช้เวลาสูงเมื่อเทียบกับภาระงานขนาดเล็ก ผู้ใช้จะรวบสถานการณ์ทดลองเป็น batch หรือย้ายงานไป CPU/MPI อย่างไร
 4. ถ้าต้องสอนผู้บริหารด้วยรูปเดียว ผู้ใช้จะเลือกกราฟ speedup, efficiency หรือ roofline signal เพราะเหตุใด
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340198 | COMPLETED | 1 | 7 | 4.291 | 0.007778 | 0.85 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../../docs/lanta-runs/2026-09-26-performance/mini-innovation-enhanced-seir-performance-workshop-th.png)
-<!-- performance-rerun:end -->

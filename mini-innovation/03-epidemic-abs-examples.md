@@ -1,67 +1,13 @@
 # 03 พัฒนาและรัน Epidemic ABS ด้วย Mesa
 
-<!-- resource-learning:start -->
-## จากงานเล็กสู่การทดลองที่วัดผลได้ / Resource lab
+## ก่อนลงมือ
 
-Booklet flow: pages **33–36** of the [LANTA handbook](../docs/lanta-hpc-experience-handbook.pdf). [Full learning sequence and worksheet](../docs/RESOURCE_ESTIMATION_WORKBOOK.md).
+จำลองคนหรือหน่วยย่อยหลายตัวที่มีพฤติกรรมต่างกัน
 
-<details><summary>ภาพแนวคิดจาก booklet / workflow illustration</summary>
+- **ใช้เครื่องเท่าไร:** เริ่มประมาณจากจำนวนตัวแทน × จำนวนรอบ × จำนวนการทดลอง และเผื่อข้อมูลประวัติ
+- **ตรวจผลและลองปรับ:** ใช้ค่าเริ่มสุ่มเดียวกันเปรียบเทียบความเร็ว ตรวจจำนวนประชากรให้คงเดิม ผลจำลองนี้ไม่ใช่คำพยากรณ์โรคสำหรับตัดสินใจจริง
 
-![Booklet workflow: agents](../docs/images/booklet/Part5-ScientificWorkload.png)
-
-Original booklet illustration, not a run screenshot. [Source and limitations](../docs/images/booklet/README.md).
-
-</details>
-
-### 1. ขอบเขตและการประมาณก่อนรัน
-
-Synthetic epidemic/agent ensemble; performance evidence does not validate epidemiological predictions.
-
-For local interactions, start with work proportional to agents × steps × repeats; all-pairs interactions can instead grow quadratically. Memory grows with agent state plus retained history. Pilot one seed before multiplying by scenarios.
-
-### 2. ทรัพยากรที่ใช้จริงและตัวอย่าง output
-
-Archived LANTA evidence, **2026-09-26**, account `pv915002`; these are historical measurements, not a new run or a future performance promise.
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6339754 | COMPLETED | 8 | 28 | 12.834 | 0.007778 | 1.47 |
-| 6339755 | COMPLETED | 1 | 7 | 9.106 | 0.003889 | 0.40 |
-| 6339756 | COMPLETED | 1 | 3 | 1.654 | 0.000833 | 0.18 |
-
-Elapsed is summed across array elements, not array makespan. CPU used is `TotalCPU`; reserved CPU-hours include idle allocation time. MaxRSS is the largest sampled task/step value, **not total node RAM**. Missing GPU/energy telemetry must not be interpreted as zero.
-
-![Screenshot of archived job accounting and stdout](../docs/images/run-evidence/mini-innovation-03-epidemic-abs-examples.png)
-
-Browser screenshot of the [archived evidence viewer](../docs/tutorial-evidence/mini-innovation-03-epidemic-abs-examples.html); not a live terminal capture. Open the viewer for exact requested/allocated resources and job-specific log excerpts.
-
-**Read the numbers:** job `6339754` used 12.834 CPU-seconds over 28 summed elapsed seconds: about **0.46 busy CPU cores per running element on average**. This describes CPU work across the whole allocation, including setup; it does not measure GPU utilization. For a seconds-long run, startup and coarse memory sampling can dominate. Do not reduce RAM to the displayed RSS or claim scaling without a longer pilot.
-
-<details><summary>ตัวอย่าง output ที่บันทึกจริง / archived stdout excerpt</summary>
-
-Job `6339754` · archive member `tutorials/mini-innovation/03-epidemic-abs-examples/logs/epi_array_6339754_1.out`
-
-```text
-summary=results/epi_summary_6339754_1_baseline_1.csv
-daily=results/epi_daily_6339754_1_baseline_1.csv
-peak_I=91 attack_rate=0.305833
-```
-
-</details>
-
-### 3. ขยายงานทีละแกนและตรวจความถูกต้อง
-
-Compare fixed-size 1/2/4-worker or rank runs with three repeats, preserving seeds and input. Then vary agent count 10× separately. Limit concurrent array tasks and aggregate throughput only after checking every task.
-
-**Correctness gate:** Check population conservation, finite/non-negative compartments and seed-specific output agreement. Compare stochastic distributions when implementations change random-stream ordering.
-
-[Public applications and research-backed experiments](../docs/REAL_APPLICATION_EXPERIMENTS.md#agent-models) provide the next workload. Proposed resource budgets there are not measured requirements.
-
-Before the next run, write down input size, expected time/RAM, requested CPUs/GPUs, and a stop condition. Afterwards record job ID, actual allocation, elapsed, CPU time, memory, result check and one change for the next run. Use three repeats and report spread; do not claim speedup from one short smoke run.
-
-<!-- resource-learning:end -->
-
-ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+จดเวลาที่ใช้และหน่วยความจำหลังงานจบ แล้วดู [วิธีประมาณและอ่านการใช้ทรัพยากร](../docs/RESOURCE_ESTIMATION_WORKBOOK.md) เพื่อวางแผนรอบถัดไป
 
 หน้านี้สร้างแบบจำลองโรคระบาดชนิด SEIR ด้วย agent-based simulation สำหรับนวัตกรรมย่อย `LANTA EpiSprint` แล้วรัน 3 วิธีที่สอดคล้องกับบทฝึกหลักของหนังสือ: งาน Slurm เดี่ยว, job array และชุดทดลองหลายแกนภายในหนึ่งโหนด
 
@@ -69,7 +15,7 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `module use`, `module load`, `cat > file <<'PY'`, `sbatch`, `squeue`, `tail`, job array, `SLURM_ARRAY_TASK_ID`, และ multicore worker
 
-## Copy-Paste จากเครื่องผู้ใช้
+## ลงมือทำ จากเครื่องผู้ใช้
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -77,7 +23,7 @@ Before the next run, write down input size, expected time/RAM, requested CPUs/GP
 ssh <lanta-username>@lanta.nstda.or.th
 ```
 
-## Copy-Paste เตรียมโค้ดและสถานการณ์ทดลองบน LANTA
+## ลงมือทำ เตรียมโค้ดและสถานการณ์ทดลองบน LANTA
 
 คัดลอกทีละชุดคำสั่งตามลำดับ แต่ละชุดทำงานหลักหนึ่งเรื่องและแสดงหลักฐานให้ตรวจทันทีหลังรัน
 
@@ -370,7 +316,7 @@ Results tutor: อ่าน epi_policy_compare.csv แล้วอธิบา�
 EOF
 ```
 
-### ขั้นที่ 10: ตรวจ syntax ก่อนส่งงาน
+### ขั้นที่ 10: ตรวจ รูปแบบคำสั่ง ก่อนส่งงาน
 
 ขั้นนี้ใช้การตรวจคอมไพล์ของ Python เพื่อจับข้อผิดพลาดด้านไวยากรณ์ตั้งแต่บนเครื่องเข้าใช้งาน และยืนยันว่าโมดูลที่ใช้คือ `hpc-mesa/3.5.1`
 
@@ -383,7 +329,7 @@ head -5 configs/epi_scenarios.csv
 echo "source, scenario, prompt พร้อมสำหรับ Slurm"
 ```
 
-## Example 1: งาน Slurm เดี่ยว
+## ตัวอย่างที่ 1: งาน Slurm เดี่ยว
 
 วิธีนี้ใช้ตรวจควันก่อนให้ผู้ใช้ทั้งห้องรัน array ให้รันงานเดี่ยวให้ผ่านก่อนเสมอ
 
@@ -440,7 +386,7 @@ echo "Monitor: squeue -j $job_id"
 echo "Read: tail -60 logs/epi_single_${job_id}.out"
 ```
 
-## Example 2: งาน Slurm แบบ Array
+## ตัวอย่างที่ 2: งาน Slurm แบบ Array
 
 วิธีนี้ใช้ตารางสถานการณ์ทดลอง แล้วให้ Slurm แตกงานย่อย ผู้ใช้แต่ละทีมสามารถรัน array สั้น ๆ ของตนเองได้
 
@@ -516,7 +462,7 @@ python src/merge_results.py \
 cat "results/epi_array_${job_id}_policy_compare.csv"
 ```
 
-## Example 3: ชุดทดลองหลายแกนในหนึ่งโหนด
+## ตัวอย่างที่ 3: ชุดทดลองหลายแกนในหนึ่งโหนด
 
 วิธีนี้ใช้ `SLURM_CPUS_PER_TASK` เพื่อให้ Python เปิดหลายกระบวนการภายในการจัดสรรทรัพยากรเดียว ผู้ใช้จะเห็นความต่างระหว่าง job array กับผู้ทำงานหลายตัวในงานเดียว
 
@@ -580,7 +526,7 @@ echo "Read: tail -80 logs/epi_multicore_${job_id}.out"
 
 ไฟล์ `prompts/ai-scaffold-th.md` เป็นตัวช่วยสำหรับถาม AI ให้ช่วยตรวจสถานการณ์ทดลอง ตรวจสคริปต์ Slurm และอธิบาย CSV โดยให้คำตอบผูกกับหลักฐานหลักคือโค้ด ไฟล์กำหนดค่า บันทึกงาน และไฟล์ผลลัพธ์
 
-## Check
+## ตรวจผล
 
 ```bash
 cd "$HOME/lanta-episprint"
@@ -592,19 +538,3 @@ cat notes/epi-policy-compare.txt 2>/dev/null || true
 เมื่อสำเร็จ ผู้ใช้ควรเห็นไฟล์ `epi_daily_*.csv`, `epi_summary_*.csv`, `epi_array_<jobid>_summary_all.csv`, `epi_array_<jobid>_policy_compare.csv`, และ `epi_multicore_<jobid>_policy_compare.csv` ผลลัพธ์ที่ใช้ได้ควรมี header ครบ จำนวนวันตรงกับค่า `days` ค่า `peak_I` อยู่ในช่วง 0 ถึงจำนวนเอเจนต์ และตารางเปรียบเทียบนโยบายอ้างอิงหลายสถานการณ์ทดลองหรือหลาย seed เมื่อต้องแก้ปัญหา ให้เปิดบันทึกข้อผิดพลาดเฉพาะงานหรือ array task นั้นก่อน เช่น `tail -80 logs/epi_array_<jobid>_<taskid>.err` เมื่อ import Mesa error ให้ตรวจ `module use "$EPI_MODULE_ROOT"` และ `module load hpc-mesa/3.5.1`
 
 เมื่อต้องสื่อสารผลในห้องเรียน ให้ต่อด้วย [05-output-display-jupyter-gnuplot.md](05-output-display-jupyter-gnuplot.md) เพื่อแปลง CSV สรุปเป็น Jupyter Notebook, Matplotlib PNG หรือ gnuplot PNG
-
-<!-- performance-rerun:start -->
-## Fresh measured rerun — 26 September 2026
-
-| Job | State | Elements | Sum elapsed (s) | CPU used (s) | Reserved CPU-h | Max step/task RSS (MiB) |
-|---|---|---:|---:|---:|---:|---:|
-| 6340192 | COMPLETED | 8 | 66 | 16.016 | 0.018333 | 42.71 |
-| 6340193 | COMPLETED | 1 | 9 | 10.746 | 0.005000 | 1.78 |
-| 6340194 | COMPLETED | 1 | 3 | 2.038 | 0.000833 | 0.41 |
-
-These are new measured jobs, not estimates. One campaign pass does not establish scaling or runtime variance. Allocated CPU-hours are not billed SHr; sampled RSS is not total node memory.
-
-[Accounting, output archive and measurement limitations](../docs/lanta-runs/2026-09-26-performance/README.md)
-
-![Browser capture of fresh measured accounting and recorded output](../docs/lanta-runs/2026-09-26-performance/mini-innovation-03-epidemic-abs-examples.png)
-<!-- performance-rerun:end -->
