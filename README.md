@@ -1,5 +1,9 @@
 # HPC Ignite Hands-On Labs
 
+![HPC IGNITE learning journey: connect, prepare, submit, run, check and improve](docs/images/beginners/tutorial-overview.png)
+
+New to HPC? Start with the [illustrated beginner guide / คู่มือเริ่มต้นด้วยภาพ](docs/BEGINNER_VISUAL_GUIDE_TH.md). The illustrations explain concepts; [real run evidence](docs/lanta-runs/2026-09-26-pv915002/README.md) is labeled separately.
+
 [![LANTA Compatible](https://img.shields.io/badge/LANTA-Compatible-blue.svg)](https://docs.lanta.nstda.or.th)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -162,6 +166,12 @@ sbatch -p compute-devel jobs/main.sbatch
 - LANTA User Guide: https://docs.lanta.nstda.or.th
 - ThaiSC: https://www.thaisc.io
 - Slurm: https://slurm.schedmd.com/documentation.html
+
+## Verified LANTA rerun — 2026-09-26
+
+The [rerun report](docs/lanta-runs/2026-09-26-pv915002/README.md) records 70 successful baseline workflows on `pv915002`, fixes, real outputs, resource accounting, and the remaining EnergyPlus/Mesa coupling failures. Slurm completion is not a claim that every scientific model or optional extension is validated.
+
+See the [performance evaluation and optimization tutorial](docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md) for per-hands-on experiments and interpretation.
 
 ## License
 

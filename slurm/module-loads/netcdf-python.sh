@@ -17,7 +17,11 @@ if command -v conda >/dev/null 2>&1; then
     fi
 fi
 
-conda activate netcdf-py39 2>/dev/null || true
+_netcdf_nounset=0
+case $- in *u*) _netcdf_nounset=1; set +u ;; esac
+conda activate netcdf-py39
+if [ "$_netcdf_nounset" = 1 ]; then set -u; fi
+unset _netcdf_nounset
 export MPLBACKEND="${MPLBACKEND:-Agg}"
 
 echo "NetCDF Python environment loaded:"

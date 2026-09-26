@@ -1,5 +1,11 @@
 # LANTA Experience Labs
 
+![ภาพรวมการเรียนจากเชื่อมต่อจนถึงประเมินผล](../docs/images/beginners/tutorial-overview.png)
+
+ภาพแนวคิดสำหรับผู้เริ่มต้น: Connect → Prepare → Submit → Run → Check → Improve ทำงานเล็กให้ครบวงจรก่อนเพิ่มขนาด. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
+
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 ลำดับนี้ตาม booklet `LANTA HPC Handbook` สำหรับ LANTA HPC Experience Day: On the Move ให้ผู้ใช้แปะคำสั่งทีละ block และตรวจไฟล์จริงที่สร้างขึ้น เช่น `src/*.py`, `jobs/*.sbatch`, `configs/*`, `logs/*`, `results/*`, และ `notes/*`
 
 คำสั่งและ syntax ใน lab ชุดนี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `cd`, `mkdir -p`, heredoc, `export`, `sbatch`, `squeue`, `sacct`, `srun`, `tail` และตัวแปร `SLURM_*`

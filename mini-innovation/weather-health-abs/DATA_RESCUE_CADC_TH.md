@@ -1,5 +1,7 @@
 # Data Rescue: กู้ข้อมูล CADC FITS และเตรียมข้อมูล HPDA บน LANTA
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 หน้านี้เป็นแบบฝึกปฏิบัติที่จบได้ในหน้าเดียว สำหรับเหตุการณ์ที่แหล่งข้อมูลใกล้หมดอายุและการติดต่อจาก LANTA ไปยังปลายทางหมดเวลา กรณีศึกษาคือ CADC FITS URL ขนาดประมาณ 1.59 GB

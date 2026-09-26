@@ -1,5 +1,7 @@
 # บทที่ 29: Data Security บน HPC
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
@@ -76,11 +78,7 @@ cat results/security_audit.csv
 
 ## การตรวจผล
 
-หลัง job จบ ให้ผู้ใช้ตรวจสามชั้นหลักฐาน:
-
-1. `sacct` แสดง `COMPLETED` และ `ExitCode` เป็น `0:0`
-2. `logs/` มี stdout/stderr ของ job id นั้น
-3. `results/` มีไฟล์ output ที่ระบุในหัวข้อ Check
+บทนี้เป็นการตรวจไฟล์ขนาดเล็กใน shell ไม่ได้สร้าง Slurm job จึงไม่มี job ID หรือ `sacct` โดยอัตโนมัติ ตรวจว่า `private.env` เป็น `0o600` และมี fake-secret flag เป็น `True`; `public.txt` ต้องเป็น `False` เก็บ `results/security_audit.csv` เป็นหลักฐาน ใน campaign 2026-09-26 ตรวจซ้ำภายในงาน postprocess ด้วย
 
 ## ใช้ Repo เป็น Reference
 

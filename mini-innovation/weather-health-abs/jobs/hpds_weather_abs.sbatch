@@ -12,7 +12,7 @@ set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p logs notes results figures
 module purge
-module use /project/tn999996-north/modules 2>/dev/null || true
+module use "${EPI_MODULE_ROOT:-/project/tn999996-north/modules}"
 module load hpc-mesa/3.5.1
 . "${HPDS_ENV_PREFIX:?set HPDS_ENV_PREFIX before sbatch}/bin/activate"
 {

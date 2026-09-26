@@ -1,5 +1,7 @@
 # 02 ใช้ Jupyter Notebook บน LANTA ผ่าน Slurm และ SSH Tunnel
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 หน้านี้เปิด JupyterLab บนเครื่องคำนวณของ LANTA ผ่านการจัดสรรทรัพยากรของ Slurm แล้วส่งพอร์ตกลับมาเปิดในเบราว์เซอร์บนเครื่องผู้ใช้ด้วย SSH tunnel โดยใช้สภาพแวดล้อมและโมดูลจาก [01-custom-python-env-module.md](01-custom-python-env-module.md)
 
 บทนี้ใช้ `hpc-mesa` เป็นเส้นทางหลัก เพราะเซิร์ฟเวอร์และเคอร์เนลอยู่ในสภาพแวดล้อมเดียวกัน จึงลดความคลาดเคลื่อนของแพ็กเกจระหว่างผู้เรียน ถ้า LANTA มี JupyterLab กลางในรอบอบรม ให้ใช้เป็นทางสำรองได้ โดยเลือกเคอร์เนล `Python (hpc-mesa)` ในหน้า JupyterLab เพื่อให้สมุดบันทึกใช้ Mesa, pandas และ matplotlib จากสภาพแวดล้อมของกิจกรรม
@@ -142,7 +144,8 @@ cells = [
     ("code", """from pathlib import Path
 import pandas as pd
 
-files = sorted(Path('results').glob('epi_summary_*.csv'))
+import os
+files = sorted(Path(os.environ.get('EPI_RESULTS', '../results')).glob('epi_summary_*.csv'))
 df = pd.concat([pd.read_csv(p) for p in files], ignore_index=True) if files else pd.DataFrame([
     {'policy': 'baseline', 'peak_I': 540, 'attack_rate': 0.62},
     {'policy': 'mask', 'peak_I': 340, 'attack_rate': 0.41},
@@ -153,13 +156,13 @@ policy_summary = df.groupby('policy')[['peak_I', 'attack_rate']].mean().sort_val
 policy_summary"""),
     ("code", """from pathlib import Path
 import matplotlib.pyplot as plt
-Path('results').mkdir(exist_ok=True)
+Path('../results').mkdir(exist_ok=True)
 ax = policy_summary.plot(kind='bar', secondary_y='attack_rate', figsize=(9, 5))
 ax.set_title('EpiSprint policy comparison')
 ax.set_ylabel('Mean peak infectious agents')
 ax.right_ax.set_ylabel('Mean attack rate')
 plt.tight_layout()
-policy_summary.to_csv('results/policy_summary.csv')"""),
+policy_summary.to_csv('../results/policy_summary.csv')"""),
     ("code", """from pathlib import Path
 import os, socket
 print('hostname', socket.gethostname())

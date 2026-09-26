@@ -1,5 +1,13 @@
 # การประเมินและปรับสมรรถนะทุก HPC Ignite Hands-On
 
+![ลูปการเรียนรู้: correctness baseline measurement เปลี่ยนหนึ่งอย่าง แล้วทดลองซ้ำพร้อมเก็บหลักฐาน](images/beginners/performance-learning-loop.png)
+
+ภาพแนวคิด ไม่ใช่ผล benchmark: ตรวจความถูกต้อง → เก็บ baseline → วัด → เปลี่ยนทีละอย่าง → ทดลองซ้ำ. ดู [คำอธิบายแบบเริ่มต้น](BEGINNER_VISUAL_GUIDE_TH.md#3-ตรวจให้ถูก-ก่อนถามว่าเร็วขึ้นหรือไม่).
+
+ตัวอย่างจาก [campaign จริง 2026-09-26](lanta-runs/2026-09-26-pv915002/README.md): เก็บผล 70 baseline workflows พร้อม raw accounting, output และ notebook ที่ execute แล้ว รายงานแยก preflight, surrogate, deterministic validation และ coupled failure ไม่ใช้คำว่า `COMPLETED` แทน scientific correctness
+
+ข้อค้นพบสำหรับผู้เรียน: Slurm sampling อาจพลาด peak memory ของงานที่จบเร็ว; GNU time รอบ `srun` อาจวัดเฉพาะ launcher; array task-seconds ไม่ใช่ makespan; ห้ามรวม retry เป็น independent repeat; และ stochastic CPU/GPU models ที่ใช้ noise ต่างกันต้องตรวจ ensemble/inputs ก่อนเทียบ speedup ส่วนค่าความเร็ว 1/2/4 ranks ที่มีเพียงหนึ่ง sample เป็น demonstration ไม่ใช่ข้อสรุปทางสถิติ
+
 หน้านี้เป็นเส้นทางร่วมหลังจากแต่ละ hands-on รันถูกต้องแล้ว เป้าหมายไม่ใช่ทำให้ใช้ CPU หรือ GPU มากที่สุด แต่หาคำตอบว่า **ทรัพยากรแบบใดให้ผลลัพธ์ถูกต้อง เร็ว คุ้มค่า และทำซ้ำได้** บน LANTA
 
 คำสั่ง Bash และ Slurm ที่ใช้ในหน้านี้อธิบายไว้ใน [BASH_COMMAND_REFERENCE_TH.md](BASH_COMMAND_REFERENCE_TH.md)

@@ -1,5 +1,11 @@
 # Mini Innovation: LANTA EpiSprint และ Twin-B MicroCosim
 
+![Mesa agents แลกเปลี่ยนอุณหภูมิและ setpoint กับโมเดลอาคาร](../docs/images/beginners/mesa-twinb-learning-map.png)
+
+ภาพสถาปัตยกรรมที่ตั้งใจ: surrogate สำหรับฝึกพื้นฐานแยกจาก EnergyPlus integration ไม่ใช่หลักฐานว่าระบบ coupled ผ่านแล้ว. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
+
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 แบบฝึกปฏิบัตินี้เป็นคู่มือภาษาไทยสำหรับกิจกรรมสดประมาณ 40 คน ประกอบด้วยนวัตกรรมย่อยสองแนวทางบน LANTA ได้แก่ **LANTA EpiSprint** สำหรับแบบจำลองโรคระบาดเชิงตัวแทน และ **Twin-B MicroCosim** สำหรับการจำลองร่วมระหว่างแบบจำลองอุณหภูมิของอาคารกับตัวแทนผู้อยู่อาศัยใน Mesa
 
 ดูคำอธิบายคำสั่ง Bash, Slurm และรูปแบบคำสั่งที่ใช้ในชุดนวัตกรรมย่อยได้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md)

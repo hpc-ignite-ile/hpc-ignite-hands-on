@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --gpus-per-node=1
-#SBATCH --mem=8G
+#SBATCH --mem=32G
 #SBATCH --time=00:10:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
@@ -31,5 +31,5 @@ if [ -z "$TPR" ]; then
 fi
 
 echo "input_tpr=$TPR" | tee "$OUT/summary.txt"
-gmx mdrun -s "$TPR" -deffnm "$OUT/benchPEP" -nsteps 100 -ntomp "${SLURM_CPUS_PER_TASK:-1}" | tee "$OUT/mdrun_stdout.txt"
+gmx mdrun -s "$TPR" -deffnm "$OUT/benchPEP" -nsteps 100 -ntmpi 1 -ntomp "${SLURM_CPUS_PER_TASK:-1}" | tee "$OUT/mdrun_stdout.txt"
 grep -E "Performance|Finished mdrun|Writing final coordinates" "$OUT/benchPEP.log" > "$OUT/performance_summary.txt" || true

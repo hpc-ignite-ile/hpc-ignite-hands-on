@@ -1,5 +1,7 @@
 # แผ่นงาน: HPDS Weather-Health ABS บน LANTA
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 หน้านี้เป็นแบบฝึกปฏิบัติที่จบได้ในหน้าเดียวสำหรับผู้เรียน 40 คน ผู้ใช้เริ่มจากเครื่องของตนเอง ย้ายหรือดึงข้อมูลเข้า LANTA จัดแฟ้มรวม อ่านหลักฐานของ Lustre สร้างสภาพแวดล้อม Dask เพิ่มเติม รันแบบจำลองอากาศ-อาคาร-ตัวแทนด้วย Slurm แล้วสรุปผลเป็นชุดหลักฐาน
@@ -78,7 +80,7 @@ pwd
 
 ```bash
 module purge
-module use /project/tn999996-north/modules 2>/dev/null || true
+module use "${EPI_MODULE_ROOT:-/project/tn999996-north/modules}"
 module load hpc-mesa/3.5.1
 
 if [ ! -x "$HPDS_ENV_PREFIX/bin/python" ]; then
@@ -448,7 +450,7 @@ set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p logs notes results figures
 module purge
-module use /project/tn999996-north/modules 2>/dev/null || true
+module use "${EPI_MODULE_ROOT:-/project/tn999996-north/modules}"
 module load hpc-mesa/3.5.1
 . "${HPDS_ENV_PREFIX:?set HPDS_ENV_PREFIX before sbatch}/bin/activate"
 {

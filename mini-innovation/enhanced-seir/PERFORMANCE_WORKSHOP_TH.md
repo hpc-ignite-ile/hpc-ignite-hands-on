@@ -1,5 +1,7 @@
 # Workshop: ประเมินสมรรถนะของ Enhanced SEIR บน LANTA
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 หน้านี้เป็นแบบฝึกต่อจาก [TRAINING_SHEET_TH.md](TRAINING_SHEET_TH.md) สำหรับนวัตกรรมย่อยในห้องอบรม ผู้ใช้เริ่มจากเครื่องผู้ใช้ เข้า LANTA สร้างโค้ดและสคริปต์ Slurm ด้วย heredoc ส่งงานสั้น อ่านหลักฐาน และตัดสินใจจากผลจริงในพื้นที่ทำงานของตนเอง

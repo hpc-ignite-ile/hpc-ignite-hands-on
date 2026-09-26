@@ -1,5 +1,7 @@
 # 00 เชื่อมต่อ LANTA และเตรียมพื้นที่ทำงาน
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 หน้านี้เป็นหน้าอ้างอิงร่วมสำหรับทุกบทใน `mini-innovation/` เมื่อบทอื่นระบุให้เริ่มจากเครื่องผู้ใช้ ให้กลับมาใช้คำสั่งพื้นฐานจากหน้านี้ได้ทันที
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `mkdir -p`, `tee`, `read -rp`, `export` และ `source`

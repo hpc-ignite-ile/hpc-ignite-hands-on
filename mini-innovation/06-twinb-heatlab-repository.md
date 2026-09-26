@@ -1,5 +1,11 @@
 # 06 ใช้โครงการจริง HPC Ignite Twin-B เป็น Twin-B HeatLab
 
+![intended Mesa EnergyPlus feedback loop ที่ต้องตรวจ synchronization ก่อนเชื่อผล](../docs/images/beginners/mesa-twinb-learning-map.png)
+
+ภาพแนวคิด ไม่ใช่ผลรันที่ยืนยันแล้ว: ต้องตรวจ warmup, timestamp, actuator และ synchronization ก่อนเชื่อผล coupled simulation สถานะจริงของ campaign ยังไม่ผ่านขั้นนี้. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
+
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 บทนี้เชื่อม tutorial กับโครงการจริงที่อยู่บนเครื่องผู้สอนที่ `/home/ubuntu/lanta/ghq/github.com/wdiazcarballo/hpcignite-twinb/` และ remote `https://github.com/wdiazcarballo/hpcignite-twinb.git` โครงการนี้รวม EnergyPlus, Mesa occupants, PyTorch distributed communication, ข้อมูลอาคาร Boonchoo และอากาศ Lampang
 
 เริ่มจาก [04-building-cosimulation-twinb.md](04-building-cosimulation-twinb.md) เพื่อเข้าใจ coupling contract แบบย่อก่อน แล้วใช้บทนี้เมื่อจะตรวจ source จริง สร้าง scenario sweep และประเมินว่า CPU/GPU/distributed configuration ใดคุ้มค่า
@@ -171,12 +177,13 @@ export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
 export TWINB_MANIFEST="${TWINB_MANIFEST:-innovation/generated/heatlab_sweep/manifest.tsv}"
 row=$(awk -F '\t' 'NR == 2 {print}' "$TWINB_MANIFEST")
 IFS=$'\t' read -r run_id run_name config agents idf weather output_dir policy material <<< "$row"
+output_dir="${output_dir}/job-${SLURM_JOB_ID}"
 mkdir -p "$output_dir" "results/${SLURM_JOB_ID}"
 export TWINB_CONFIG="$config" TWINB_AGENTS="$agents" TWINB_IDF="$idf"
 export TWINB_WEATHER="$weather" TWINB_OUTPUT_DIR="$output_dir"
 module list 2> "results/${SLURM_JOB_ID}/modules.txt" || true
 /usr/bin/time -v -o "results/${SLURM_JOB_ID}/time_verbose.txt" \
-    srun -c "${SLURM_CPUS_PER_TASK:-1}" python main.py
+    timeout "${TWINB_TIMEOUT:-900}" srun -c "${SLURM_CPUS_PER_TASK:-1}" python main.py
 SLURM
 ```
 
@@ -223,6 +230,14 @@ optimization ที่ควรทดลองตามลำดับ:
 5. ใช้ DDP เฉพาะเมื่อ agent/tensor workload มีขนาดพอ
 
 ## เกณฑ์สรุป
+
+### ผลรันจริง 2026-09-26 และข้อจำกัดที่ยังต้องแก้
+
+Mesa-only ผ่านด้วย Mesa 3.5.1, 1,875 agents และ 288 steps (`6339794`) แต่ **EnergyPlus/Mesa coupled path ยังไม่ผ่าน** ดู [รายงานและ error ของทั้งสามครั้ง](../docs/lanta-runs/2026-09-26-pv915002/README.md#remaining-twin-b-integration-failure) runtime 25.1.0 ถูกติดตั้งใน campaign แล้ว จึงไม่ใช่ปัญหา “ไม่มี runtime” อีกต่อไป
+
+IDF มี `HVACTemplate:*` ต้องใช้ `-x`/ExpandObjects; RunPeriod เดิมยาวทั้งปี ไม่สอดคล้องกับ qualification สั้น script `scripts/prepare_twinb_day_smoke.py` ใน repo hands-on สร้าง IDF หนึ่งวันใน snapshot, ปรับ Mesa เป็น 96 steps, ข้าม warmup callbacks และเพิ่ม queue timeout แต่การลองนั้นยังจบด้วย `_queue.Empty` จึงต้องแก้ readiness และ synchronization ก่อนใช้ผลพลังงานหรือทำ GPU scaling ห้ามนำ CSV เก่าของ Mesa-only มาอ้างเป็นผล coupled run
+
+ตัว adapter เปลี่ยนเฉพาะ snapshot ไม่แตะ source ต้นฉบับ และไม่ควรใช้แทนการตรวจ scientific correctness ของ feedback loop
 
 บทนี้ไม่ถือว่า “หลาย GPU ดีกว่า” จนกว่าจะเห็น:
 

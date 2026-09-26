@@ -1,5 +1,9 @@
 # แบบจำลอง SEIR ขั้นสูงสำหรับคลินิกสมรรถนะ
 
+ข้อควรระวังจากรันจริง 2026-09-26: คู่ deterministic ใน training sheet ผ่าน numerical comparison 36/36 ที่ `rtol=atol=1e-4` แต่คู่ source อ้างอิงใน `cpp_mpi/` และ `torch_ddp/` ไม่ผ่าน 30/36 comparisons เพราะ C++ เพิ่ม daily beta noise ซึ่งไม่มี noise series เดียวกันใน PyTorch ต้องทำให้ inputs/randomness ตรงกัน หรือเทียบเชิง ensemble ก่อนอ้าง CPU/GPU speedup ดู JSON correctness ในรายงานที่เชื่อมด้านล่าง
+
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 โฟลเดอร์นี้เป็นแหล่งอ้างอิงสำหรับต่อยอดนวัตกรรมย่อยในห้องอบรมไปสู่การฝึกประเมินสมรรถนะตาม booklet หน้า 15-17 ผู้ใช้เริ่มจากคำถามวิทยาศาสตร์ แปลงคำถามเป็นงานคำนวณ เลือกทรัพยากรตามคอขวด แล้วเก็บหลักฐานของการรันให้ตรวจย้อนกลับได้

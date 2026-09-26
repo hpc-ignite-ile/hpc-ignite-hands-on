@@ -1,5 +1,7 @@
 # บทที่ 7: Distributed Python ด้วย Dask
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
@@ -81,7 +83,9 @@ cat > jobs/dask-shape.sbatch <<'SLURM'
 set -euo pipefail
 module purge
 module load Mamba/23.11.0-0 2>/dev/null || module load cray-python/3.10.10 2>/dev/null || true
-conda activate netcdf-py39 2>/dev/null || true
+set +u  # GDAL activation reads optional unset variables
+conda activate netcdf-py39
+set -u
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 python src/dask_shape.py | tee "results/${SLURM_JOB_ID}/output.txt"

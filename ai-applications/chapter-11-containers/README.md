@@ -1,5 +1,7 @@
 # บทที่ 11: Containers สำหรับ HPC
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA
@@ -63,7 +65,8 @@ cat > jobs/apptainer_preflight.sbatch <<'SLURM'
 #SBATCH --error=logs/%x_%j.err
 set -euo pipefail
 module purge
-module load Apptainer/1.1.6 2>/dev/null || true
+module load Apptainer/1.1.6
+module load cray-python/3.10.10
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p "results/${SLURM_JOB_ID}"
 apptainer --version | tee "results/${SLURM_JOB_ID}/apptainer_version.txt"

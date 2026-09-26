@@ -1,5 +1,11 @@
 # LANTA Foundation Lab: งานแรกที่รันได้จริง
 
+![เส้นทางคำสั่งและข้อมูลก่อนรันงานแรกบน LANTA](../../docs/images/beginners/lanta-job-workflow.png)
+
+ภาพแนวคิด: laptop เป็นจุดเริ่มต้น ส่วนงานหนักรันบน compute node ที่ได้รับจาก Slurm ไฟล์ผลลัพธ์ต้องอยู่ในพื้นที่ที่คุณหาและตรวจได้. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
+
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 เริ่มจาก SSH ตาม [../../LANTA_SETUP.md#1-ssh-to-lanta](../../LANTA_SETUP.md#1-ssh-to-lanta) แล้วแปะ block ในหัวข้อ Copy-Paste บน LANTA

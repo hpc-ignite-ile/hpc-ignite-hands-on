@@ -1,5 +1,9 @@
 # LANTA Setup Guide
 
+![คำสั่งผ่าน login และ Slurm ไป compute node; ไฟล์ผ่าน transfer host ไป project storage](docs/images/beginners/lanta-job-workflow.png)
+
+ภาพแนวคิด: login node ใช้แก้ไข/ตรวจไฟล์และส่งงาน ส่วน compute node ที่ Slurm จัดสรรใช้คำนวณหนัก. การย้ายไฟล์กับการส่งงานเป็นคนละขั้น อ่าน [คำอธิบายสำหรับผู้เริ่มต้น](docs/BEGINNER_VISUAL_GUIDE_TH.md#2-คำสั่งกับข้อมูลเดินทางคนละเส้น) ก่อนทำตามคำสั่ง
+
 คู่มือเริ่มต้นสำหรับใช้ repo นี้บน LANTA ตาม booklet ของงาน LANTA HPC Experience Day: On the Move.
 
 คำสั่งและ syntax ในหน้านี้อธิบายรวมไว้ที่ [docs/BASH_COMMAND_REFERENCE_TH.md](docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `scp`, `rsync`, `module`, `sbatch`, `squeue`, `sacct`, heredoc และ `#SBATCH`

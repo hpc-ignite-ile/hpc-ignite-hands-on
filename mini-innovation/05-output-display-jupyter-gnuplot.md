@@ -1,5 +1,7 @@
 # 05 แสดงผลนวัตกรรมย่อยด้วย Jupyter Notebook และ Gnuplot
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 หน้านี้สร้างแดชบอร์ดสำหรับผลลัพธ์ของนวัตกรรมย่อยทั้งสองแนวทาง: **LANTA EpiSprint** และ **Twin-B MicroCosim** ผู้ใช้สามารถดูผลผ่าน Jupyter Notebook หรือสร้างรูปโดยตรงจากงานชุดด้วย Matplotlib และ gnuplot
 
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../docs/BASH_COMMAND_REFERENCE_TH.md](../docs/BASH_COMMAND_REFERENCE_TH.md) เช่น `ssh`, `module use`, `module load`, `python - <<'PY'`, `python -m json.tool`, `command -v`, `gnuplot`, `sbatch`, `squeue`, `tail`, และ `sacct`
@@ -246,10 +248,13 @@ cells = [
 ]
 nb = {"cells": [], "metadata": {"kernelspec": {"display_name": "Python (hpc-mesa)", "language": "python", "name": "hpc-mesa"}}, "nbformat": 4, "nbformat_minor": 5}
 for kind, source in cells:
-    cell = {"cell_type": kind, "metadata": {}, "source": source.splitlines(True)}
+    source = source.replace("\\n", "\n").replace("\\\\t", "\\t")
+    source = source.replace("'results/", "'../results/")
+    cell = {"cell_type": kind, "id": f"cell-{len(nb['cells'])}", "metadata": {}, "source": source.splitlines(True)}
     if kind == "code":
         cell.update({"execution_count": None, "outputs": []})
     nb["cells"].append(cell)
+Path("notebooks").mkdir(exist_ok=True)
 Path("notebooks/mini_innovation_display.ipynb").write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8")
 print("notebooks/mini_innovation_display.ipynb")
 PY

@@ -1,5 +1,11 @@
 # 04 การจำลองร่วม: แบบจำลองความร้อนเชิงวิทยาศาสตร์กับ ABS แบบ Twin-B
 
+![thermal surrogate กับ EnergyPlus เป็นตัวเลือกคนละแบบของ building model](../docs/images/beginners/mesa-twinb-learning-map.png)
+
+บทนี้ใช้ thermal surrogate เพื่อฝึก feedback loop: อาคารส่งอุณหภูมิให้ agents และ agents ส่งคำขอ setpoint กลับ ภาพรวมแสดง EnergyPlus เป็นเส้นทางขั้นสูงแยกต่างหาก. อ่าน [คู่มือเริ่มต้นด้วยภาพ](../docs/BEGINNER_VISUAL_GUIDE_TH.md) สำหรับคำอธิบายทีละขั้น
+
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 หน้านี้สร้างนวัตกรรมย่อยชื่อ **Twin-B MicroCosim** โดยย่อแนวคิดจาก [wdiazcarballo/hpcignite-twinb](https://github.com/wdiazcarballo/hpcignite-twinb) ให้เหมาะกับกิจกรรมสดบน LANTA สำหรับผู้ใช้ประมาณ 40 คน
 
 ต้นฉบับ Twin-B ใช้ EnergyPlus เป็นแบบจำลองพลังงานอาคารเชิงวิทยาศาสตร์ และใช้ Mesa เป็น agent-based simulation ของผู้ใช้อาคาร การสื่อสารหลักคือแบบจำลองวิทยาศาสตร์ส่งอุณหภูมิรายโซนให้เอเจนต์ ส่วนเอเจนต์ส่งคำขอจุดตั้งอุณหภูมิของระบบทำความเย็นกลับไปควบคุมแบบจำลองอาคาร

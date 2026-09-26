@@ -1,5 +1,7 @@
 # 03 พัฒนาและรัน Epidemic ABS ด้วย Mesa
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 หน้านี้สร้างแบบจำลองโรคระบาดชนิด SEIR ด้วย agent-based simulation สำหรับนวัตกรรมย่อย `LANTA EpiSprint` แล้วรัน 3 วิธีที่สอดคล้องกับบทฝึกหลักของหนังสือ: งาน Slurm เดี่ยว, job array และชุดทดลองหลายแกนภายในหนึ่งโหนด
 
 เตรียมสภาพแวดล้อมด้วย [01-custom-python-env-module.md](01-custom-python-env-module.md) ก่อนเริ่มหน้านี้

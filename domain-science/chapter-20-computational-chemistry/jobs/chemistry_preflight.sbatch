@@ -17,7 +17,7 @@ if [ ! -d "$REPO_ROOT/slurm" ]; then
 fi
 cd "$REPO_ROOT"
 
-source slurm/module-loads/base.sh
+source slurm/module-loads/netcdf-python.sh
 OUT="results/chemistry_${SLURM_JOB_ID}"
 mkdir -p "$OUT"
 

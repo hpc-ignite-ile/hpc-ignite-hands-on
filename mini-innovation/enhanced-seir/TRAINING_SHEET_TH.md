@@ -1,5 +1,7 @@
 # แผ่นงานฝึกปฏิบัติ: Enhanced SEIR Performance Clinic บน LANTA
 
+ผลรันซ้ำ LANTA บัญชี `pv915002` วันที่ 2026-09-26: [สถานะ ขอบเขต ผลลัพธ์ และ resource usage](../../docs/lanta-runs/2026-09-26-pv915002/README.md) · [วิธีประเมินและปรับปรุง performance](../../docs/PERFORMANCE_EVALUATION_OPTIMIZATION_TH.md)
+
 คำสั่งในหน้านี้อธิบายรวมไว้ที่ [../../docs/BASH_COMMAND_REFERENCE_TH.md](../../docs/BASH_COMMAND_REFERENCE_TH.md).
 
 หน้านี้เป็นแผ่นงานสำหรับผู้เรียนในห้องอบรม ผู้ใช้คัดลอกคำสั่งทีละชุดบน LANTA แล้วสร้างข้อมูล โค้ด สคริปต์ Slurm บันทึกงาน และผลลัพธ์ได้ครบใน `$HOME/lanta-enhanced-seir` โดยสร้างทุกไฟล์จาก heredoc บน LANTA จากหน้าเดียว

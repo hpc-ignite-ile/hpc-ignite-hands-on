@@ -8,7 +8,8 @@ if ! command -v module >/dev/null 2>&1; then
 fi
 
 module purge
-module load Apptainer/1.1.6 2>/dev/null || true
+module load Apptainer/1.1.6
+module load cray-python/3.10.10
 
 echo "Apptainer environment loaded:"
 module list 2>&1
