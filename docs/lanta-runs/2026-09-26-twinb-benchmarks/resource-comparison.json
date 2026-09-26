@@ -1,0 +1,25 @@
+{
+  "reference_job": "6339929",
+  "candidate_job": "6339935",
+  "checks": {
+    "fivezone/baseline/timestep_outputs_equal": true,
+    "fivezone/readonly/timestep_outputs_equal": true,
+    "fivezone/reset/timestep_outputs_equal": true,
+    "fivezone/fixed/timestep_outputs_equal": true,
+    "fivezone/mesa-small/timestep_outputs_equal": true,
+    "fivezone/mesa-0/timestep_outputs_equal": true,
+    "fivezone/mesa-1/timestep_outputs_equal": true,
+    "fivezone/mesa-2/timestep_outputs_equal": true,
+    "fivezone/seeded_trace_hashes_equal": true,
+    "school/baseline/timestep_outputs_equal": true,
+    "school/readonly/timestep_outputs_equal": true,
+    "school/reset/timestep_outputs_equal": true,
+    "school/fixed/timestep_outputs_equal": true,
+    "school/mesa-small/timestep_outputs_equal": true,
+    "school/mesa-0/timestep_outputs_equal": true,
+    "school/mesa-1/timestep_outputs_equal": true,
+    "school/mesa-2/timestep_outputs_equal": true,
+    "school/seeded_trace_hashes_equal": true
+  },
+  "passed": true
+}

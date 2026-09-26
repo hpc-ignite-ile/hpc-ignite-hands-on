@@ -17,6 +17,10 @@
 อ่าน [ผล gate, geometry audit, resource usage และขั้นตอนที่ยังรอ](../docs/lanta-runs/2026-09-26-twinb-fix/README.md).
 ต้องตรวจแก้ฟิสิกส์อาคารก่อนประกาศว่า EnergyPlus/Mesa ใช้งานร่วมกันได้ครบถ้วน
 
+สำหรับการพัฒนา coupling โดยไม่เดาฟิสิกส์อาคาร Boonchoo ให้ใช้
+[reference-building benchmarks: five-zone → school](../docs/TWINB_REFERENCE_BENCHMARKS.md).
+เป็นแบบจำลองทดสอบแยกต่างหาก ไม่ใช่การรับรองว่า geometry ของ Boonchoo ถูกแก้แล้ว
+
 ## สิ่งที่ต้องแยกให้ออก
 
 | ชั้น | หน้าที่ | รันเมื่อใด |
