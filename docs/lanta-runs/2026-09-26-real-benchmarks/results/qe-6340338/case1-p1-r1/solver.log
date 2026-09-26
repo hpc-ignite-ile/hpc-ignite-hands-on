@@ -1,0 +1,53 @@
+
+     Program PWSCF v.7.3.1 starts on 26Sep2026 at 12:24:59 
+
+     This program is part of the open-source Quantum ESPRESSO suite
+     for quantum simulation of materials; please cite
+         "P. Giannozzi et al., J. Phys.:Condens. Matter 21 395502 (2009);
+         "P. Giannozzi et al., J. Phys.:Condens. Matter 29 465901 (2017);
+         "P. Giannozzi et al., J. Chem. Phys. 152 154105 (2020);
+          URL http://www.quantum-espresso.org", 
+     in publications or presentations arising from this work. More details at
+     http://www.quantum-espresso.org/quote
+
+     Parallel version (MPI & OpenMP), running on       1 processor cores
+     Number of MPI processes:                 1
+     Threads/MPI process:                     1
+
+     MPI processes distributed on     1 nodes
+     232172 MiB available memory on the printing compute node when the environment starts
+
+     Reading input from /project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/results/qe-6340338/case1-p1-r1/input.in
+     Message from routine read_cards :
+     DEPRECATED: no units specified in ATOMIC_POSITIONS card
+     Message from routine read_cards :
+     ATOMIC_POSITIONS: units set to alat
+
+     Current dimensions of program PWSCF are:
+     Max number of different atomic species (ntypx) = 10
+     Max number of k-points (npk) =  40000
+     Max angular momentum in pseudopotentials (lmaxx) =  4
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x1511fca4297f in ???
+#1  0x1511fcb69710 in ???
+#2  0xc855cd in __mp_MOD_mp_bcast_r4d
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/UtilXlib/mp.f90:603
+#3  0x8fb941 in upf_bcast
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/Modules/read_pseudo.f90:400
+#4  0x8fed5f in __read_pseudo_mod_MOD_readpp
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/Modules/read_pseudo.f90:142
+#5  0x4740d2 in pseudo_iosys_
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/PW/src/input.f90:176
+#6  0x478cf2 in iosys_
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/PW/src/input.f90:50
+#7  0x51d084 in run_pwscf_
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/PW/src/run_pwscf.f90:116
+#8  0x408699 in pwscf
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/PW/src/pwscf.f90:85
+#9  0x4084cc in main
+	at /lustrefs/disk/modules/easybuild/software/QE/qe-7.3.1_cpu/PW/src/pwscf.f90:40
+srun: error: lanta-c-158: task 0: Segmentation fault
+srun: Terminating StepId=6340338.0

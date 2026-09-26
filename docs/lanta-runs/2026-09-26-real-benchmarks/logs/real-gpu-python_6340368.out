@@ -1,0 +1,13 @@
+{"repeat": 0, "epoch": 1, "training_mse": 0.9288909267634153, "data_generation_s": 7.845275172032416, "training_s": 7.790761863812804, "samples_per_s": 130.97947998620185}
+{"repeat": 0, "epoch": 2, "training_mse": 0.172621835838072, "data_generation_s": 7.837608356960118, "training_s": 7.5264078713953495, "samples_per_s": 133.29847935335158}
+{"repeat": 0, "epoch": 3, "training_mse": 0.05279967555543408, "data_generation_s": 7.844974711537361, "training_s": 7.527665197849274, "samples_per_s": 133.22370211439596}
+{"repeat": 0, "epoch": 4, "training_mse": 0.024296528194099665, "data_generation_s": 7.826949181035161, "training_s": 7.527395044453442, "samples_per_s": 133.3824466824358, "validation_relative_L2": 0.04944685474038124}
+{"repeat": 0, "epoch": 5, "training_mse": 0.008751024695811793, "data_generation_s": 7.84345255792141, "training_s": 7.530605428852141, "samples_per_s": 133.21141378300473}
+{"repeat": 0, "epoch": 6, "training_mse": 0.00567594056337839, "data_generation_s": 7.823590726591647, "training_s": 7.528058040887117, "samples_per_s": 133.40586610726294}
+{"repeat": 0, "epoch": 7, "training_mse": 0.005580022501817439, "data_generation_s": 7.825717029161751, "training_s": 7.526703920215368, "samples_per_s": 133.39915618214545}
+{"repeat": 0, "epoch": 8, "training_mse": 0.00402328039490385, "data_generation_s": 7.817435208708048, "training_s": 7.528188086114824, "samples_per_s": 133.4582480394218, "validation_relative_L2": 0.027196425944566727}
+{"repeat": 0, "epoch": 9, "training_mse": 0.0023949218302732334, "data_generation_s": 7.816942520439625, "training_s": 7.527269707992673, "samples_per_s": 133.47052096979775}
+{"repeat": 0, "epoch": 10, "training_mse": 0.002414085960481316, "data_generation_s": 7.853529533371329, "training_s": 7.527110354974866, "samples_per_s": 133.15440806541187}
+{"repeat": 0, "epoch": 11, "training_mse": 0.0016957752159214579, "data_generation_s": 7.879280514083803, "training_s": 7.527088042348623, "samples_per_s": 132.93203992221285}
+{"repeat": 0, "epoch": 12, "training_mse": 0.0015696912250859896, "data_generation_s": 7.8363901218399405, "training_s": 7.527118208818138, "samples_per_s": 133.30288602852445, "validation_relative_L2": 0.020077575463801622}
+{"repeat": 0, "epoch": 13, "training_mse": 0.0014916879481461365, "data_generation_s": 7.794918482191861, "training_s": 7.525769775733352, "samples_per_s": 133.67545671067313}

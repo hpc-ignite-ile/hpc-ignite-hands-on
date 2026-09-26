@@ -1,0 +1,69 @@
+
+GENMAKE :
+
+A program for GENerating MAKEfiles for the MITgcm project.
+   For a quick list of options, use "genmake2 -h"
+or for more detail see the documentation, section "Building the model"
+   (under "Getting Started") at:  https://mitgcm.readthedocs.io/
+
+===  Processing options files and arguments  ===
+  getting local config information:  none found
+  getting OPTFILE information:
+    using OPTFILE="/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/slurm/mitgcm-options"
+  getting AD_OPTFILE information:
+    using AD_OPTFILE="/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/sources/MITgcm/tools/adjoint_options/adjoint_default"
+  check Fortran Compiler...   (set FC_CHECK=4/5)
+  check makedepend (local: 0, system: 1, 1)
+  Turning on MPI cpp macros
+
+===  Checking system libraries  ===
+  Do we have the system() command using ftn...  yes
+  Do we have the fdate() command using ftn...  yes
+  Do we have the etime() command using ftn... c,r: yes (SbR)
+  Can we call simple C routines (here, "cloc()") using ftn...  yes
+  Can we unlimit the stack size using ftn...  yes
+  Can we register a signal handler using ftn...  yes
+  Can we use stat() through C calls...  yes
+  Can we create NetCDF-enabled binaries...  no
+    skip check for LAPACK Libs
+  Can we call FLUSH intrinsic subroutine...  yes
+
+===  Setting defaults  ===
+  Adding MODS directories: ./code 
+  Making source files in eesupp from templates
+  Making source files in pkg/exch2 from templates
+  Making source files in pkg/regrid from templates
+
+===  Determining package settings  ===
+  getting package dependency info from  /project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/sources/MITgcm/pkg/pkg_depend
+  getting package groups info from      /project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/sources/MITgcm/pkg/pkg_groups
+  checking list of packages to compile:
+    using PKG_LIST="./code/packages.conf"
+    before group expansion packages are: gfd diagnostics mnc
+    replacing "gfd" with:  mom_common mom_fluxform mom_vecinv generic_advdiff debug mdsio rw monitor
+    after group expansion packages are:  mom_common mom_fluxform mom_vecinv generic_advdiff debug mdsio rw monitor diagnostics mnc
+  applying DISABLE settings
+  applying ENABLE settings
+    packages are:  debug diagnostics generic_advdiff mdsio mom_common mom_fluxform mom_vecinv monitor rw
+  applying package dependency rules
+    packages are:  debug diagnostics generic_advdiff mdsio mom_common mom_fluxform mom_vecinv monitor rw
+  Adding STANDARDDIRS='eesupp model'
+  Searching for *OPTIONS.h files in order to warn about the presence
+    of "#define "-type statements that are no longer allowed:
+    found CPP_EEOPTIONS="/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/sources/MITgcm/eesupp/inc/CPP_EEOPTIONS.h"
+    found CPP_OPTIONS="/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/sources/MITgcm/model/inc/CPP_OPTIONS.h"
+  Creating the list of files for the adjoint compiler.
+
+===  Creating the Makefile  ===
+  setting INCLUDES
+  Determining the list of source and include files
+  Writing makefile: Makefile
+  Add the source list for AD code generation
+  Making list of "exceptions" that need ".p" files
+  Making list of NOOPTFILES
+  Add rules for links
+  Adding makedepend marker
+
+===  Done  ===
+  original 'Makefile' generated but was unable to
+   run compiled test-program (please see 'genmake.log')

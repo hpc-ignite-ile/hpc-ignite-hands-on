@@ -1,0 +1,10 @@
+/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/envs/science/lib/python3.12/site-packages/climlab/radiation/cam3.py:45: UserWarning: Cannot import and initialize compiled Fortran extension, CAM3 module will not be functional.
+  warnings.warn('Cannot import and initialize compiled Fortran extension, CAM3 module will not be functional.')
+/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/envs/science/lib/python3.12/site-packages/climlab/radiation/rrtm/rrtmg_lw.py:18: UserWarning: Cannot import and initialize compiled Fortran extension, RRTMG_LW module will not be functional.
+  warnings.warn('Cannot import and initialize compiled Fortran extension, RRTMG_LW module will not be functional.')
+/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/envs/science/lib/python3.12/site-packages/climlab/radiation/rrtm/rrtmg_sw.py:19: UserWarning: Cannot import and initialize compiled Fortran extension, RRTMG_SW module will not be functional.
+  warnings.warn('Cannot import and initialize compiled Fortran extension, RRTMG_SW module will not be functional.')
+/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/envs/science/lib/python3.12/site-packages/climlab/convection/emanuel_convection.py:12: UserWarning: Cannot import EmanuelConvection fortran extension, this module will not be functional.
+  warnings.warn('Cannot import EmanuelConvection fortran extension, this module will not be functional.')
+/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/envs/science/lib/python3.12/site-packages/climlab/convection/simplified_betts_miller.py:110: UserWarning: Cannot import SimplifiedBettsMiller fortran extension, this module will not be functional.
+  warnings.warn('Cannot import SimplifiedBettsMiller fortran extension, this module will not be functional.')

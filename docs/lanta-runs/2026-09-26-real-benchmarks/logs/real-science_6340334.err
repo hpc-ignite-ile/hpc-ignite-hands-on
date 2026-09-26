@@ -1,0 +1,4 @@
+/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/envs/science/lib/python3.12/site-packages/scanpy/preprocessing/_simple.py:660: NumbaPerformanceWarning: '@' is faster on contiguous arrays, called on (Array(float64, 1, 'A', False, aligned=True), Array(float64, 2, 'C', False, aligned=True))
+  data[i] -= regressor[i] @ coeff
+/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/envs/science/lib/python3.12/site-packages/scanpy/preprocessing/_simple.py:660: NumbaPerformanceWarning: '@' is faster on contiguous arrays, called on (Array(float64, 1, 'A', False, aligned=True), Array(float64, 2, 'C', False, aligned=True))
+  data[i] -= regressor[i] @ coeff
