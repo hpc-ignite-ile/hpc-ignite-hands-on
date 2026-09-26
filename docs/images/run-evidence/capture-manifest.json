@@ -170,7 +170,7 @@
     },
     {
       "path": "docs/tutorial-evidence/ai-applications-chapter-12-ai-development-readme.html",
-      "sha256": "6b53e4adeb8db4ce9d17bb36b93ec53d08bf72a45f1317bc17bb93b0c025636d"
+      "sha256": "097f55818590a66dfbb8092fa4ccd6ee393a184eb44bf74c3e231220061f0e0b"
     },
     {
       "path": "docs/tutorial-evidence/ai-applications-chapter-13-prompts-readme.html",
@@ -198,7 +198,7 @@
     },
     {
       "path": "docs/tutorial-evidence/core-hpc-chapter-04-deep-learning-readme.html",
-      "sha256": "b604f52498a6430c3a85116e4a88746cb808d93f0565d1cbf5848788f40efde5"
+      "sha256": "e168b741fd9421ee9e8f94a333b9f81727e7aef5f97e40ae285aabaf55d52f19"
     },
     {
       "path": "docs/tutorial-evidence/core-hpc-chapter-05-big-data-readme.html",
@@ -222,7 +222,7 @@
     },
     {
       "path": "docs/tutorial-evidence/core-hpc-chapter-10-gpu-readme.html",
-      "sha256": "07f58f8b3bb1dcc53b069d47088ce4c73ecb81b2197297da686df733300637e5"
+      "sha256": "71043d2f9139cb0641d0be645ec819a571235869e65795c442378a40383716c2"
     },
     {
       "path": "docs/tutorial-evidence/domain-science-chapter-20-computational-chemistry-readme.html",
@@ -286,7 +286,7 @@
     },
     {
       "path": "docs/tutorial-evidence/lanta-experience-05-ai-gpu.html",
-      "sha256": "1b8c43b140136b797a36c18b530f0b06ca6bff7a5d1d986c078470b263b9b8d6"
+      "sha256": "429f4499b4137d14b4db8087b707918074c8e8862b0f050cb284192f1ef24d4f"
     },
     {
       "path": "docs/tutorial-evidence/lanta-experience-06-run-logs.html",

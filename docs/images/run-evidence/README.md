@@ -10,7 +10,7 @@ Each viewer joins the archived job ID to `workflow-status.json`, allocation rows
 in `accounting.psv`, and job-ID-associated stdout in `artifacts.tar.gz`. For arrays,
 the viewer shows every allocation row and one explicitly named output element.
 Long logs are excerpted; the full archive and per-excerpt SHA-256 remain linked.
-The Markdown excerpts trim trailing whitespace; raw source bytes are unchanged.
+The displayed excerpts trim trailing whitespace; raw source bytes are unchanged.
 
 See [capture hashes](capture-manifest.json) and [job/excerpt mappings](../../tutorial-evidence/manifest.json).
 The capture manifest covers the HTML source and screenshots so stale images can

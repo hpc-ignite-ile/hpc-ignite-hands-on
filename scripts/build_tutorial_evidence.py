@@ -97,8 +97,9 @@ def build_html(path, topic, rows, accounting, samples):
                 'CPU-hours are reserved capacity, not billed SHr. MaxRSS is a sampled task/step maximum, not summed node RAM. '
                 'GPU utilization/peak VRAM and energy were not systematically recorded in this campaign.</p>')
     for sample in samples:
+        display_text = '\n'.join(line.rstrip() for line in sample['text'].splitlines())
         body.append(f'<h2>Recorded output excerpt · {esc(sample["job"])}</h2><p class="workflow">'
-                    f'{esc(sample["member"])}</p><pre>{esc(sample["text"])}</pre>')
+                    f'{esc(sample["member"])}</p><pre>{esc(display_text)}</pre>')
     if rows and not samples:
         body.append('<p>No job-ID-associated stdout excerpt was found; accounting is available, but output is not fabricated.</p>')
     if topic == 'twinb':
