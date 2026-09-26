@@ -1,0 +1,23 @@
+	Command being timed: "apptainer exec --pwd /project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/results/cfd-6340350/n40-p2-r1 /project/pv915002-hpcign/wdiazcar/containers/openfoam-dev-2512.sif /usr/bin/openfoam2512 -c mpirun -np 2 --mca plm isolated --mca ras ^slurm --mca pml ob1 --mca btl self,vader,tcp icoFoam -parallel -case "$PWD""
+	User time (seconds): 17.80
+	System time (seconds): 2.85
+	Percent of CPU this job got: 191%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:10.78
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 41420
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 500
+	Minor (reclaiming a frame) page faults: 65823
+	Voluntary context switches: 107130
+	Involuntary context switches: 91274
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 19736
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

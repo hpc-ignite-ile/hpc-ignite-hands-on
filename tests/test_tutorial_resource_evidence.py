@@ -13,7 +13,7 @@ import build_tutorial_evidence as evidence
 
 
 class TutorialEvidenceTests(unittest.TestCase):
-    def test_new_domain_protocols_are_linked_and_not_claimed_as_runs(self):
+    def test_domain_protocols_link_evidence_and_preserve_unexecuted_scope(self):
         tracks = {
             'CFD_CLIMATE_OCEAN_EXPERIMENTS.md': ['OpenFOAM', 'WRF', 'climlab', 'CMIP6', 'MITgcm', 'Oceananigans'],
             'SPACE_ASTRONOMY_EXPERIMENTS.md': ['REBOUND', 'Athena++', 'Astropy', 'SunPy'],
@@ -23,7 +23,8 @@ class TutorialEvidenceTests(unittest.TestCase):
             page = ROOT/'docs'/name
             text = page.read_text()
             self.assertIn(name, catalog)
-            self.assertIn('not completed runs', text)
+            self.assertIn('lanta-runs/2026-09-26-real-benchmarks/README.md', text)
+            self.assertIn('remain proposed', text)
             self.assertIn('pv915002', text)
             self.assertIn('GiB', text)
             for application in applications:

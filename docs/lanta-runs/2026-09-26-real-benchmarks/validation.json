@@ -1,0 +1,598 @@
+{
+  "athena-6340337": {
+    "gate": "PASS",
+    "runs": [
+      {
+        "n": 128,
+        "ranks": 1,
+        "repeat": 1,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 1,
+        "repeat": 2,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 1,
+        "repeat": 3,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 2,
+        "repeat": 1,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 2,
+        "repeat": 2,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 2,
+        "repeat": 3,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 4,
+        "repeat": 1,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 4,
+        "repeat": 2,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 128,
+        "ranks": 4,
+        "repeat": 3,
+        "density_L1": 0.003947587374263671,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 1,
+        "repeat": 1,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 1,
+        "repeat": 2,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 1,
+        "repeat": 3,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 2,
+        "repeat": 1,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 2,
+        "repeat": 2,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 2,
+        "repeat": 3,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 4,
+        "repeat": 1,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 4,
+        "repeat": 2,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 256,
+        "ranks": 4,
+        "repeat": 3,
+        "density_L1": 0.002140953643453668,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 1,
+        "repeat": 1,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 1,
+        "repeat": 2,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 1,
+        "repeat": 3,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 2,
+        "repeat": 1,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 2,
+        "repeat": 2,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 2,
+        "repeat": 3,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 4,
+        "repeat": 1,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 4,
+        "repeat": 2,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      },
+      {
+        "n": 512,
+        "ranks": 4,
+        "repeat": 3,
+        "density_L1": 0.001212931787450998,
+        "rank_repeat_equal": true
+      }
+    ],
+    "note": "Global assembled fields; upstream per-block shock-errors.dat is not used as global accuracy evidence."
+  },
+  "miniweather-6340319": {
+    "gate": "PASS",
+    "runs": [
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 1,
+        "repeat": 1,
+        "mass_relative_change": -1.56261e-15,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 1,
+        "repeat": 2,
+        "mass_relative_change": -1.56261e-15,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 1,
+        "repeat": 3,
+        "mass_relative_change": -1.56261e-15,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 2,
+        "repeat": 1,
+        "mass_relative_change": -6.83642e-14,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 2,
+        "repeat": 2,
+        "mass_relative_change": -6.83642e-14,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 2,
+        "repeat": 3,
+        "mass_relative_change": -6.83642e-14,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 4,
+        "repeat": 1,
+        "mass_relative_change": 2.324383e-14,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 4,
+        "repeat": 2,
+        "mass_relative_change": 2.324383e-14,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 200,
+        "ranks": 4,
+        "repeat": 3,
+        "mass_relative_change": 2.324383e-14,
+        "energy_relative_change": 0.0001111263,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 1,
+        "repeat": 1,
+        "mass_relative_change": -3.416251e-13,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 1,
+        "repeat": 2,
+        "mass_relative_change": -3.416251e-13,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 1,
+        "repeat": 3,
+        "mass_relative_change": -3.416251e-13,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 2,
+        "repeat": 1,
+        "mass_relative_change": 8.379483e-14,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 2,
+        "repeat": 2,
+        "mass_relative_change": 8.379483e-14,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 2,
+        "repeat": 3,
+        "mass_relative_change": 8.379483e-14,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 4,
+        "repeat": 1,
+        "mass_relative_change": 2.55877e-14,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 4,
+        "repeat": 2,
+        "mass_relative_change": 2.55877e-14,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "THERMAL",
+        "nx": 400,
+        "ranks": 4,
+        "repeat": 3,
+        "mass_relative_change": 2.55877e-14,
+        "energy_relative_change": 0.0001189428,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 1,
+        "repeat": 1,
+        "mass_relative_change": -1.230556e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 1,
+        "repeat": 2,
+        "mass_relative_change": -1.230556e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 1,
+        "repeat": 3,
+        "mass_relative_change": -1.230556e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 2,
+        "repeat": 1,
+        "mass_relative_change": -6.113713e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 2,
+        "repeat": 2,
+        "mass_relative_change": -6.113713e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 2,
+        "repeat": 3,
+        "mass_relative_change": -6.113713e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 4,
+        "repeat": 1,
+        "mass_relative_change": 2.129056e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 4,
+        "repeat": 2,
+        "mass_relative_change": 2.129056e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 200,
+        "ranks": 4,
+        "repeat": 3,
+        "mass_relative_change": 2.129056e-14,
+        "energy_relative_change": 0.0004152279,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 1,
+        "repeat": 1,
+        "mass_relative_change": -3.437737e-13,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 1,
+        "repeat": 2,
+        "mass_relative_change": -3.437737e-13,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 1,
+        "repeat": 3,
+        "mass_relative_change": -3.437737e-13,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 2,
+        "repeat": 1,
+        "mass_relative_change": 8.789668e-14,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 2,
+        "repeat": 2,
+        "mass_relative_change": 8.789668e-14,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 2,
+        "repeat": 3,
+        "mass_relative_change": 8.789668e-14,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 4,
+        "repeat": 1,
+        "mass_relative_change": 2.754096e-14,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 4,
+        "repeat": 2,
+        "mass_relative_change": 2.754096e-14,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      },
+      {
+        "case": "DENSITY_CURRENT",
+        "nx": 400,
+        "ranks": 4,
+        "repeat": 3,
+        "mass_relative_change": 2.754096e-14,
+        "energy_relative_change": 0.0005205049,
+        "fields_equal": true
+      }
+    ]
+  },
+  "mitgcm-6340345": {
+    "gate": "PASS",
+    "runs": [
+      {
+        "ranks": 1,
+        "repeat": 1,
+        "max_absolute_difference": {
+          "T": 0.0,
+          "U": 0.0,
+          "V": 0.0,
+          "Eta": 0.0
+        },
+        "model_days": 30
+      },
+      {
+        "ranks": 1,
+        "repeat": 2,
+        "max_absolute_difference": {
+          "T": 0.0,
+          "U": 0.0,
+          "V": 0.0,
+          "Eta": 0.0
+        },
+        "model_days": 30
+      },
+      {
+        "ranks": 1,
+        "repeat": 3,
+        "max_absolute_difference": {
+          "T": 0.0,
+          "U": 0.0,
+          "V": 0.0,
+          "Eta": 0.0
+        },
+        "model_days": 30
+      },
+      {
+        "ranks": 4,
+        "repeat": 1,
+        "max_absolute_difference": {
+          "T": 0.0,
+          "U": 0.0,
+          "V": 0.0,
+          "Eta": 0.0
+        },
+        "model_days": 30
+      },
+      {
+        "ranks": 4,
+        "repeat": 2,
+        "max_absolute_difference": {
+          "T": 0.0,
+          "U": 0.0,
+          "V": 0.0,
+          "Eta": 0.0
+        },
+        "model_days": 30
+      },
+      {
+        "ranks": 4,
+        "repeat": 3,
+        "max_absolute_difference": {
+          "T": 0.0,
+          "U": 0.0,
+          "V": 0.0,
+          "Eta": 0.0
+        },
+        "model_days": 30
+      }
+    ],
+    "note": "Finite fields and decomposition/repeat agreement; no equilibrium or closed tracer-budget claim."
+  }
+}

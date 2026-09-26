@@ -1,0 +1,10 @@
+[
+  {
+    "case": 1,
+    "ranks": 1,
+    "repeat": 1,
+    "elapsed_s": 28.641545648686588,
+    "energy_Ry": -253.63402999,
+    "gate": "PASS"
+  }
+]

@@ -1,11 +1,11 @@
 # Public applications: from smoke tests to repeatable scientific experiments
 
-**Fresh execution evidence:** [26 September performance campaign](lanta-runs/2026-09-26-performance/README.md) reran every existing runnable tutorial, the real EnergyPlus/Mesa benchmark, and a new bounded OpenFOAM cavity experiment. This does not mark the other proposed applications below as executed.
+**Fresh execution evidence:** the [real-science campaign ledger](lanta-runs/2026-09-26-real-benchmarks/README.md) now records extended GROMACS, miniWeather, CFD, materials, ocean, single-cell, climate and astronomy workflows, plus full EuroSAT and PhysicsNeMo training jobs. Consult its timestamp and job states: ongoing jobs are not completed results. The earlier [tutorial performance campaign](lanta-runs/2026-09-26-performance/README.md) remains a separate archive.
 
 Research checked **2026-09-26**. This is a selection and experiment-design catalog,
 not a claim that these new applications have run on LANTA. The existing
 [EnergyPlus + Mesa benchmark](TWINB_REFERENCE_BENCHMARKS.md) already has archived
-LANTA evidence; the other entries below are **proposed pilots**.
+LANTA evidence. The entries below preserve the original **pilot designs**; the new campaign ledger specifies which protocols were actually executed and their limits.
 Use the [resource worksheet](RESOURCE_ESTIMATION_WORKBOOK.md) and
 [Bash reference](BASH_COMMAND_REFERENCE_TH.md) alongside these plans.
 
@@ -16,7 +16,7 @@ cover OpenFOAM, WRF, climlab, CMIP6, MITgcm and Oceananigans.
 [Space and astronomical science](SPACE_ASTRONOMY_EXPERIMENTS.md) covers REBOUND,
 Athena++, Astropy and SunPy. Each has input sources, a pilot ceiling, scaling
 questions, scientific validation and a post-run image checklist. These are
-proposed experiments; they do not add new completed runs to the evidence archive.
+experiment designs; completion status and actual output are in the new campaign ledger, not inferred from these plans.
 
 | Priority | Application | What replaces a toy result | Initial ceiling per pilot, not measured need |
 |---|---|---|---|

@@ -1,0 +1,89 @@
+[
+  {
+    "epoch": 1,
+    "training_mse": 0.9288909267634153,
+    "data_generation_s": 7.91113146673888,
+    "training_s": 7.7989108534529805,
+    "samples_per_s": 130.362475049971
+  },
+  {
+    "epoch": 2,
+    "training_mse": 0.172621835838072,
+    "data_generation_s": 7.916419273242354,
+    "training_s": 7.529710914939642,
+    "samples_per_s": 132.58984451438505
+  },
+  {
+    "epoch": 3,
+    "training_mse": 0.05279967555543408,
+    "data_generation_s": 7.917142117395997,
+    "training_s": 7.530622514896095,
+    "samples_per_s": 132.57581590276496
+  },
+  {
+    "epoch": 4,
+    "training_mse": 0.024296528194099665,
+    "data_generation_s": 7.9080075565725565,
+    "training_s": 7.5290154702961445,
+    "samples_per_s": 132.66806666255414,
+    "validation_relative_L2": 0.04944685474038124
+  },
+  {
+    "epoch": 5,
+    "training_mse": 0.008751024695811793,
+    "data_generation_s": 7.884872158057988,
+    "training_s": 7.530775199644268,
+    "samples_per_s": 132.85202706565155
+  },
+  {
+    "epoch": 6,
+    "training_mse": 0.00567594056337839,
+    "data_generation_s": 7.9136554235592484,
+    "training_s": 7.529095440171659,
+    "samples_per_s": 132.61885904084392
+  },
+  {
+    "epoch": 7,
+    "training_mse": 0.005580022501817439,
+    "data_generation_s": 7.898514797911048,
+    "training_s": 7.531266910023987,
+    "samples_per_s": 132.7303288384683
+  },
+  {
+    "epoch": 8,
+    "training_mse": 0.00402328039490385,
+    "data_generation_s": 7.890210913494229,
+    "training_s": 7.530616965144873,
+    "samples_per_s": 132.80739634198792,
+    "validation_relative_L2": 0.027196425944566727
+  },
+  {
+    "epoch": 9,
+    "training_mse": 0.0023949218302732334,
+    "data_generation_s": 7.8954251473769546,
+    "training_s": 7.537112154997885,
+    "samples_per_s": 132.70662884999754
+  },
+  {
+    "epoch": 10,
+    "training_mse": 0.002414085960481316,
+    "data_generation_s": 7.928296348080039,
+    "training_s": 7.534368300810456,
+    "samples_per_s": 132.44806419228343
+  },
+  {
+    "epoch": 11,
+    "training_mse": 0.0016957752159214579,
+    "data_generation_s": 7.965694230049849,
+    "training_s": 7.534754564985633,
+    "samples_per_s": 132.12520663633546
+  },
+  {
+    "epoch": 12,
+    "training_mse": 0.0015696912250859896,
+    "data_generation_s": 7.910784786567092,
+    "training_s": 7.536351813003421,
+    "samples_per_s": 132.5812060247426,
+    "validation_relative_L2": 0.020077575463801622
+  }
+]

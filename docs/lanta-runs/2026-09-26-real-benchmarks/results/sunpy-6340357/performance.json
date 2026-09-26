@@ -1,0 +1,50 @@
+[
+  {
+    "repeat": 0,
+    "date": "2011-06-07T06:33:02.770",
+    "wavelength": "171.0 Angstrom",
+    "exposure_s": 0.234256,
+    "region_pixel_bounds": [
+      400,
+      624,
+      400,
+      624
+    ],
+    "region_mean_DN_per_s": 2672.351253587136,
+    "wcs_roundtrip_px": 2.5579538487363607e-11,
+    "elapsed_s": 0.18365064170211554,
+    "gate": "PASS"
+  },
+  {
+    "repeat": 1,
+    "date": "2011-06-07T06:33:02.770",
+    "wavelength": "171.0 Angstrom",
+    "exposure_s": 0.234256,
+    "region_pixel_bounds": [
+      400,
+      624,
+      400,
+      624
+    ],
+    "region_mean_DN_per_s": 2672.351253587136,
+    "wcs_roundtrip_px": 2.5579538487363607e-11,
+    "elapsed_s": 0.07023219764232635,
+    "gate": "PASS"
+  },
+  {
+    "repeat": 2,
+    "date": "2011-06-07T06:33:02.770",
+    "wavelength": "171.0 Angstrom",
+    "exposure_s": 0.234256,
+    "region_pixel_bounds": [
+      400,
+      624,
+      400,
+      624
+    ],
+    "region_mean_DN_per_s": 2672.351253587136,
+    "wcs_roundtrip_px": 2.5579538487363607e-11,
+    "elapsed_s": 0.06486856658011675,
+    "gate": "PASS"
+  }
+]

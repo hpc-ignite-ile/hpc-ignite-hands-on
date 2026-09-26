@@ -1,0 +1,41 @@
+{
+  "collected_utc": "2026-09-26T05:47:51.405076+00:00",
+  "root": "/lustrefs/disk/project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926",
+  "source_commits": {
+    "athena": "823614c90b594472747a0ac2a699e4a454f300d2",
+    "MITgcm": "d861cd501f21303825de860eb3caa0a8a7ae22f8",
+    "qe-benchmarks": "eff15189e7b1120f5facc6fef202cbd6ff0ed26b",
+    "miniWeather": "b001069e1f7654914744641013e2bd408a9206fb",
+    "physicsnemo": "426f7552da4b4fa675e404e8a4f437e27681b668"
+  },
+  "inputs": {
+    "benchMEM.zip": {
+      "bytes": 1727355,
+      "sha256": "3c1c8cd4f274d532f48c4668e1490d389486850d6b3b258dfad4581aa11380a4"
+    },
+    "AIA171-real.fits": {
+      "bytes": 973440,
+      "sha256": "49bda3ad85bb83825d76b0cccc6a3aae5662d9106a208d0f9d7ceb9c97e3abe4"
+    },
+    "pbmc3k.tar.gz": {
+      "bytes": 7621991,
+      "sha256": "847d6ebd9a1ec9a768f2be7e40ca42cbfe75ebeb6d76a4c24167041699dc28b5"
+    },
+    "benchMEM.tpr": {
+      "bytes": 3461380,
+      "sha256": "5099268bf3a3d948c03b3b78432f29a2c5d4207b54d02e7e294f8138b587d473"
+    },
+    "EuroSAT.zip": {
+      "bytes": 94280567,
+      "sha256": "8ebea626349354c5328b142b96d0430e647051f26efc2dc974c843f25ecf70bd"
+    },
+    "AIA171.fits": {
+      "bytes": 131,
+      "sha256": "0823a98b52c4e27459b57183896eef376332a3e307dd8d5083a9920ec6a29e94"
+    },
+    "HorseHead.fits": {
+      "bytes": 1650240,
+      "sha256": "c4bcc0bccbadf1488e4e361c0d8f04255dc344ff401fd4827139b3354eafe863"
+    }
+  }
+}

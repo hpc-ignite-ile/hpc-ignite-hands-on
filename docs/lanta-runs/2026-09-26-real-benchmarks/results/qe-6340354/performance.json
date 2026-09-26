@@ -1,0 +1,34 @@
+[
+  {
+    "case": 3,
+    "ranks": 1,
+    "repeat": 1,
+    "elapsed_s": 239.47198180574924,
+    "energy_Ry": -5055.46270367,
+    "gate": "PASS"
+  },
+  {
+    "case": 3,
+    "ranks": 1,
+    "repeat": 2,
+    "elapsed_s": 229.0321983601898,
+    "energy_Ry": -5055.46270367,
+    "gate": "PASS"
+  },
+  {
+    "case": 3,
+    "ranks": 1,
+    "repeat": 3,
+    "elapsed_s": 230.91542818956077,
+    "energy_Ry": -5055.46270367,
+    "gate": "PASS"
+  },
+  {
+    "case": 3,
+    "ranks": 2,
+    "repeat": 1,
+    "elapsed_s": 110.65553904604167,
+    "energy_Ry": -5055.46270366,
+    "gate": "PASS"
+  }
+]

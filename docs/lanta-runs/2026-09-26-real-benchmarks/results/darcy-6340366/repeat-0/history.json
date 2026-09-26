@@ -1,0 +1,96 @@
+[
+  {
+    "epoch": 1,
+    "training_mse": 0.9288909267634153,
+    "data_generation_s": 7.86712802015245,
+    "training_s": 7.8050050642341375,
+    "samples_per_s": 130.67780811792153
+  },
+  {
+    "epoch": 2,
+    "training_mse": 0.172621835838072,
+    "data_generation_s": 7.871070299297571,
+    "training_s": 7.527379358187318,
+    "samples_per_s": 133.00040234923955
+  },
+  {
+    "epoch": 3,
+    "training_mse": 0.05279967555543408,
+    "data_generation_s": 7.861337113194168,
+    "training_s": 7.525061255320907,
+    "samples_per_s": 133.10457398469467
+  },
+  {
+    "epoch": 4,
+    "training_mse": 0.024296528194099665,
+    "data_generation_s": 7.861416228115559,
+    "training_s": 7.527595750056207,
+    "samples_per_s": 133.08196802399948,
+    "validation_relative_L2": 0.04944685474038124
+  },
+  {
+    "epoch": 5,
+    "training_mse": 0.008751024695811793,
+    "data_generation_s": 7.843180667608976,
+    "training_s": 7.527441339567304,
+    "samples_per_s": 133.2411921289733
+  },
+  {
+    "epoch": 6,
+    "training_mse": 0.00567594056337839,
+    "data_generation_s": 7.866769690066576,
+    "training_s": 7.52874871250242,
+    "samples_per_s": 133.02572517845567
+  },
+  {
+    "epoch": 7,
+    "training_mse": 0.005580022501817439,
+    "data_generation_s": 7.861389198340476,
+    "training_s": 7.5280905878171325,
+    "samples_per_s": 133.0779226106211
+  },
+  {
+    "epoch": 8,
+    "training_mse": 0.00402328039490385,
+    "data_generation_s": 7.841115502640605,
+    "training_s": 7.526852901093662,
+    "samples_per_s": 133.26419902726738,
+    "validation_relative_L2": 0.027196425944566727
+  },
+  {
+    "epoch": 9,
+    "training_mse": 0.0023949218302732334,
+    "data_generation_s": 7.846277653239667,
+    "training_s": 7.527631243690848,
+    "samples_per_s": 133.21270561248704
+  },
+  {
+    "epoch": 10,
+    "training_mse": 0.002414085960481316,
+    "data_generation_s": 7.882243016734719,
+    "training_s": 7.5291575863957405,
+    "samples_per_s": 132.88863567559184
+  },
+  {
+    "epoch": 11,
+    "training_mse": 0.0016957752159214579,
+    "data_generation_s": 7.900286704301834,
+    "training_s": 7.527481480501592,
+    "samples_per_s": 132.7476518617456
+  },
+  {
+    "epoch": 12,
+    "training_mse": 0.0015696912250859896,
+    "data_generation_s": 7.85098668653518,
+    "training_s": 7.528601469472051,
+    "samples_per_s": 133.16351382270636,
+    "validation_relative_L2": 0.020077575463801622
+  },
+  {
+    "epoch": 13,
+    "training_mse": 0.0014916879481461365,
+    "data_generation_s": 7.827386028133333,
+    "training_s": 7.529569883830845,
+    "samples_per_s": 133.35976294653943
+  }
+]

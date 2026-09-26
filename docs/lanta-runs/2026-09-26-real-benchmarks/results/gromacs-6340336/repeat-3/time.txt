@@ -1,0 +1,23 @@
+	Command being timed: "gmx mdrun -s inputs/benchMEM.tpr -deffnm /project/pv915002-hpcign/wdiazcar/real-benchmarks-20260926/results/gromacs-6340336/repeat-3/md -nsteps 50000 -ntmpi 1 -ntomp 16 -pin on -noconfout -resethway -nb gpu -pme gpu -bonded cpu -update cpu"
+	User time (seconds): 521.06
+	System time (seconds): 1.27
+	Percent of CPU this job got: 1298%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:40.22
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 340236
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 79
+	Minor (reclaiming a frame) page faults: 63274
+	Voluntary context switches: 1341
+	Involuntary context switches: 6333
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 88
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

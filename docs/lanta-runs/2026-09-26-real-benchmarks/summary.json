@@ -1,0 +1,12 @@
+{
+  "snapshot_utc": "2026-09-26T05:48:14.378324+00:00",
+  "jobs": 34,
+  "states": {
+    "COMPLETED": 21,
+    "FAILED": 6,
+    "PENDING": 1,
+    "RUNNING": 6
+  },
+  "reserved_cpu_hours_including_running_elapsed": 12.323333333333332,
+  "note": "Allocated CPU-hours are not ThaiSC billed SHr. MaxRSS is a sampled per-task high-water mark; see step records, not just allocation rows."
+}

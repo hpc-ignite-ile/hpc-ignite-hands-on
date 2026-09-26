@@ -1,6 +1,6 @@
 # Space and astronomical science: reproducible experiment track
 
-Sources checked **2026-09-26**. These are proposed pilots, **not completed runs**.
+Sources checked **2026-09-26**. The [real-science campaign](lanta-runs/2026-09-26-real-benchmarks/README.md) now records REBOUND accuracy/timestep repeats, Athena++ Sod grid/rank repeats with a global exact-solution check, and real Astropy/SunPy FITS analysis. The blast-wave alternative and wider astronomical surveys remain proposed. The sections below preserve the initial pilot designs, not the measured resource ledger.
 They extend booklet pages 33–38 from scientific simulation and data workflows
 to gravitational dynamics, astrophysical fluids and real telescope observations.
 Use the [resource worksheet](RESOURCE_ESTIMATION_WORKBOOK.md) for accounting and
